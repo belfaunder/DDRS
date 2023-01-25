@@ -6,8 +6,6 @@ import os
 from time import process_time
 from src.main.discount_strategy.io import OCVRPParser
 
-path_to_enumeration = os.path.join((Path(os.path.abspath(__file__)).parents[1]), "algorithms", "exact","enumeration")
-sys.path.insert(2, path_to_enumeration)
 from src.main.discount_strategy.algorithms.exact.enumeration.enumeration_scenarios_2_segm import ScenarioEnumerationSolver
 from src.main.discount_strategy.util import constants
 

@@ -9,7 +9,7 @@ path_to_data = constants.PATH_TO_DATA
 from src.main.discount_strategy.util.bit_operations import bitCount
 #import pickle
 from src.main.discount_strategy.algorithms.exact.bab.BAB_exact import BABExact
-from src.main.discount_strategy.algorithms.exact.enumeration.enumeration_scenarios import ScenarioEnumerationSolver
+from src.main.discount_strategy.algorithms.exact.enumeration.enumeration_scenarios_2_segm import ScenarioEnumerationSolver
 
 from src.main.discount_strategy.algorithms.heuristic.sample_average import sampleAverageApproximation_PoissonBinomial
 from src.main.discount_strategy.algorithms.heuristic.sample_average import sampleAverageApproximation_PoissonBinomial_1sample
@@ -34,18 +34,12 @@ if __name__ == "__main__":
     print(prefix, "Exact BAB")
     print(prefix,"solverType: ", solverType)
     print(prefix, "TIME_LIMIT:", constants.TIME_LIMIT)
-
-    #file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "data","i_VRPDO_temp", str(sys.argv[-1])+".txt")
-    file_instance = os.path.join(path_to_data,"data", "i_VRPDO_discount_proportional",
-                               "VRPDO_size_12_phome_0.2_ppup_0.0_incrate_0.06_0.txt")
-
-    #file_instance = os.path.join(path_to_data, "data", "i_VRPDO_const_density",
-    #                            "VRPDO_size_14_phome_0.2_ppup_0.2_incrate_0.3_4.txt")
-    #file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "data", "i_VRPDO_discount_proportional",
-    #                             str(sys.argv[-1]) + ".txt")
-    # print(path_to_data)
-    # file_instance = os.path.join(path_to_data,"data" ,"i_VRPDO_discount_proportional",
-    #                              "VRPDO_size_15_phome_0.3_ppup_0.2_incrate_0.05_9.txt")
+    if os.name != 'nt':
+        file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "data",
+                                     "i_VRPDO_discount_proportional", str(sys.argv[-1])+".txt")
+    else:
+        file_instance = os.path.join(path_to_data,"data", "i_VRPDO_discount_proportional",
+                                   "VRPDO_size_12_phome_0.2_ppup_0.0_incrate_0.06_0.txt")
 
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()
@@ -86,3 +80,6 @@ if __name__ == "__main__":
         estimation_bab = sampleAverageApproximation_PoissonBinomial_1sample(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)
 
     print(prefix, 'Estimated_BAB_cost:',estimation_bab )
+
+    EnumerationSolver = ScenarioEnumerationSolver(instance=OCVRPInstance, solverType=solverType)
+    EnumerationSolver.exactPolicyByEnumeration_withoutGurobi_2segm()

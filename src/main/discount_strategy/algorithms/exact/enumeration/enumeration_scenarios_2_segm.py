@@ -79,7 +79,7 @@ class ScenarioEnumerationSolver:
 
             for scenario in Y:
                 if not (~policy & scenario):
-                    scenarioProb = probability.scenarioProb_2_segm(scenario, policy, n, n, self.instance.p_pup_delta)
+                    scenarioProb = probability.scenarioProb_2segm(scenario, policy, n, n, self.instance.p_pup_delta)
                     policyCost += scenarioProb* routeCost[scenario]
 
             if policyCost < bestPolicyCost:

@@ -90,8 +90,8 @@ class BABExact(BAB_super_class):
             print(prefix+ "Time_first_meet_optimum,s: ", (first_meet_time[self.bestNode.withDiscountID]-start_time))
         except:
             print(prefix + "Time_first_meet_optimum,s: ", (process_time()))
-        print(prefix+ 'BestPolicy_ID: ', self.bestNode.withDiscountID)
-        print(prefix+ 'BestPolicy: ', bin(self.bestNode.withDiscountID)[2:].zfill(self.instance.NR_CUST))
+        print(prefix+ 'BestPolicy_bab_ID: ', self.bestNode.withDiscountID)
+        print(prefix+ 'BestPolicy)bab: ', bin(self.bestNode.withDiscountID)[2:].zfill(self.instance.NR_CUST))
 
         return self.bestNode.withDiscountID, time, lbPrint, ubPrint
     # Check whether the node can be fathomed, i.e.whether we can prune the node
