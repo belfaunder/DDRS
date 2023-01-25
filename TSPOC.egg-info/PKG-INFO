@@ -1,0 +1,14 @@
+Metadata-Version: 2.1
+Name: TSPOC
+Version: 0.0.1
+Summary: Reinforced Genertic Algorithm
+Home-page: UNKNOWN
+Author: Nima and Stefan
+Author-email: 
+License: UNKNOWN
+Description: UNKNOWN
+Platform: UNKNOWN
+Classifier: License :: Other/Proprietary License
+Classifier: Programming Language :: Python :: 3
+Requires-Python: >=3.6
+Provides-Extra: dev
