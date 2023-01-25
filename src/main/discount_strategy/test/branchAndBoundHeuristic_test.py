@@ -2,6 +2,7 @@ from pathlib import Path
 from sys import argv
 import os
 from time import process_time
+import sys
 def timer(start,end):
     hours, rem = divmod(end-start, 3600)
     minutes, seconds = divmod(rem, 60)
@@ -28,12 +29,12 @@ if __name__ == "__main__":
     print(prefix,"NEIGHBOURHOOD_HEURISTIC: " ,constants.NEIGHBOURHOOD_HEURISTIC)
     print(prefix, "EPS_PRECISION_HEURISTIC: ", constants.EPSILON_H)
 
-    #file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "data", "i_VRPDO_discount_proportional",
-    #                             str(sys.argv[-1]) + ".txt")
-    #file_instance = os.path.join(path_to_data,"data" ,"i_VRPDO_discount_proportional",
-    #                             "VRPDO_size_18_phome_0.3_ppup_0.2_incrate_0.05_9.txt")
-    file_instance = os.path.join(path_to_data,"data", "i_VRPDO_discount_proportional",
-                               "VRPDO_size_12_phome_0.2_ppup_0.0_incrate_0.06_0.txt")
+    if os.name != 'nt':
+        file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "data",
+                                     "i_VRPDO_discount_proportional_2segm", str(sys.argv[-1]) + ".txt")
+    else:
+        file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional",
+                                     "VRPDO_size_12_phome_0.2_ppup_0.0_incrate_0.06_0.txt")
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()
     print(OCVRPInstance)

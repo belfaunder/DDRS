@@ -418,15 +418,16 @@ def parseEnumeration(file_path, folder, output_name):
                 if 'Instance:' in line:
                     instance = (line.split(':')[1].replace('\n', '')).replace(' ', '').replace('.txt', '')
                     nrCust = int(lines[idx + 1].split(':')[1])
-                    obj_val = float(lines[idx + 3].split(':')[1])
-                    time_running = float(lines[idx + 6].split()[1])
-                    policy_ID = int(lines[idx + 4].split(':')[1])
-                    data.append([nrCust, time_running, obj_val, policy_ID, instance])
+                    time_calculate_all_TSPs = float(lines[idx + 3].split(':')[1])
+                    obj_val = float(lines[idx + 4].split(':')[1])
+                    time_running = float(lines[idx + 7].split()[1])
+                    policy_ID = int(lines[idx + 5].split(':')[1])
+                    data.append([nrCust, time_running,time_calculate_all_TSPs, obj_val, policy_ID, instance])
 
             except:
                 data.append(["", "", "", "", instance])
                 print("enumeration problem with instance ", (line.split('/')[len(line.split('/')) - 1]), " line: ", idx)
-    rowTitle = ['nrCust_enum', 'time_running_enum', 'obj_val_enum', 'policy_enum_ID', 'instance']
+    rowTitle = ['nrCust_enum', 'time_running_enum','time_calc_allTSPs', 'obj_val_enum', 'policy_enum_ID', 'instance']
     writer(os.path.join(folder, output_name + ".csv"), data, rowTitle)
 
 
@@ -1295,15 +1296,13 @@ def sensitivity_p_home(df, folder):
 
 
 def nr_cust_variation(df):
-    df = df[df.nrCust < 19].copy()
-
-
-    df_results = pd.DataFrame(index=list(range(10, 20)),
+    #df = df[df.nrCust < 19].copy()
+    df_results = pd.DataFrame(index=list(range(10, 21)),
                               columns=['t_bab_av', 't_bab_sd','t_bab_min','t_bab_max', 'tto_best','tto_best_min', 'tto_best_max', 'n_bab_av', 'n_bab_sd','n_bab_min','n_bab_max',
                                        'sp2',
                                        'g_opt_3600', 'closed_3600', 'sp1', 't_enum_av', 't_enum_sd','t_enum_min','t_enum_max',
                                        'n_enum'])
-    for nrCust in range(10, 19):
+    for nrCust in range(10, 21):
         df_slice = df[(df.nrCust == nrCust) ].copy()
 
         #df_slice = df[(df.nrCust == nrCust)& (df.p_pup == 0.2) & (df.discount_rate ==0.06)].copy()
@@ -1325,18 +1324,17 @@ def nr_cust_variation(df):
 
         df_results.at[nrCust, 'n_bab_sd'] = int(df_slice['nodes'].std() + 0.5)
 
-        df_results.at[nrCust, 'g_opt_3600'] = df_slice['opt_gap_h'].mean()
-        df_results.at[nrCust, 'tto_best'] = df_slice['time_tb'].mean()
-        df_results.at[nrCust, 'tto_best_min'] = df_slice['time_tb'].min()
-        df_results.at[nrCust, 'tto_best_max'] = df_slice['time_tb'].max()
+        # df_results.at[nrCust, 'g_opt_3600'] = df_slice['opt_gap_h'].mean()
+        # df_results.at[nrCust, 'tto_best'] = df_slice['time_tb'].mean()
+        # df_results.at[nrCust, 'tto_best_min'] = df_slice['time_tb'].min()
+        # df_results.at[nrCust, 'tto_best_max'] = df_slice['time_tb'].max()
+        #df_results.at[nrCust, 'closed_3600'] = sum(df_slice['solved_h'])
+        #print(sum(df_slice['solved_h']), nrCust)
 
-        df_results.at[nrCust, 'closed_3600'] = sum(df_slice['solved_h'])
-        print(sum(df_slice['solved_h']), nrCust)
+    #df_results = df_results[[ 'g_opt_3600','closed_3600','sp1','tto_best', 'tto_best_min', 'tto_best_max']].copy()
 
-    df_results = df_results[[ 'g_opt_3600','closed_3600','sp1','tto_best', 'tto_best_min', 'tto_best_max']].copy()
-
-    #df_results = df_results[['t_enum_av', 't_enum_min', 't_enum_max', 'sp1', 't_bab_av','t_bab_min', 't_bab_max','sp2', 'n_bab_av', 'n_bab_min', 'n_bab_max']].copy()
-    print(df_results.to_latex(float_format='{:0.2f}'.format, na_rep=''))
+    df_results = df_results[['t_enum_av', 't_enum_min', 't_enum_max', 'sp1', 't_bab_av','t_bab_min', 't_bab_max','sp2', 'n_bab_av', 'n_bab_min', 'n_bab_max']].copy()
+    print(df_results.to_latex(float_format='{:0.1f}'.format, na_rep=''))
     #print(df_results.to_latex(formatters=['{:0.2f}', None, None, '{:0.1f}','{:0.5f}','{:0.1f}'], na_rep=''))
 
     print("")
@@ -1573,43 +1571,45 @@ def experiment_variation_nrcust(folder):
     # Speed test on nr_cust_variation instances
     # parseBAB_RS_NODISC(os.path.join(folder, "bab_rs_nodisc_i_VRPDO_notfinished.txt"), folder, "i_VRPDO_time")
     #parseBAB_RS_NODISC(os.path.join(folder, "bab_VRPDO_discount_proportional_02_02.txt"), folder, "i_VRPDO_discount_proportional_02_02")
-    #parseEnumeration(os.path.join(folder, "enum_VRPDO_disc_proportional_small.txt"), folder, "enum_VRPDO_disc_proportional_small")
-    #parseBAB(os.path.join(folder, "bab_3600_VRPDO_disc_proportional_02_02_006.txt"), folder, "bab_3600_VRPDO_disc_proportional_02_02_006")
+
+    #parseBAB(os.path.join(folder, "01_25_bab_exact_small.txt"), folder, "01_25_bab_exact_small")
+    #parseEnumeration(os.path.join(folder, "01_25_enumeration_small.txt"), folder, "01_25_enumeration_small")
+    df_enum = pd.read_csv(os.path.join(folder, "01_25_enumeration_small.csv"))
+    df_bab = pd.read_csv(os.path.join(folder, "01_25_bab_exact_small.csv"))
+
+    df_enum.drop(['nrCust_enum'], axis=1, inplace=True)
+    df = df_bab.merge(df_enum, how='left', on='instance')
+    nr_cust_variation(df)
 
     #parseBAB(os.path.join(folder, "bab_VRPDO_disc_proportional_small_02_02_006.txt"), folder, "bab_VRPDO_disc_proportional_small_02_02_006")
-    df_bab = pd.read_csv(os.path.join(folder, "bab_VRPDO_disc_proportional_small_02_02_006.csv"))
+
     #df_bab = pd.read_csv(os.path.join(folder, "i_VRPDO_time.csv"))
 
-    df_bab_tl = pd.read_csv(os.path.join(folder, "bab_3600_VRPDO_disc_proportional_02_02_006.csv"))
+    #df_bab_tl = pd.read_csv(os.path.join(folder, "bab_3600_VRPDO_disc_proportional_02_02_006.csv"))
     #df_bab_tl = pd.read_csv(os.path.join(folder, "bab_VRPDO_discount_proportional_3600.csv"))
-    df_enum = pd.read_csv(os.path.join(folder, "enum_VRPDO_disc_proportional_small.csv"))
 
     # df_bab_tl.drop(['p_home', 'p_pup', 'discount_rate', 'time_bab', 'time_tb', 'nodes', 'num_tsps', 'policy_ID_rs',
     #                 'obj_val_rs', '2sd_rs', 'gap_rs', 'obj_val_nodisc', '2sd_nodisc', 'gap_nodisc', 'obj_val_uniform',
     #                 '2sd_uniform', 'gap_uniform', 'eps'], axis=1, inplace=True)
 
-    df_bab_tl.drop(['p_home', 'p_pup', 'discount_rate', 'time_bab',  'nodes', 'num_tsps', 'eps', 'nrCust','time_tb'], axis=1, inplace=True)
-    df_enum.drop(['nrCust_enum'], axis=1, inplace=True)
+    #df_bab_tl.drop(['p_home', 'p_pup', 'discount_rate', 'time_bab',  'nodes', 'num_tsps', 'eps', 'nrCust','time_tb'], axis=1, inplace=True)
 
-    df_bab_tl.rename(columns={'policy_bab_ID': 'policy_h_ID', 'obj_val_bab': 'obj_val_h', '2sd_bab': '2sd_h',
-                              'optimal': 'optimal_h'},
-                     inplace=True)
+    #df_bab_tl.rename(columns={'policy_bab_ID': 'policy_h_ID', 'obj_val_bab': 'obj_val_h', '2sd_bab': '2sd_h',
+    #                          'optimal': 'optimal_h'},
+    #                 inplace=True)
 
-    df = df_bab.merge(df_enum, how='left', on='instance')
-    df = df.merge(df_bab_tl, how='left', on='instance')
-    df['opt_gap_h'] = df.apply(
-        lambda x: 0 if (x['optimal_h'] == x['policy_bab_ID'] or x['time_bab']<3600) else (x['obj_val_h'] - x['obj_val_bab']) / x[
-            'obj_val_h'] * 100, axis=1)
-
-
-    df['solved_h'] = df.apply(
-        lambda x: 0 if x['time_bab'] >=3600 else 1, axis=1)
+    #df = df.merge(df_bab_tl, how='left', on='instance')
+    # df['opt_gap_h'] = df.apply(
+    #     lambda x: 0 if (x['optimal_h'] == x['policy_bab_ID'] or x['time_bab']<3600) else (x['obj_val_h'] - x['obj_val_bab']) / x[
+    #         'obj_val_h'] * 100, axis=1)
+    #df['solved_h'] = df.apply(
+    #    lambda x: 0 if x['time_bab'] >=3600 else 1, axis=1)
     # file_path = os.path.join( folder,  "Comparison_full_table.xlsx")
     # writer = pd.ExcelWriter(file_path, engine='openpyxl')
     # df.to_excel(writer, index=False)
     # writer.save()
     #df = pd.read_excel(os.path.join(folder, "Comparison_full_table.xlsx"))
-    nr_cust_variation(df)
+    #nr_cust_variation(df)
 
 
 def experiment_variation_nrcust_heuristic(folder):
@@ -2083,11 +2083,12 @@ if __name__ == "__main__":
     #sensitivity_prob_comparison_nodisc(folder,folder_data_prob)
     #print_convergence_gap()
 
-    folder = os.path.join(path_to_data, "output", "VRPDO_discount_proportional")
-    #
-    #experiment_variation_nrcust_heuristic(folder)
-    #experiment_variation_nrcust(folder)
+    folder_2segm = os.path.join(path_to_data, "output", "VRPDO_discount_proportional_2segm")
 
+    #experiment_variation_nrcust_heuristic(folder)
+    experiment_variation_nrcust(folder_2segm)
+    folder = os.path.join(path_to_data, "output", "VRPDO_discount_proportional")
+    # experiment_bab_solution_time_classes(folder)
     # parseBAB(os.path.join(folder, "bab_7types_nrCust.txt"), folder, "bab_7types_nrCust")
 
     # experiment_heuristic_general()
@@ -2100,8 +2101,7 @@ if __name__ == "__main__":
 
     #experiment_heuristic_parameters_variation(folder)
 
-    folder = os.path.join(path_to_data, "output", "VRPDO_discount_proportional")
-    experiment_bab_solution_time_classes(folder)
+
 
     # folder_eps = os.path.join(path_to_data, "output", "nr_cust_small", "eps")
     # folder_sample = os.path.join(path_to_data, "output", "nr_cust_small", "sample")

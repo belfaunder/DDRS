@@ -97,7 +97,6 @@ class BABExact(BAB_super_class):
     # Check whether the node can be fathomed, i.e.whether we can prune the node
     # skip node
     def canFathom(self, node):
-        #TODO: finish this function
         def exploreNode():
 
             nonlocal node
