@@ -42,9 +42,8 @@ def setWeightCovered(policy, scenario, n, p_home):
     #weightCovered = p_dev ** (probTemp)
     return weightCovered
 
-
 def recalculateLbCovered(p_home, node, n):
-    #return 0,  0
+    return 0,  0
     # gamma is the number of customers who are vistied
     # here we look for the min gamma for which no tsp was exactly calculated
     # for gamma in range(n , len(node.setNotGivenDiscount) - 1, -1):
@@ -85,11 +84,6 @@ def recalculateLbCovered(p_home, node, n):
     else:
         treshold = 0
 
-    # TODO: sort lbSorted by the weightCovered*scenario[1] (without considering intersections) and then do the normal pickipng
-    # (or even take only 5-10 first from sorted
-    # TODO: add new scenarios into lbScenarios when calculate new TSP or from dict
-
-
     for scenario in lbSorted:
         if scenario[0] not in lbAdded:
             if probCovered < 1:
@@ -129,6 +123,34 @@ def recalculateLbCovered(p_home, node, n):
     else:
         lbDensityCovered = node.lbScenario[1]
     return probCovered, lbDensityCovered
+
+def set_probability_covered(node, Bab):
+    for id in node.lbScenarios:
+        node.lbScenarios[id][1] = 1
+        for pup in Bab.instance.pups:
+            # for all those customers who should be visited at home in the scenario id
+            if not (1 << pup.number) & id:
+                for cust_id in pup.closest_cust_id:
+                    # if the discount is either given to the customer or is not defined(becasue is the discount
+                    # is not given to the customer, then the probability of selecting home is 1)
+                    if cust_id not in node.setNotGivenDiscount:
+                        node.lbScenarios[id][1] *= Bab.instance.p_home[cust_id]
+
+    for id in node.lbScenarios:
+        visited_pups = [i for i in range(Bab.instance.NR_PUP) if id & (1 << i)]
+        for number_visited_pups in range(bitCount(id)):
+            for combination in itertools.combinations(visited_pups,  number_visited_pups):
+                id_to_reduce = sum((1<<offset) for offset in combination)
+                node.lbScenarios[id][1] -= node.lbScenarios[id_to_reduce][1]
+
+    #TODO: carefully remove the probability from the lbScenarios wherever you add a new TSP
+    # remove any scenario from lbCoveredProb if this scenario was included in calculation of exactValue(prob)
+    for scenario in node.tspProbDict:
+        for id in node.lbScenarios:
+            if not ~node.lbScenarios[id][2]&(2**(Bab.instance.NR_CUST) - 1) & scenario:
+                node.lbScenarios[id][1] -=  node.tspProbDict[scenario]
+                break
+    #print(node.lbScenarios)
 
 #CHANGESPROBABILITY
 def ub_insertion_cost(instance, setNotGivenDiscount, diff_customer):
@@ -197,7 +219,6 @@ def lb_insertion_cost(instance, setGivenDiscount, diff_customer):
                                 prob_current = 0
                         else:
                             prob_current *= 0
-
                 insertion_cost += min(prob_current, p_left) * lb_insertion[i, j]
                 if min(prob_current, p_left) > 0:
                     previous_insertion.append([i, j])
@@ -214,9 +235,6 @@ def lb_insertion_cost(instance, setGivenDiscount, diff_customer):
 
 def updateByInsertionCost(node, Bab):
     status_not_changed = True
-    fork_node_child = node
-    fork_node = node.parent
-
     if node.fathomedState:
         return False
     else:
@@ -236,8 +254,6 @@ def updateByInsertionCost(node, Bab):
                 node.ubRoute = node.lbRoute
                 node.lbExpDiscount = 0
                 node.ubExpDiscount = 0
-                # node.lbRoute = Bab.bestUb + lbInsertionCost + additionSibling + constants.EPS
-                # node.fathomed()
                 node.fathomedState = True
                 status_not_changed = False
         else:
@@ -254,94 +270,32 @@ def updateByInsertionCost(node, Bab):
                 node.ubRoute = node.lbRoute
                 node.lbExpDiscount = 0
                 node.ubExpDiscount = 0
-                # node.lbRoute = Bab.bestUb - ubInsertionCost + constants.EPS + additionSibling
-                # node.fathomed()
                 node.fathomedState = True
                 status_not_changed = False
 
     return status_not_changed
 
 
-def compareDynamicParent(node, sibling, diff_customer, Bab):
-    # additionSibling = sibling.lbVal() - Bab.bestNode.ubVal()
-    additionSibling = 0
-    ubInsertionCost = ub_insertion_cost(Bab.instance, sibling.setNotGivenDiscount, diff_customer)
-    if -ubInsertionCost + additionSibling >= 0:
-        node.lbRoute = sibling.lbVal() - ubInsertionCost + additionSibling
-        node.ubRoute = node.lbRoute
-        node.lbExpDiscount = 0
-        node.ubExpDiscount = 0
-        node.fathomedState = True
-        return True
-    return False
-
-
-def compareDynamicChild(node, sibling, diff_customer, Bab):
-    # additionSibling = sibling.lbVal() - Bab.bestUb
-    additionSibling = 0
-    lbInsertionCost = lb_insertion_cost(Bab.instance, node.setGivenDiscount, diff_customer)
-    # for i in range(1, node.NR_CUST+1):
-    #    if i not in node.setGivenDiscount:
-    if lbInsertionCost + additionSibling >= 0:
-        node.lbRoute = node.parent.children[0].lbVal() + lbInsertionCost + additionSibling
-        node.ubRoute = node.lbRoute
-        node.lbExpDiscount = 0
-        node.ubExpDiscount = 0
-        node.fathomedState = True
-        status_not_changed = False
-        return True
-    return False
-
-def updateBoundsFromLayer(Bab, node):
-    if (Bab.bestNode.number_disc - node.number_disc == 1) and node.layer == Bab.instance.NR_CUST:
-        pass
-    elif (Bab.bestNode.number_disc - node.number_disc == -1) and node.layer == Bab.instance.NR_CUST:
-        diff_customer =  (node.withDiscountID - Bab.bestNode.withDiscountID).bit_length()
-        lbInsertionCost = lb_insertion_cost(Bab.instance, node.setGivenDiscount, diff_customer)
-        ubInsertionCost = ub_insertion_cost(Bab.instance, node.setNotGivenDiscount, diff_customer)
-        if -ubInsertionCost + additionSibling > -constants.EPS * Bab.bestNode.lbVal():
-            node.lbRoute = node.parent.children[1].lbVal() - ubInsertionCost + constants.EPS + additionSibling
-            node.ubRoute = node.lbRoute
-            node.lbExpDiscount = 0
-            node.ubExpDiscount = 0
-            # node.lbRoute = Bab.bestUb - ubInsertionCost + constants.EPS + additionSibling
-            # node.fathomed()
-            node.fathomedState = True
-            status_not_changed = False
-
-        if lbInsertionCost  > -constants.EPS * Bab.bestNode.lbVal():
-            node.lbRoute = node.parent.children[0].lbVal() + lbInsertionCost + additionSibling
-            node.ubRoute = node.lbRoute
-            node.lbExpDiscount = 0
-            node.ubExpDiscount = 0
-            # node.lbRoute = Bab.bestUb + lbInsertionCost + additionSibling + constants.EPS
-            # node.fathomed()
-            node.fathomedState = True
-            status_not_changed = False
-        pass
-
-
 def updateBoundsFromDictionary(Bab, node):
     n = Bab.instance.NR_CUST
+    #print(len(Bab.instance.routeCost))
+    #print(node.lbScenarios)
     # calculate the worst UB on the insetion cost given the information about customers with discount
     if node.parent is not None:
-        if node is not Bab.bestNode:
-            status_not_changed = updateByInsertionCost(node, Bab)
-        else:
-            status_not_changed = True
-
+        # if node is not Bab.bestNode:
+        #     status_not_changed = updateByInsertionCost(node, Bab)
+        # else:
+        #     status_not_changed = True
+        status_not_changed = True
         if status_not_changed:
             setGivenDiscount = node.setGivenDiscount
             number_offered_discounts = len(setGivenDiscount)
-            routeCost = Bab.instance.routeCost
-
             # limit the number of deviated since function may be too slow for small probabilities
             #num_may_deviate = Bab.instance.maxNumDeviated[len(setGivenDiscount)]
-
-            if (2 ** n - 1 - node.noDiscountID) in routeCost:
-                node.updateLbScenario(routeCost[2 ** n - 1 - node.noDiscountID], Bab.instance.p_home, n)
-
+            # if (2 ** n - 1 - node.noDiscountID) in Bab.instance.routeCost:
+            #     node.updateLbScenario(Bab.instance.routeCost[2 ** n - 1 - node.noDiscountID], Bab.instance.p_home, n)
             # limit the number of deviated since function may be too slow for small probabilities
+
             num_may_deviate = Bab.instance.maxNumDeviated[len(setGivenDiscount)]
             setMayVary = node.setGivenDiscount
 
@@ -362,21 +316,28 @@ def updateBoundsFromDictionary(Bab, node):
                         scenario = scenario & mask
                     # check if scenario is already in node
                     if scenario not in node.tspDict[gamma]:
-                        scenarioCost = routeCost.get(scenario)
+                        scenarioCost = Bab.instance.routeCost.get(scenario)
                         if scenarioCost:
                             node.tspDict[gamma].append(scenario)
                             scenarioProb = probability.scenarioProb_2segm(scenario, node.withDiscountID, node.layer, n,
                                                                           Bab.instance.p_pup_delta)
 
                             node.tspProbDict[scenario] = scenarioProb
-                            lbCoveredProbNew = max(0, node.lbCoveredProb - scenarioProb)
-                            node.lbRoute += scenarioProb * (scenarioCost - node.lbScenario[1]) + (
-                                    node.lbDensityCovered - node.lbScenario[1]) * (
-                                                        lbCoveredProbNew - node.lbCoveredProb)
-                            node.lbCoveredProb = lbCoveredProbNew
-                            node.ubRoute -= (routeCost[0] - scenarioCost) * scenarioProb
                             node.exactValueProb += scenarioProb
                             node.exactValue += scenarioCost * scenarioProb
+                            for id in node.lbScenarios:
+                                if not ~node.lbScenarios[id][2] & (2 ** (Bab.instance.NR_CUST) - 1) & scenario:
+                                    node.lbScenarios[id][1] -= node.tspProbDict[scenario]
+                                    node.lbRoute += scenarioProb * (scenarioCost - node.lbScenarios[id][0])
+                                    break
+
+                            #set_probability_covered(node, Bab)
+                            # node.lbRoute = sum(
+                            #     node.lbScenarios[id][1] * node.lbScenarios[id][0] for id in
+                            #     node.lbScenarios) + node.exactValue
+                            #lbCoveredProbNew = max(0, node.lbCoveredProb - scenarioProb)
+
+                            node.ubRoute -= (Bab.ubScenario- scenarioCost) * scenarioProb
 
             # for scenario, scenarioCost in dropwhile(lambda x: x[0] != node.lastEnteranceDictionary, routeCost.items()):
             #     if probability.scenarioPossible_2segm(scenario,  node.withDiscountID, node.layer, n):
@@ -390,96 +351,14 @@ def updateBoundsFromDictionary(Bab, node):
             #                                                     n, Bab.instance.p_pup_delta)
             #             node.tspProbDict[scenario] = scenarioProb
             #             lbCoveredProbNew = max(0, node.lbCoveredProb - scenarioProb)
-            #             node.lbRoute += scenarioProb * (scenarioCost - node.lbScenario[1]) + (
-            #                     node.lbDensityCovered - node.lbScenario[1]) * (lbCoveredProbNew - node.lbCoveredProb)
+            #             node.lbRoute += scenarioProb * (scenarioCost - Bab.lbScenario) + (
+            #                     node.lbDensityCovered - Bab.lbScenario) * (lbCoveredProbNew - node.lbCoveredProb)
             #             node.lbCoveredProb =lbCoveredProbNew
-            #             node.ubRoute -= (routeCost[0] - scenarioCost) * scenarioProb
+            #             node.ubRoute -= (Bab.instance.ubScenario - scenarioCost) * scenarioProb
             #             node.exactValueProb += scenarioProb
             #             node.exactValue += scenarioCost * scenarioProb
             #lastEnteranceDictionary is the last element of Route Cost that was checked for this node
-            node.lastEnteranceDictionary = next(reversed(routeCost))
-
-            '''
-
-            for alpha in range(min(num_may_deviate, node.numDefined+1)):
-                for combination in itertools.combinations(list(range(1,node.numDefined+1)), alpha):
-                    scenario = node.withDiscountID
-                    # make a scenario given policy and combination of deviated nodes
-                    for offset in combination:
-                        mask = (1 << (offset - 1))
-                        if policy & mask:
-                            scenario = scenario & ~mask
-                        else:
-                            scenario = scenario | mask
-                    # check if scenario is already in node
-                    if scenario not in node.tspDict[gamma]:
-                        scenarioCost = routeCost.get(scenario)
-                        if scenarioCost:
-                            node.tspDict[gamma].append(scenario)
-                            scenarioProb = probability.scenarioProb(scenario, node.withDiscountID, node.layer,
-                                                                      n, Bab.instance.p_dev)
-
-                            coveredProbNew = max(0, node.lbCoveredProb - scenarioProb)
-                            node.lbRoute += scenarioProb * (scenarioCost - node.lbScenario) + (
-                                        node.lbDensityCovered - node.lbScenario) * (coveredProbNew - node.lbCoveredProb)
-                            node.lbCoveredProb = coveredProbNew
-
-                            node.ubRoute -= (routeCost[0] - scenarioCost) * scenarioProb
-                            node.exactValueProb +=  scenarioProb
-                            node.exactValue += scenarioCost*scenarioProb
-                            assert node.lbRoute >= 0, 'loop3 Dict node lbRoute <0'
-
-                            #num_scenarios_gamma += 1
-                            #cum_cost_gamma += scenarioCost
-                '''
-                #scenarioProbLb = (1 - p_dev) ** (n - gamma) * p_dev ** (gamma - len(node.setNotGivenDiscount))
-                #node.lbRoute += (cum_cost_gamma - num_scenarios_gamma * node.lbScenario) * scenarioProbLb
-                #node.ubRoute -= (routeCost[0] * num_scenarios_gamma - cum_cost_gamma) * scenarioProbLb
-                #node.exactValueProb += num_scenarios_gamma * scenarioProbLb
-        # TODO recalculate LB so that we do not have scenarios with gamma in LB
-
-    '''
-            for numDeviated in range(num_may_deviate+1):
-                all_combinations = itertools.combinations(setMayVary, numDeviated)
-                for combination in all_combinations:
-                    scenario = node.withDiscountID
-                    #make a scenario given policy and combination of deviated nodes
-                    for offset in combination:
-                        mask = ~(1 << (offset-1))
-                        scenario = scenario & mask
-                    #check if scenario is already in node
-                    if scenario not in node.:
-                        scenarioCost = routeCost.get(scenario)
-                        if scenarioCost:
-                            scenarioProbLb = (1 - p_dev) ** bitCount(node.withDiscountID & scenario) * p_dev ** (
-                                    bitCount(node.withDiscountID ^ scenario) + n - layer)
-                            node.exactValueProb += scenarioProbLb
-                            node.lbRoute += scenarioProbLb * (scenarioCost - node.lbScenario)
-                            node.ubRoute -= scenarioProbLb * (routeCost[0] - scenarioCost)
-
-            '''
-
-
-    '''
-        if status_not_changed:
-        #for scenario in list(routeCost.keys())[node.lastAddedScenario:node.withDiscountID+1]:
-        #for scenario in routeCost:
-            if node.lastAddedScenario <=  scenario and  scenario <=node.withDiscountID:
-                newLastAddedScenario += 1
-                if not (~node.withDiscountID & scenario):
-                    if scenario not in node.:
-
-                        scenarioProbLb = (1-p_dev) ** bitCount(node.withDiscountID & scenario) * p_dev ** (
-                            bitCount(node.withDiscountID ^ scenario) + n - (node.withDiscountID + node.noDiscountID).bit_length())
-
-                        scenarioCost = routeCost[scenario]
-                        node..append(scenario)
-                        node.exactValueProb += scenarioProbLb
-                        node.lbRoute += scenarioProbLb * (scenarioCost - node.lbScenario)
-                        node.ubRoute -= scenarioProbLb * (routeCost[0]- scenarioCost)
-        node.lastAddedScenario = newLastAddedScenario
-    '''
-
+            node.lastEnteranceDictionary = next(reversed(Bab.instance.routeCost))
 
 def updateBoundsWithNewTSPs(Bab, node):
 
@@ -488,13 +367,12 @@ def updateBoundsWithNewTSPs(Bab, node):
     setMayVary = node.setGivenDiscount
     p_home = Bab.instance.p_home
     continue_flag = True
-    ubScenario = Bab.instance.routeCost[0]
     added = 0
     gap_old = (node.ubRoute - node.lbRoute) / node.ubRoute
     # limit the number of deviated since function may be too slow for small probabilities
     #num_may_deviate = Bab.instance.maxNumDeviated[len(setGivenDiscount)]
-    if (2 ** n - 1 - node.noDiscountID) in Bab.instance.routeCost:
-        node.updateLbScenario(Bab.instance.routeCost[2 ** n - 1 - node.noDiscountID], Bab.instance.p_home, n)
+    # if (2 ** n - 1 - node.noDiscountID) in Bab.instance.routeCost:
+    #     node.updateLbScenario(Bab.instance.routeCost[2 ** n - 1 - node.noDiscountID], Bab.instance.p_home, n)
 
     if node.exactValueProb < 1:
         num_dev_start = node.lastNumDeviatedNewTSP
@@ -562,27 +440,26 @@ def updateBoundsWithNewTSPs(Bab, node):
                     else:
                         scenarioCost = Bab.instance.routeCost[scenario]
 
-                    if gamma == n - len(setMayVary):
-                        node.updateLbScenario(scenarioCost, Bab.instance.p_home, n)
+                    # if gamma == n - len(setMayVary):
+                    #     node.updateLbScenario(scenarioCost, Bab.instance.p_home, n)
 
                     node.tspDict[gamma].append(scenario)
                     added += 1
-
                     scenarioProb = probability.scenarioProb_2segm(scenario, node.withDiscountID, n, n,
                                                                         Bab.instance.p_pup_delta)
                     node.tspProbDict[scenario] = scenarioProb
                     node.exactValueProb += scenarioProb
                     node.exactValue += scenarioCost * scenarioProb
-                    lbCoveredProbNew = max(0, node.lbCoveredProb - scenarioProb)
-                    node.lbRoute += scenarioProb * (scenarioCost - node.lbScenario[1]) + (
-                                            node.lbDensityCovered - node.lbScenario[1]) * (lbCoveredProbNew - node.lbCoveredProb)
-                    node.lbCoveredProb = lbCoveredProbNew
-                    node.ubRoute -= scenarioProb * (ubScenario - scenarioCost)
-
-                    #add new scenario to the dict of scenarios in the lbCovered, iff the scenario has high SEtWEIGHTCOVERED
-                    if node.lbCoveredWeightBest < setWeightCovered(node.withDiscountID, scenario, n, p_home)*scenarioCost:
-                        node.lbCoveredWeightBest =  setWeightCovered(node.withDiscountID, scenario, n, p_home)*scenarioCost
-                        node.lbScenarios[scenario] = scenarioCost
+                    #lbCoveredProbNew = max(0, node.lbCoveredProb - scenarioProb)
+                    for id in node.lbScenarios:
+                        if not ~node.lbScenarios[id][2]&(2**(Bab.instance.NR_CUST) - 1) & scenario:
+                            node.lbScenarios[id][1] -= node.tspProbDict[scenario]
+                            node.lbRoute += scenarioProb * (scenarioCost - node.lbScenarios[id][0])
+                            break
+                    #set_probability_covered(node, Bab)
+                    # node.lbRoute = sum(
+                    #     node.lbScenarios[id][1] * node.lbScenarios[id][0] for id in node.lbScenarios) + node.exactValue
+                    node.ubRoute -= scenarioProb * (Bab.ubScenario - scenarioCost)
 
                 if False:
                     #print("added new scenario",bin(scenario))
@@ -638,17 +515,4 @@ def updateBoundsWithNewTSPsHeuristic(Bab, node):
     node.lbRoute = estimation_cost_by_sampling[0]-node.lbExpDiscount
     node.ubRoute = node.lbRoute
     node.exactValue = node.lbRoute
-    node.lbScenario[1]  = node.lbRoute
-
-
-def updateBoundsWithImportanceSampling(Bab, node,sampleScenarioID, sampleScenarioCost):
-    estimation_cost_by_sampling = importanceSampling( Bab.instance, node.withDiscountID,0, sampleScenarioID, sampleScenarioCost)
-
-    node.exactValueProb = 1
-
-    node.lbCoveredProb = 0
-    node.lbRoute = estimation_cost_by_sampling-node.lbExpDiscount
-    node.ubRoute = node.lbRoute
-    node.exactValue = node.lbRoute
-    node.lbScenario[1]  = node.lbRoute
-
+    Bab.lbScenario  = node.lbRoute

@@ -3,9 +3,7 @@
 import os
 from pathlib import Path
 import sys
-path_to_bab = os.path.join((Path(os.path.abspath(__file__)).parents[1]), "algorithms","exact","bab")
-sys.path.insert(2, path_to_bab)
-from BoundsCalculation import recalculateLbCovered
+from src.main.discount_strategy.algorithms.exact.bab.BoundsCalculation import recalculateLbCovered
 
 class Node:
     #Reference to the next node in the same layer * /
@@ -17,13 +15,13 @@ class Node:
     #@ param layer layer
     #@ param state state
     __slots__ = ['noDiscountID', 'withDiscountID', 'parent', 'layer','nextNodeInLayer', 'prevNodeInLayer', 'lbRoute',
-                 'ubRoute', 'lbScenario', 'lbExpDiscount', 'ubExpDiscount', 'children','fathomedState',
-                 'tspDict','tspProbDict', 'lbCoveredWeightBest','lbScenarios','ubScenarios', 'exactValue','exactValueProb', 'setGivenDiscount',
-                 'setNotGivenDiscount',  'lbCoveredProb', 'lbDensityCovered','ubDensityCovered', 'tspAverageCost','priorityCoef','lastEnteranceDictionary','lastNumDeviatedNewTSP','number_disc']
+                 'ubRoute', 'lbScenarios', 'lbExpDiscount', 'ubExpDiscount', 'children','fathomedState',
+                 'tspDict','tspProbDict', 'lbCoveredWeightBest', 'exactValue','exactValueProb', 'setGivenDiscount',
+                 'setNotGivenDiscount',  'tspAverageCost','priorityCoef','lastEnteranceDictionary','lastNumDeviatedNewTSP','number_disc']
 
 
-    def __init__(self, parent,  lbScenario, lbRoute, ubRoute, withDiscountID, noDiscountID,
-                 lbExpDiscount, ubExpDiscount, tspDict,tspProbDict, lbScenarios,ubScenarios, lbCoveredProb, lbDensityCovered, ubDensityCovered, exactValueProb, exactValue, layer, priorityCoef,lastEnteranceDictionary):
+    def __init__(self, parent,  lbRoute, ubRoute, withDiscountID, noDiscountID,
+                 lbExpDiscount, ubExpDiscount, tspDict,tspProbDict, lbScenarios,  exactValueProb, exactValue, layer, priorityCoef,lastEnteranceDictionary):
 
         self.noDiscountID = noDiscountID
         self.withDiscountID = withDiscountID
@@ -36,8 +34,6 @@ class Node:
         self.prevNodeInLayer = None
         self.lbRoute = lbRoute
         self.ubRoute = ubRoute
-        self.lbScenario = lbScenario
-
         self.lbExpDiscount = lbExpDiscount
         self.ubExpDiscount = ubExpDiscount
         self.priorityCoef = priorityCoef
@@ -60,16 +56,12 @@ class Node:
         # It is possible that some of the routes will not be possible for some of children
         # (but still will be the TRUE LB_route for them)
         self.lbScenarios = lbScenarios
-        self.ubScenarios = ubScenarios
 
         self.exactValueProb = exactValueProb
         self.exactValue = exactValue
 
         self.lbCoveredWeightBest = 0
 
-        self.lbCoveredProb = lbCoveredProb
-        self.lbDensityCovered = lbDensityCovered
-        self.ubDensityCovered = ubDensityCovered
 
         givenDiscount = []
         notGivenDiscount = []
@@ -94,7 +86,7 @@ class Node:
     def priority(self):
         #return (self.ubRoute+self.ubExpDiscount+self.lbRoute+self.lbExpDiscount)*self.priorityCoef/(1+self.layer)/(1+self.layer)
         #return (self.ubRoute + self.ubExpDiscount)*self.priorityCoef
-        return (self.lbRoute + self.lbExpDiscount) * self.priorityCoef
+        return (self.lbRoute + self.lbExpDiscount)
 
 
     def __str__(self):
@@ -151,6 +143,8 @@ class Node:
             return NotImplemented
         return  self.noDiscountID == other.noDiscountID and self.withDiscountID == other.withDiscountID
 
+
+    #TODO: make this work
     def updateLbScenario(self, lbScenarioNew, p_home, n):
 
         # in lbScenarios only those scenarios that cost more than lbScenarioNew
@@ -168,7 +162,7 @@ class Node:
         self.lbRoute += improve
         return improve
 
-
+    #TODO: make this work or delete
     def updateLbCovered(self, lbCoveredProbNew, lbDensityCovered):
         improve = lbDensityCovered*lbCoveredProbNew - self.lbDensityCovered*self.lbCoveredProb - self.lbScenario[1]*(lbCoveredProbNew - self.lbCoveredProb)
         self.lbCoveredProb = lbCoveredProbNew

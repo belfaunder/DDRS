@@ -32,7 +32,6 @@ class ScenarioEnumerationSolver:
         teta_vars = {policy: opt_model.addVar(vtype=grb.GRB.BINARY,
                                               name="y_{0}".format(policy)) for policy in Y}
         opt_model.addConstr(grb.quicksum(teta_vars[policy] for policy in Y) == 1)
-
         objective = 0
         for policy in Y:
             policy_exp_disc = 0

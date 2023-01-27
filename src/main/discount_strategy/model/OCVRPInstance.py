@@ -4,11 +4,8 @@ import os
 from collections import OrderedDict
 
 import numpy as np
-#from collections import OrderedDict
 
-path_to_util = os.path.join((Path(os.path.abspath(__file__)).parents[2]), "util")
-sys.path.insert(1, path_to_util)
-import constants
+from src.main.discount_strategy.util import constants
 prefix="tag: "
 
 class OCVRPInstance:
@@ -38,15 +35,17 @@ class OCVRPInstance:
     routeCost = OrderedDict()
 
 
-    def __init__(self, name, customers, depot, pup, distanceMatrix):
+    def __init__(self, name, customers, depot, pups, distanceMatrix):
         # Instance name
         self.name = name
         # Customers
         self.customers = customers
         self.depot = depot
-        self.pup = pup
+        self.pups = pups
         # Number of customers
         self.NR_CUST = len(customers)
+        self.NR_PUP = len(pups)
+
         self.distanceMatrix = distanceMatrix
 
         #TODO:where do we use it? Rethink
@@ -120,58 +119,60 @@ class OCVRPInstance:
         ubInsertionDict = {}
         lbInsertionDict = {}
 
-        for i in range(1, self.NR_CUST + 1):
-            ubInsertionDict[i] = self.sort_ub(i)
-            lbInsertionDict[i] = self.sort_lb(i)
+        for customer in self.customers:
+            ubInsertionDict[customer.id] = self.sort_ub(customer)
+            lbInsertionDict[customer.id] = self.sort_lb(customer)
 
         self.ubInsertion = ubInsertionDict
         self.lbInsertion = lbInsertionDict
         # list of all possible ub insertion cost that are cheapper than min_default = dist[0,node] or dist[n+1,node]
 
-    def sort_ub(self, node):
+    def sort_ub(self, customer):
 
         dist = self.distanceMatrix
         n = self.NR_CUST
 
-        min_default_ub = 2*min(dist[0, node], dist[n + 1, node])
+        min_default_ub = 2*dist[0, customer.id]
         min_insertion = {}
 
         min_insertion[0] = min_default_ub
 
-        for i in range(1, n + 1):
-            if i != node:
-                if dist[i, node]*2 < min_default_ub:
-                    min_insertion[i] = dist[i, node]*2
+        for i in range(1, self.NR_CUST):
+            if i != customer.id:
+                if dist[i, customer.id]*2 < min_default_ub:
+                    min_insertion[i] = dist[i, customer.id]*2
         sorted_insertion = {k: v for k, v in sorted(min_insertion.items(), key=lambda item: item[1])}
-
         return sorted_insertion
 
     # list of all possible lb insertion cost that are cheapper than min_default = dist[0,node] or dist[n+1,node]
-    def sort_lb(self, node):
+    def sort_lb(self, customer):
         dist = self.distanceMatrix
 
         n = self.NR_CUST
-        min_default = max(0,2 * dist[0, node])
+        min_default = max(0,2 * dist[0, customer.id])
         min_insertion = {}
         min_insertion[0, 0] = min_default
-        for i in range(0, n + 2):
-            if i != node:
-                for j in range(i, n + 2):
-                    if j != node:
-                        if dist[i, node] + dist[node, j] - dist[i, j] < min_default:
-                            min_insertion[i, j] = max(0, dist[i, node] + dist[node, j] - dist[i, j])
+        for i in range(0, self.NR_CUST + self.NR_PUP+1):
+            if i != customer.id:
+                for j in range(i, self.NR_CUST + self.NR_PUP+1):
+                    if j != customer.id:
+                        if dist[i, customer.id] + dist[customer.id, j] - dist[i, j] < min_default:
+                            min_insertion[i, j] = max(0, dist[i, customer.id] + dist[customer.id, j] - dist[i, j])
         sorted_insertion = {k: v for k, v in sorted(min_insertion.items(), key=lambda item: item[1])}
 
         p_home, p_pup = {}, {}
         for cust in self.customers:
             p_home[cust.id] = max(cust.prob_home, constants.EPS)
             p_pup[cust.id] = max(cust.prob_pup, constants.EPS)
-
         p_home[0] = constants.EPS
-        p_home[n+1] = constants.EPS
         p_pup[0] = constants.EPS
-        p_pup[n + 1] = constants.EPS
 
+        # in the worst case we to not visit pickup points
+        for i in range(self.NR_CUST + 1, self.NR_CUST + self.NR_PUP+1):
+            p_home[i] = 0
+            p_pup[i] = 1
+
+        # We want to delete any benchmanrk that will not be used (because there is a better one)
         previous_insertion = {}
         p_left = 1
         for (i, j) in sorted_insertion:
@@ -181,19 +182,19 @@ class OCVRPInstance:
                     if i == j:
                         prob_current *= p_home[i]
                     else:
-                        if (i not in [0, n + 1]):
+                        if i !=0:
                             prob_current *= p_home[i]
-                        if (j not in [0, n + 1]):
+                        if j !=0:
                             prob_current *= p_home[j]
 
                     for (m, k) in previous_insertion:
                         if m == i or m == j:
-                            if (k not in [0, n + 1]):
+                            if (k !=0):
                                 prob_current *= (1 - p_home[k])
                             else:
                                 prob_current *= 0
                         if k == i or k == j:
-                            if m not in [0, n + 1]:
+                            if m !=0:
                                 prob_current *= (1 - p_home[m])
                             else:
                                 prob_current *= 0

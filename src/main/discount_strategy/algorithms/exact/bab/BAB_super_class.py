@@ -2,9 +2,10 @@
 import collections
 import numpy as np
 import heapq
-from src.main.discount_strategy.algorithms.exact.bab.BoundsCalculation import recalculateLbCovered
+from src.main.discount_strategy.algorithms.exact.bab.BoundsCalculation import set_probability_covered
 #from BoundsCalculation import updateBoundsFromDictionary
-
+import itertools
+from collections import OrderedDict
 from src.main.discount_strategy.model.Node import Node
 from src.main.discount_strategy.algorithms.exact.TSPSolver import TSPSolver
 from src.main.discount_strategy.algorithms.exact.ring_star_without_TW import ring_star_deterministic_no_TW
@@ -12,7 +13,6 @@ from src.main.discount_strategy.algorithms.exact.ring_star_without_TW import rin
 from src.main.discount_strategy.util import constants
 from src.main.discount_strategy.util import probability
 from src.main.discount_strategy.util.bit_operations import bitCount
-
 # Representation of a BB tree
 # @author Joris Kinable
 
@@ -36,8 +36,6 @@ class PriorityQueue:
 
     def length(self):
         return len(self._queue)
-
-
 
 #shallow version of deepcopy: https://stackoverflow.com/questions/45858084/what-is-a-fast-pythonic-way-to-deepcopy-just-data-from-a-python-dict-or-list
 _dispatcher = {}
@@ -69,10 +67,7 @@ def deepcopy(sth):
     else:
         return cp(sth, _dispatcher)
 
-
-
 class BAB_super_class:
-
     def __init__(self, instance, solverType):
         self.instance = instance
 
@@ -84,63 +79,75 @@ class BAB_super_class:
         scenario_0 = 0
         self.instance.routeCost[scenario_0] = self.TSPSolver.tspCost(scenario_0)
 
-        scenario_1 = 2 ** instance.NR_CUST - 1
-        self.instance.routeCost[scenario_1] = self.TSPSolver.tspCost(scenario_1)
+        lbScenarios = {}
+        self.ubScenario, self.lbScenario = self.TSPSolver.tspCostUbScenario()
+        # COVERED_BOUND
+        lbScenarios, lbScenario = self.set_lbScenarios()
 
-        ubRoute = self.instance.routeCost[scenario_0]
-        lbRoute = self.instance.routeCost[scenario_1]
-        lbScenario = self.instance.routeCost[scenario_1]
-
+        ubRoute = self.ubScenario
+        lbRoute = self.lbScenario
         tspDict = {instance.NR_CUST:[scenario_0]}
         tspProbDict = {scenario_0:probability.scenarioProb_2segm(scenario_0, 0, 0, instance.NR_CUST, instance.p_pup_delta)}
+
         # Root node of the BB tree
         root = Node(parent=None,
-                    lbScenario=[scenario_1,lbScenario],
-                    lbRoute=lbRoute,
-                    ubRoute=ubRoute,
+                    lbRoute = lbRoute,
+                    ubRoute = ubRoute,
                     withDiscountID=0,
                     noDiscountID=0,
                     lbExpDiscount=0,
                     ubExpDiscount=(instance.p_pup_delta.dot(instance.shipping_fee) ),#*constants.PROB_PLACE_ORDER,
                     tspDict=tspDict,
                     tspProbDict = tspProbDict,
-                    lbScenarios={scenario_1:lbScenario},
-                    ubScenarios = None,
-                    lbCoveredProb=0,
-                    lbDensityCovered = lbScenario,
-                    ubDensityCovered = ubRoute,
+                    lbScenarios=lbScenarios,
                     exactValueProb = tspProbDict[scenario_0],
                     exactValue = tspProbDict[scenario_0]*self.instance.routeCost[scenario_0],
                     layer=0,
                     priorityCoef = 1,
                     lastEnteranceDictionary = scenario_0
                     )
+        lastEnteranceDictionary = None
 
+        set_probability_covered(root, self)
+        # we already added scenario 0 to the exact cost of the root - this is done in set_probability_covered function
+        #root.lbScenarios[0][1] = 0
+        #TODO: strange that it is not 1 Shall it be 1?
+        print("probability left", 1-sum(  root.lbScenarios[id][1] for id in root.lbScenarios) - root.exactValueProb)
+        root.lbRoute = sum(root.lbScenarios[id][1] * root.lbScenarios[id][0] for id in root.lbScenarios) + root.exactValue
         self.nodeLayers = {}
         self.root = root
         self.nrNodes = 1
         self.openNodes = PriorityQueue()
         self.lastCurrentNodes = collections.deque(maxlen=5)
-
         self.bestNode = root
         self.listNodes = []
         self.bestUb = ubRoute
-
         # in the worst case we can do nothing (do not offer any discount), which will cost route visiting all customers
-
+        #TODO: rs should be corrected for many PUPS
         rsPolicyID, rsValue = ring_star_deterministic_no_TW(instance, instance.NR_CUST)
         self.rs_policy = rsPolicyID
         self.upperBoundNumberDiscount = bitCount(self.rs_policy)
-        #print(bin(rsPolicyID)[2:], "RS cost", rsValue)
 
-        # TODO: this theorem is now not used
-        #self.upperBoundNumerDiscount = bitCount(rsPolicyID)
-        #self.rsCost = {scenario_0:ubRoute, instance.NR_CUST:lbScenario[1]}
 
-        #print(rsPolicyID, bin(rsPolicyID))
-        #for i in range(1, instance.NR_CUST):
-        #    self.rs_policy[i], self.rsCost[i] = ring_star_deterministic_no_TW(instance= instance,
-        #                                max_number_offered_discounts=i, discount=np.zeros(instance.NR_CUST + 1))
+    def set_lbScenarios(self):
+        lbScenarios = OrderedDict()            #self.instance.NR_PUP
+        lbScenario = 10**5
+        set_pups = list(range(self.instance.NR_PUP))
+
+        for number_visited_pups in range(self.instance.NR_PUP + 1):
+            for combination in itertools.combinations(set_pups, number_visited_pups):
+                id = sum(1 << (offset) for offset in combination)
+                scenario = 0
+                for pup in self.instance.pups:
+                    if (1 << pup.number) & id:
+                        for cust_id in pup.closest_cust_id:
+                            scenario = scenario +  (1 << (cust_id - 1))
+                #First element is the cost of lbScenario, the second element is the probabbility of all scenarios that have
+                # lower cost than the lbScenario. We initiate with the zero probability
+                lbScenarios[id] = [self.TSPSolver.tspCost(scenario), 0 , scenario]
+                lbScenario = min(lbScenarios[id][0], lbScenario)
+
+        return lbScenarios, lbScenario
 
     def canBranch(self, node):
         if (node.ubVal() - node.lbVal()) <= constants.EPSILON * self.bestNode.lbVal():
@@ -160,13 +167,11 @@ class BAB_super_class:
             diff_customer = (parent.withDiscountID + parent.noDiscountID).bit_length()+1
         return (diff_customer)
 
-
     # Method that implements the branching logic
     def branch(self, parent, diff_customer):
         #diff_customer starts form 1
         shipping_fee = self.instance.shipping_fee
         p_home = self.instance.p_home
-        p_pup = self.instance.p_pup
         n = self.instance.NR_CUST
         # decide how to branch
         # calculate the new policy information
@@ -177,14 +182,6 @@ class BAB_super_class:
         withDiscountIDRight = parent.withDiscountID
         noDiscountIDRight = parent.noDiscountID + 2 ** (diff_customer-1)
 
-        lbScenarioLeft = deepcopy(parent.lbScenario)
-        lbScenarioRight = [parent.lbScenario[0]- 2 ** (diff_customer-1)]
-
-        ubRoute = self.instance.routeCost[0]
-
-        if lbScenarioRight[0]  not in self.instance.routeCost:
-            self.instance.routeCost[lbScenarioRight[0]] = self.TSPSolver.tspCost(lbScenarioRight[0])
-        lbScenarioRight.append(self.instance.routeCost[lbScenarioRight[0]])
         lastEnteranceDictionary = self.root.lastEnteranceDictionary
 
         # CHANGESPROBABILITY
@@ -196,15 +193,9 @@ class BAB_super_class:
         #tspDictLeft = copy.deepcopy(parent.tspDict)
         #tspDictRight = copy.deepcopy(parent.tspDict)
 
-        #TODO: seems that we do not use it when calculating the bounds inside brunching
-        lbCoveredProbRight = 0
-        lbCoveredProbLeft = 0
-        lbDensityCoveredRight = 0
-        lbDensityCoveredLeft = 0
-
-        lbRouteLeft = parent.lbRoute
-        ubRouteLeft = parent.ubRoute
-        lbRouteRight = parent.lbRoute
+        # lbRouteLeft = parent.lbRoute
+        # ubRouteLeft = parent.ubRoute
+        # lbRouteRight = parent.lbRoute
 
         lbScenariosRight = deepcopy(parent.lbScenarios)
         lbScenariosLeft = deepcopy(parent.lbScenarios)
@@ -251,28 +242,27 @@ class BAB_super_class:
                     #
                     # tspProbDictLeft[scenario] = scenarioProbLeft
 
-        lbRouteRight = exactValueRight + lbCoveredProbRight*lbDensityCoveredRight+ (1-exactValProbRight - lbCoveredProbRight)*lbScenarioRight[1]
-        ubRouteRight = exactValueRight + (1-exactValProbRight) * ubRoute
 
-        lbRouteLeft = exactValueLeft + lbCoveredProbLeft * lbDensityCoveredLeft + (
-                    1 - exactValProbLeft - lbCoveredProbLeft) * lbScenarioLeft[1]
-        ubRouteLeft = exactValueLeft + (1 - exactValProbLeft) * ubRoute
-
+        #TODO: recalculate using a new function
+        lbRouteRight = exactValueRight +  (1-exactValProbRight)*self.lbScenario
+        ubRouteRight = exactValueRight + (1-exactValProbRight) * self.ubScenario
+        lbRouteLeft = exactValueLeft +  (1 - exactValProbLeft ) * self.lbScenario
+        ubRouteLeft = exactValueLeft + (1 - exactValProbLeft) * self.ubScenario
 
         leftChild = self.addNode(
-            parent, lbScenarioLeft, lbRouteLeft, ubRouteLeft, withDiscountIDLeft, noDiscountIDLeft,
-            lbExpDiscountLeft, ubExpDiscountLeft, tspDictLeft, tspProbDictLeft, lbScenariosLeft, lbCoveredProbLeft, lbDensityCoveredLeft,
+            parent,  lbRouteLeft, ubRouteLeft, withDiscountIDLeft, noDiscountIDLeft,
+            lbExpDiscountLeft, ubExpDiscountLeft, tspDictLeft, tspProbDictLeft, lbScenariosLeft,
             exactValProbLeft, exactValueLeft, lastEnteranceDictionary)
         rightChild = self.addNode(
-            parent, lbScenarioRight, lbRouteRight, ubRouteRight, withDiscountIDRight, noDiscountIDRight,
-            lbExpDiscountRight, ubExpDiscountRight, tspDictRight, tspProbDictRight, lbScenariosRight, lbCoveredProbRight, lbDensityCoveredRight,
+            parent,  lbRouteRight, ubRouteRight, withDiscountIDRight, noDiscountIDRight,
+            lbExpDiscountRight, ubExpDiscountRight, tspDictRight, tspProbDictRight, lbScenariosRight,
             exactValProbRight, exactValueRight, lastEnteranceDictionary)
 
         parent.children = [leftChild, rightChild]
         # TODO: this lbRecalculate can be moved in the line above
-        for node in parent.children:
-            lbCoveredProbNew, lbDensityCoveredNew = recalculateLbCovered(p_home, node, n)
-            node.updateLbCovered(lbCoveredProbNew, lbDensityCoveredNew)
+        # for node in parent.children:
+        #     lbCoveredProbNew, lbDensityCoveredNew = recalculateLbCovered(p_home, node, n)
+        #     node.updateLbCovered(lbCoveredProbNew, lbDensityCoveredNew)
 
         if parent is self.bestNode:
             if leftChild.fathomedState:
@@ -289,7 +279,6 @@ class BAB_super_class:
 
             if not rightChild.fathomedState:
                 self.openNodes.push(rightChild, rightChild.priority())
-
 
     # Adds a new node to the BB tree
     # @param parent parent node of the node that is added to the tree
@@ -316,24 +305,20 @@ class BAB_super_class:
         else:
             return 1
 
-    def addNode(self, parent, lbScenario, lbRoute, ubRoute, withDiscountID, noDiscountID, lbExpDiscount, ubExpDiscount,
-                tspDict,tspProbDict, lbScenarios, lbCoveredProb, lbDensityCovered, exactValueProb, exactValue, lastEnteranceDictionary):
+    def addNode(self, parent, lbRoute, ubRoute, withDiscountID, noDiscountID, lbExpDiscount, ubExpDiscount,
+                tspDict,tspProbDict, lbScenarios, exactValueProb, exactValue, lastEnteranceDictionary):
         # Create a new node
         layer = parent.layer + 1
 
         #priorityCoef is the coef defined by ring-star branching policy
         priorityCoef = self.setPriorityCoef(withDiscountID, layer)
-        node = Node(parent, lbScenario, lbRoute, ubRoute, withDiscountID, noDiscountID, lbExpDiscount, ubExpDiscount,
-                    tspDict,tspProbDict, lbScenarios, None,lbCoveredProb, lbDensityCovered,lbDensityCovered, exactValueProb, exactValue, layer,
+        node = Node(parent, lbRoute, ubRoute, withDiscountID, noDiscountID, lbExpDiscount, ubExpDiscount,
+                    tspDict,tspProbDict, lbScenarios,  exactValueProb, exactValue, layer,
                     priorityCoef, lastEnteranceDictionary)
+        set_probability_covered(node, self)
 
-
-        #assert lbRoute >= 0, 'loop4 new node next node lbRoute <0'
-        #mostProbScenario = 2 ** self.instance.NR_CUST - 1 - noDiscountID
-        #if mostProbScenario in self.instance.routeCost:
-        #    node.updateLbScenario(self.instance.routeCost[mostProbScenario], self.instance.p_home, self.instance.NR_CUST )
-
-
+        node.lbRoute = sum(
+            node.lbScenarios[id][1] * node.lbScenarios[id][0] for id in node.lbScenarios) + node.exactValue
         if node.lbRoute + node.lbExpDiscount > self.bestNode.ubVal():
             node.fathomedState = True
             #print(node.lbRoute ,  node.lbExpDiscount,  self.bestNode.ubVal())
@@ -453,103 +438,3 @@ class BAB_super_class:
             # @Override
             # public void remove():
             #    removeNode(current)
-
-
-    '''
-    def fathomByLayerSibling(self, node):
-        p_dev = self.instance.p_dev
-        ubScenario = self.instance.routeCost[0]
-        # print("in fathom by layer", node.lbRoute)
-
-        for sibling in self.nodeIterator(node.layer):
-            if sibling is not node and sibling.fathomedState:
-                # check if sibling is a "dynamic parent"
-                mask = (node.withDiscountID & (2 ** node.layer - 1)) - sibling.withDiscountID
-                if ((mask & (mask - 1)) == 0) and (node.withDiscountID & mask > 0):
-
-                    # print("parent sibling", node, sibling, sibling.lbRoute)
-                    # print(sibling, (sibling.lbRoute - sibling.lbScenario*(1-sibling.exactValueProb))*p_dev + (1-sibling.exactValueProb*p_dev)*node.lbScenario+node.lbExpDiscount)
-                    if sibling.lbRoute * p_dev + (1 - p_dev) * node.lbScenario + node.lbExpDiscount > self.bestUb:
-                        # node.fathomed()
-                        return True
-                    diff_customer = mask.bit_length()
-                    fathomed = BoundsCalculation.compareDynamicParent(node, sibling, diff_customer, self)
-                    # print("here2", node.lbRoute)
-                    # TODO carefully get info from sibling with more info (15_C1_12_1.6_30)
-                    # if sibling.exactValueProb * p_dev > max(node.exactValueProb,constants.EPS):
-                    # TODO maybe the latter is valid not for fathomed
-                    if False:
-                        # print("HERE2", sibling)
-                        # print("before", node.lbRoute, node.ubRoute)
-                        node.exactValueProb = sibling.exactValueProb * p_dev
-                        node.lbCalculated = sibling.lbCalculated.copy()
-                        oldLbScenario = node.lbScenario
-                        lbScenarioRight, lbCalculatedRight = recalculateLbCovered(lbCalculatedRight, lbScenarioRight,
-                                                                                  p_dev,
-                                                                                  withDiscountIDRight,
-                                                                                  diff_customer + 1, n)
-                        # print("diff_customer + 1", diff_customer + 1)
-                        lbImprove = (1 - exactValProbRight) * (lbScenarioRight - oldLbScenario)
-                        lbRouteRight += lbImprove
-
-                        node.lbRoute = (sibling.lbRoute - sibling.lbScenario * (1 - sibling.exactValueProb)) * p_dev + (
-                                1 - sibling.exactValueProb * p_dev) * node.lbScenario
-                        node.ubRoute = (sibling.ubRoute - ubScenario * (1 - sibling.exactValueProb)) * p_dev + (
-                                1 - sibling.exactValueProb * p_dev) * ubScenario
-                        # print("after",node.lbRoute , node.ubRoute  )
-
-                # check if sigbling is a "dynamic child"
-                mask = sibling.withDiscountID - node.withDiscountID & (2 ** node.layer - 1)
-                if (mask & (mask - 1)) == 0 and (sibling.withDiscountID & mask > 0):
-
-                    # print("in dynamic child", sibling,sibling.exactValueProb,  node, node.exactValueProb )
-                    # print(sibling.lbRoute, sibling.lbVal())
-                    # Carefully get info
-                    if False:
-                        oldLbScenario = node.lbScenario
-                        # print("")
-                        # print("before", node.lbCalculated )
-                        # TODO the length can be larger than 5
-                        node.lbCalculated = sibling.lbCalculated.copy()
-                        # print("after", node.lbCalculated )
-                        node.lbScenario, node.lbCalculated = recalculateLbCovered(node.lbCalculated, node.lbScenario,
-                                                                                  self.instance.p_dev,
-                                                                                  node.withDiscountID,
-                                                                                  node.layer,
-                                                                                  self.instance.NR_CUST)
-
-                        lbImprove = (1 - node.exactValueProb) * (node.lbScenario - oldLbScenario)
-                        node.lbRoute += lbImprove
-
-                    diff_customer = mask.bit_length()
-                    fathomed = BoundsCalculation.compareDynamicChild(node, sibling, diff_customer, self)
-                    if fathomed:
-                        # print("sibling_comparison", sibling, node, diff_customer)
-                        return True
-            #
-                    if node.exactValueProb < sibling.exactValueProb+10:
-                        node.exactValueProb = sibling.exactValueProb
-                        exactLbRoute = sibling.lbRoute - sibling.lbScenario*(1-sibling.exactValueProb)
-                        exactUbRoute = sibling.ubRoute  - ubScenario*(1-sibling.exactValueProb)
-                        for scenario in sibling.tspCalculated:
-                            if (scenario & mask) > 0:
-                                node.tspCalculated.remove(scenario)
-                                scenarioProbLb = (1 - p_dev) ** bitCount(sibling.withDiscountID & scenario) * p_dev ** (
-                                        bitCount(sibling.withDiscountID ^ scenario) + self.instance.NR_CUST - (
-                                        sibling.withDiscountID + sibling.noDiscountID).bit_length())
-
-
-                                node.exactValueProb -= scenarioProbLb
-                                exactLbRoute -= scenarioProbLb*self.instance.routeCost[scenario]
-                                exactUbRoute -= scenarioProbLb * self.instance.routeCost[scenario]
-                        node.exactValueProb = node.exactValueProb/p_dev
-                        node.lbRoute = exactLbRoute/p_dev + (1-node.exactValueProb)*node.lbScenario
-                        node.ubRoute = exactUbRoute / p_dev + (1 - node.exactValueProb) * ubScenario
-                    if node.lbVal() > self.bestUb:
-                        node.fathomed()
-
-                    #if (sibling.lbRoute - sibling.lbScenario*(1-sibling.exactValueProb))*p_dev + (1-sibling.exactValueProb*p_dev)*node.lbScenario+node.lbExpDiscount > self.bestUb:
-                    #    node.fathomed()
-                    #    break
-                    '''
-

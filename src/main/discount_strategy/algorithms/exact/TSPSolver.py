@@ -12,13 +12,7 @@ sys.path.insert(1, path_to_concorde)
 #from concorde.tests.data_utils import get_dataset_path
 
 
-def bitCount(int_type):
-    count = 0
-    while (int_type):
-        int_type &= int_type - 1
-        count += 1
-    return (count)
-
+from src.main.discount_strategy.util.bit_operations import bitCount
 
 def subtourelim(model, where):
     if where == grb.GRB.Callback.MIPSOL:
@@ -54,23 +48,25 @@ def subtour(edges, set_visit):
 
 
 class TSPSolver:
-
     def __init__(self, instance, solverType):
         self.instance = instance
-        self.baseModel = self.tsp_base_model(instance.distanceMatrix, instance.NR_CUST)
+        self.baseModel = self.tsp_base_model(instance.distanceMatrix, instance.NR_CUST, instance.NR_PUP)
         self.solverType = solverType
         if solverType == 'Concorde':
             fname = get_dataset_path("berlin" + str(instance.NR_CUST + 2))
             self.solver = TSPSolverConcorde.from_tspfile(fname)
-
     # create a tsp model that visit all customers at home
-    def tsp_base_model(self, distanceMatrix, nr_cust):
+    def tsp_base_model(self, distanceMatrix, nr_cust, nr_pup):
         m = grb.Model()
         m.setParam('OutputFlag', False)
         # m.Params.Threads = 1
 
-        set_visit = list(range(nr_cust + 2))
-        m._dist_pup = distanceMatrix[(0, nr_cust + 1)] * 2
+        set_visit = list(range(nr_cust + 1 + nr_pup))
+
+        #length of the route that includes only one depot and one pickup point
+        m._dist_pup = {}
+        for pup_id in range(nr_cust+1, nr_cust+nr_pup+1):
+             m._dist_pup[pup_id]= distanceMatrix[(0, pup_id)] * 2
 
         # Create variables
         x_vars = m.addVars(distanceMatrix.keys(), obj=distanceMatrix, vtype=grb.GRB.BINARY, name='e')
@@ -82,17 +78,20 @@ class TSPSolver:
             m.addConstr(x_vars[i, i] == 0, name="forbid_loop_{0}".format(i))
 
         # Add degree-2 constraint
+        constr_inflow2 = grb.tupledict()
         for i in set_visit:
-            m.addConstr(grb.quicksum(x_vars[i, j] for j in set_visit) == 2,
+            constr_inflow2[i] = m.addConstr(grb.quicksum(x_vars[i, j] for j in set_visit) == 2,
                         name="constraint_inflow2_{0}".format(i))
+
         m._set_visit = set_visit
+        m._constr_inflow2 = constr_inflow2
+        m._constr_inflow0= grb.tupledict()
         m._x_vars = x_vars
         m.Params.lazyConstraints = 1
         m.optimize(subtourelim)
         return m
 
     def tspCost(self, scenarioID):
-
         if self.solverType == 'Gurobi':
             tspCost = self.tspCostGurobi(scenarioID)
         elif self.solverType == 'Concorde':
@@ -101,38 +100,41 @@ class TSPSolver:
 
     def tspCostGurobi(self, scenarioID):
         n = self.instance.NR_CUST
-        scenario = bin(scenarioID)[2:].zfill(n)
         # create set of customers that should be visited in scenario
         set_visit = [0]
-        iter = 1
-        for i, visit in enumerate(scenario):
-            if visit == '0':
-                set_visit.append(n - i)
-        set_visit.append(n + 1)
-        # print(scenario,scenarioID,"here", [i for i in set_visit])
+
+        for customer in self.instance.customers:
+            if scenarioID & (1 << (customer.id - 1)):
+                if customer.closest_pup_id not in set_visit:
+                    set_visit.append(customer.closest_pup_id)
+            else:
+                set_visit.append(customer.id)
 
         if len(set_visit) > 2:
-
             x_vars = self.baseModel._x_vars
             # Add degree-2 constraint
-            for i in range(1, n + 1):
+            for i in range(1, n + self.instance.NR_PUP+1):
                 if i in set_visit:
                     try:
-                        self.baseModel.remove(self.baseModel.getConstrByName("constraint_inflow0_{0}".format(i)))
-                        self.baseModel.addConstr(grb.quicksum(x_vars[i, j] for j in range(n + 2)) == 2,
-                                                 name="constraint_inflow2_{0}".format(i))
+                        self.baseModel.remove(self.baseModel._constr_inflow0[i])
+                        del self.baseModel._constr_inflow0[i]
+                        self.baseModel._constr_inflow2[i] = self.baseModel.addConstr(
+                            grb.quicksum(x_vars[i, j] for j in range(n + self.instance.NR_PUP + 1)) == 2,
+                            name="constraint_inflow2_{0}".format(i))
                     except:
                         pass
                 else:
                     try:
-                        self.baseModel.remove(self.baseModel.getConstrByName("constraint_inflow2_{0}".format(i)))
-                        self.baseModel.addConstr(grb.quicksum(x_vars[i, j] for j in range(n + 2)) == 0,
-                                                 name="constraint_inflow0_{0}".format(i))
+                        self.baseModel.remove(self.baseModel._constr_inflow2[i])
+                        del self.baseModel._constr_inflow2[i]
+                        self.baseModel._constr_inflow0[i] = self.baseModel.addConstr(
+                            grb.quicksum(x_vars[i, j] for j in range(n + self.instance.NR_PUP + 1)) == 0,
+                            name="constraint_inflow0_{0}".format(i))
                     except:
                         pass
 
             self.baseModel._set_visit = set_visit
-            self.baseModel.update()
+            #self.baseModel.update()
             # Optimize model
 
             self.baseModel.optimize(subtourelim)
@@ -153,10 +155,56 @@ class TSPSolver:
             # print('')
             tsp_cost = self.baseModel.objVal
         else:
-            tsp_cost = self.baseModel._dist_pup
+            # TODO - this would be more difficult or simply delete it
+            tsp_cost = self.baseModel._dist_pup[set_visit[1]]
         # print("")
         # print("NEW_TSP", bin(scenarioID)[2:], tsp_cost)
         return tsp_cost
+
+
+    #Cost of scenario, where all vertices and all pickup points are visited
+    def tspCostUbScenario(self):
+        n = self.instance.NR_CUST
+        # create set of customers that should be visited in scenario
+        set_visit = [0] + [customer.id for customer in self.instance.customers]
+        for customer in self.instance.customers:
+            if customer.closest_pup_id not in set_visit:
+                set_visit.append(customer.closest_pup_id)
+
+        x_vars = self.baseModel._x_vars
+        # Add degree-2 constraint
+        for i in range(1, n + self.instance.NR_PUP + 1):
+            if i in set_visit:
+                try:
+                    self.baseModel.remove(self.baseModel._constr_inflow0[i])
+                    del self.baseModel._constr_inflow0[i]
+                    self.baseModel._constr_inflow2[i] = self.baseModel.addConstr(
+                        grb.quicksum(x_vars[i, j] for j in range(n + self.instance.NR_PUP + 1)) == 2,
+                        name="constraint_inflow2_{0}".format(i))
+                except:
+                    pass
+            else:
+                try:
+                    self.baseModel.remove(self.baseModel._constr_inflow2[i])
+                    del self.baseModel._constr_inflow2[i]
+                    self.baseModel._constr_inflow0[i] = self.baseModel.addConstr(
+                        grb.quicksum(x_vars[i, j] for j in range(n + self.instance.NR_PUP + 1)) == 0,
+                        name="constraint_inflow0_{0}".format(i))
+                except:
+                    pass
+
+        self.baseModel._set_visit = set_visit
+        # self.baseModel.update()
+        # Optimize model
+
+        self.baseModel.optimize(subtourelim)
+        tsp_cost = self.baseModel.objVal
+
+        lb = 10**5
+        for pup in self.instance.pups:
+            lb = min(self.instance.distanceMatrix[(0, pup.id)] * 2, lb)
+
+        return tsp_cost, lb
 
     def tspCostWihoutReuse(self, scenario):
         distanceMatrix = self.instance.distanceMatrix
@@ -171,11 +219,9 @@ class TSPSolver:
         for i in scenario:
             if i == 0:
                 set_visit.append(iter)
-            iter += 1
         set_visit.append(nr_cust + 1)
         m._dist_pup = distanceMatrix[(0, nr_cust + 1)] * 2
         if len(set_visit) > 2:
-
             # Create variables
             x_vars = m.addVars(distanceMatrix.keys(), obj=distanceMatrix, vtype=grb.GRB.BINARY, name='e')
             for i, j in x_vars.keys():

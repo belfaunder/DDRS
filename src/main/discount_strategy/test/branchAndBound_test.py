@@ -38,13 +38,12 @@ if __name__ == "__main__":
         file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "data",
                                      "i_VRPDO_discount_proportional_2segm", str(sys.argv[-1])+".txt")
     else:
-        file_instance = os.path.join(path_to_data,"data", "i_VRPDO_discount_proportional",
-                                   "VRPDO_size_12_phome_0.2_ppup_0.0_incrate_0.06_0.txt")
-
+        file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
+                                     "VRPDO_size_10_phome_0.2_ppup_0.0_incrate_0.03_0.txt")
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()
-
     print(OCVRPInstance)
+
     #painter = Painter()
     #painter.printVertexDisc(OCVRPInstance, 0)
     # rs_policy, rs_cost = ring_star_deterministic_no_TW(OCVRPInstance, 0)

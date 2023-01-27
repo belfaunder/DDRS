@@ -3,16 +3,12 @@ import sys
 import os
 import math
 from collections import defaultdict
-path_to_util = os.path.join((Path(os.path.abspath(__file__)).parents[1]),"util")
-sys.path.insert(1, path_to_util)
-import constants
+from src.main.discount_strategy.util import constants
+from src.main.discount_strategy.model.OCVRPInstance import OCVRPInstance
+from src.main.discount_strategy.model.Customer import Customer
+from src.main.discount_strategy.model.Depot import Depot
+from src.main.discount_strategy.model.PUP import PUP
 
-path_to_model = os.path.join((Path(os.path.abspath(__file__)).parents[1]),"model")
-sys.path.insert(2, path_to_model)
-from OCVRPInstance import OCVRPInstance
-from Customer import Customer
-from Depot import Depot
-from PUP import PUP
 # module method
 # parse the csv file given the file name, number of customer, deviation probability
 def parse(file_instance):
@@ -20,19 +16,20 @@ def parse(file_instance):
     #file_name, pup_node
     #OCVRPParser.parse(file_name="R101.csv", nr_cust=8,
     #                                  pup_node = 16, flat_rate_shipping_fee = 9/0.7, deviationProb = 30)
-
-
     def read_file(file_instance):
         #file_path = os.path.join((Path(os.path.abspath(__file__)).parents[6]),file_instance)
         with open(file_instance, 'r',  encoding='utf-8') as file:
             lines = file.readlines()
             name = lines[0].split()[1]
             nr_cust = int(lines[1].split()[1])
+            nr_pup = int(lines[2].split()[1])
+
+
             #flat_rate_shipping_fee = float(general_info[1])
             #deviationProb = float(general_info[2])/100
-            vertices = {}
 
-            for line in lines[12:12+nr_cust]:
+            vertices = {}
+            for line in lines[12+nr_pup:12+nr_pup+nr_cust]:
                 custInfo = line.split()
                 vertices[int(custInfo[0])] = {}
                 vertices[int(custInfo[0])]['x'] = float(custInfo[1])
@@ -41,25 +38,25 @@ def parse(file_instance):
                 vertices[int(custInfo[0])]['prob_pup'] = max(float(custInfo[4]), constants.EPS/2)
                 vertices[int(custInfo[0])]['shipping_fee'] = float(custInfo[5])
 
-
             vertices[0] = {}
-            vertices[0]['x'] = float(lines[6].split()[1])
-            vertices[0]['y'] = float(lines[6].split()[2])
+            vertices[0]['x'] = float(lines[7].split()[1])
+            vertices[0]['y'] = float(lines[7].split()[2])
 
-            vertices[nr_cust + 1] = {}
-            vertices[nr_cust + 1]['x'] = float(lines[6 + 3].split()[1])
-            vertices[nr_cust + 1]['y'] = float(lines[6 + 3].split()[2])
+            for iter in range(nr_pup):
+                vertices[nr_cust + iter+1] = {}
+                vertices[nr_cust + iter+1]['x'] = float(lines[7 + 3 + iter].split()[1])
+                vertices[nr_cust + iter+1]['y'] = float(lines[7 + 3 + iter].split()[2])
 
-        return nr_cust, vertices, name
+        return nr_cust, nr_pup, vertices, name
 
     # retrurn matrix of distances with depot in the node 0 and many vitual pups
-    def setDistances(nodes, n):
+    def setDistances(nodes, n, nr_pup):
         d = {}
         i = 0
-        while i < n + 2:
+        while i < n + 1+nr_pup:
             d[(i, i)] = 0
             j = i + 1
-            while j < n + 2:
+            while j < n + 1 + nr_pup:
                 #d[(i, j)] = int(10 * math.sqrt((nodes[i]['x'] - nodes[j]['x']) ** 2 +
                 #                               (nodes[i]['y'] - nodes[j]['y']) ** 2)) / 10
                 #d[(i, j)] = math.sqrt((nodes[i]['x'] - nodes[j]['x']) ** 2 +
@@ -67,7 +64,6 @@ def parse(file_instance):
                 #EUC_2D : rounded Euclidean distances metric from TSPLIN format
                 d[(i, j)] = int(math.sqrt((nodes[i]['x'] - nodes[j]['x']) ** 2 +
                                                (nodes[i]['y'] - nodes[j]['y']) ** 2) +0.5)
-
                 j += 1
             while j < n + constants.FLEET_SIZE + 1:
                 d[(i, j)] = d[(i, j - 1)]
@@ -101,9 +97,14 @@ def parse(file_instance):
         #    del d[(i,i)]
         return d
 
-    nr_cust, vertices, name = read_file(file_instance)
+    nr_cust, nr_pup, vertices, name = read_file(file_instance)
     depot = Depot(vertices[0]['x'], vertices[0]['y'], 0)
-    pup = PUP(vertices[nr_cust + 1]['x'], vertices[nr_cust + 1]['y'], nr_cust + 1)
+    pups = []
+    for iter in range(nr_pup):
+        closest_cust_id = []
+        pup = PUP(vertices[nr_cust + 1 + iter]['x'], vertices[nr_cust + 1 + iter]['y'], nr_cust + 1 + iter, closest_cust_id, iter)
+        pups.append(pup)
+
     customersDistance = defaultdict(int)
 
     for i in range(1, nr_cust+1):
@@ -111,7 +112,7 @@ def parse(file_instance):
                                                (vertices[i]['y'] - vertices[0]['y']) ** 2)
 
     verticesReenum = {}
-    for i in [0, nr_cust+1]:
+    for i in [0]+list(range(nr_cust+1,nr_cust+nr_pup+1)):
         verticesReenum[i] = vertices[i]
     id = 1
     for i in sorted(customersDistance, key=customersDistance.get, reverse=True):
@@ -120,12 +121,26 @@ def parse(file_instance):
 
     customers = []
     for i in range(1, nr_cust+1):
+        closest_pup_id = nr_cust + 1
+        distance_to_closest_pup = 10**5
+        for pup in pups:
+            if int(math.sqrt((pup.xCoord - vertices[i]['x'] ) ** 2 +
+                                               (pup.yCoord - vertices[i]['y'] ) ** 2) +0.5) < distance_to_closest_pup:
+                distance_to_closest_pup = int(math.sqrt((pup.xCoord - vertices[i]['x'] ) ** 2 +
+                                               (pup.yCoord - vertices[i]['y'] ) ** 2) +0.5)
+                closest_pup_id = pup.id
         customer = Customer(verticesReenum[i]['x'] , verticesReenum[i]['y'], i,verticesReenum[i]['prob_home'],verticesReenum[i]['prob_pup'],
-                            verticesReenum[i]['shipping_fee']  )
+                            verticesReenum[i]['shipping_fee'], closest_pup_id  )
+
+        print(customer.id, closest_pup_id)
         customers.append(customer)
+    for pup in pups:
+        for customer in customers:
+            if customer.closest_pup_id==pup.id:
+                pup.closest_cust_id.append(customer.id)
 
-    distanceMatrix = setDistances(verticesReenum, nr_cust)
+    distanceMatrix = setDistances(verticesReenum, nr_cust, nr_pup)
 
-    instance = OCVRPInstance(name, customers,depot, pup, distanceMatrix)
+    instance = OCVRPInstance(name, customers,depot, pups, distanceMatrix)
 
     return instance

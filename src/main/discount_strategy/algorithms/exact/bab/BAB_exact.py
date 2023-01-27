@@ -5,11 +5,10 @@ import copy
 
 import math
 from itertools import combinations
-from src.main.discount_strategy.algorithms.exact.bab import BoundsCalculation
+from src.main.discount_strategy.algorithms.exact.bab.BoundsCalculation import updateBoundsFromDictionary
 from src.main.discount_strategy.algorithms.exact.bab.BAB_super_class import BAB_super_class
-from BoundsCalculation import updateBoundsFromDictionary
-from BoundsCalculation import updateBoundsFromLayer
-from BoundsCalculation import recalculateLbCovered
+from src.main.discount_strategy.algorithms.exact.bab.BoundsCalculation import updateBoundsWithNewTSPs
+from src.main.discount_strategy.algorithms.exact.bab.BoundsCalculation import recalculateLbCovered
 
 import numpy as np
 from time import process_time
@@ -59,13 +58,17 @@ class BABExact(BAB_super_class):
                 if self.bestNode.exactValueProb < 0.95:
                     if best_old is self.bestNode:
                         if  self.isLeaf(self.bestNode):
-                            BoundsCalculation.updateBoundsWithNewTSPs(self, self.bestNode)
+                            updateBoundsWithNewTSPs(self, self.bestNode)
                 self.bestUb = min(self.bestUb,self.bestNode.ubVal() )
                 best_old = self.bestNode
 
             # Select the next node to branch on. We assume that the priority queue
             # containing the open nodes maintains the nodes in sorted order
             nextNode = openNodes.pop()
+
+            # print("nextNode", nextNode.withDiscountID, nextNode.exactValueProb, nextNode.exactValue, nextNode.lbRoute,
+            #       nextNode.ubRoute, nextNode.lbVal(), nextNode.ubVal())
+            # print("bestNode", self.bestNode.withDiscountID, self.bestNode.lbVal() ,self.bestNode.ubVal() , len(self.instance.routeCost))
 
             if self.isTerminalNode(nextNode):
                 continue
@@ -98,11 +101,13 @@ class BABExact(BAB_super_class):
     # skip node
     def canFathom(self, node):
         def exploreNode():
+            #TODO:finish this
+            return False
 
             nonlocal node
             n = self.instance.NR_CUST
             p_home = self.instance.p_home
-            numCustToVisit = max(n - max(0,math.floor((self.bestUb- node.lbScenario[1]) / (max(0.001, np.amin(self.instance.shipping_fee[1:])
+            numCustToVisit = max(n - max(0,math.floor((self.bestUb- self.lbScenario) / (max(0.001, np.amin(self.instance.shipping_fee[1:])
                         * np.amin(self.instance.p_pup_delta[1:]))))), len(node.setNotGivenDiscount))
             if numCustToVisit == 0:
                 numCustToVisit += 1
@@ -138,13 +143,13 @@ class BABExact(BAB_super_class):
                         # the following  is true only for 2 segment model:
                         # if the new scenario is a true LB_route, then update Lb_route
                         # (initially all nodes have LB_route = 2**n - 1 or "visit all customers")
-                        if newLbScenario == (2 ** n - 1 - node.noDiscountID):
-                            lbImprove = node.updateLbScenario(self.instance.routeCost[newLbScenario],
-                                                             self.instance.p_home,  n)
-                        else:
-                            node.lbScenarios[newLbScenario] = self.instance.routeCost[newLbScenario]
-                            lbCoveredProbNew, lbDensityCoveredNew = recalculateLbCovered(p_home, node, n)
-                            lbImprove = node.updateLbCovered(lbCoveredProbNew, lbDensityCoveredNew)
+                        # if newLbScenario == (2 ** n - 1 - node.noDiscountID):
+                        #     lbImprove = node.updateLbScenario(self.instance.routeCost[newLbScenario],
+                        #                                      self.instance.p_home,  n)
+                        # else:
+                        node.lbScenarios[newLbScenario] = self.instance.routeCost[newLbScenario]
+                        lbCoveredProbNew, lbDensityCoveredNew = recalculateLbCovered(p_home, node, n)
+                        lbImprove = node.updateLbCovered(lbCoveredProbNew, lbDensityCoveredNew)
 
                         if lbImprove > max(0.005*(node.ubRoute - node.lbRoute), constants.EPSILON*self.bestNode.lbVal()):
                             oldnumCustToVisit = numCustToVisit
@@ -170,7 +175,7 @@ class BABExact(BAB_super_class):
             if (node.ubVal() - node.lbVal()) > constants.EPSILON * self.bestNode.lbVal():
                 updateBoundsFromDictionary(self, node)
                 if self.isLeaf(node):
-                    BoundsCalculation.updateBoundsWithNewTSPs(self, node)
+                    updateBoundsWithNewTSPs(self, node)
                     self.bestUb = min(self.bestUb, self.bestNode.ubVal())
                 else:
                     exploreNode()
@@ -227,7 +232,7 @@ class BABExact(BAB_super_class):
                             return False
                     else:
                         # update the bounds for current node and repeat check
-                        BoundsCalculation.updateBoundsWithNewTSPs(self, node)
+                        updateBoundsWithNewTSPs(self, node)
             if cycle_iteration == 10:
                 self.openNodes.push(node, node.priority())
 
