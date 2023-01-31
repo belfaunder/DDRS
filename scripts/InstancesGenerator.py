@@ -352,7 +352,7 @@ def generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type ):
     mainDirZhou = os.path.join(path_to_data, "data", "zhou-et-al-2017")
     dict_depot, dict_pickup, dict_customer = adapt_zhou(instance_type)
     instance_type = "VRPDO"
-    mainDirStorage = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm")
+    mainDirStorage = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP")
     nr_custs = [10,11,12,13,14,15,16,17,18, 19, 20]
     disc_rates = [0.06, 0.03, 0.12]
     #nr_custs = [10, 20, 40]
@@ -376,12 +376,13 @@ def generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type ):
                             instanceDir = os.path.join(mainDirStorage, instanceName)
                             with open(instanceList, 'a+', encoding='utf-8') as file:
                                 file.write("{}\n".format(instanceName.split('.txt')[0]))
-
-                            TSP_cost_per_customer = temp_instance(dict_customer, nr_cust, customers_id, dict_pickup[pup_id], dict_depot[depots_id[0]])
+                            nr_pup = 1
+                            TSP_cost_per_customer = temp_instance(dict_customer, nr_cust, nr_pup, customers_id, dict_pickup[pup_id], dict_depot[depots_id[0]])
 
                             with open(instanceDir, 'w+', encoding='utf-8') as file:
                                 file.write("NAME: {}\n".format(instanceName))
-                                file.write("SIZE: {}\n\n".format(nr_cust))
+                                file.write("SIZE: {}\n".format(nr_cust))
+                                file.write("NUMBER_PUPs: {}\n\n".format(nr_pup))
 
                                 file.write("LOCATION COORDINATES:\n\n")
 
@@ -492,11 +493,14 @@ def set_disc_coef(problem, sample_customers, nr_cust, pupnode ,depotnode, disc_s
     return sum(customer_disc_coef)/len(customer_disc_coef)
 
 #temp fucntion - to write an empty instance that contains only coordinates: thus to calculate TSP cost
-def temp_instance(dict_customer, nr_cust,customers_id, pupnode ,depotnode):
+def temp_instance(dict_customer, nr_cust,nr_pups,customers_id, pupnode ,depotnode):
     instance_name = 'temp.txt'
     with open(instance_name, 'w+', encoding='utf-8') as file:
         file.write("NAME: {}\n")
-        file.write("SIZE: {}\n\n".format(nr_cust))
+        file.write("SIZE: {}\n".format(nr_cust))
+        file.write("NUMBER_PUPs: {}\n\n".format(nr_pups))
+
+
         file.write("LOCATION COORDINATES:\n\n")
 
         file.write("DEPOT V. XCOORD. YCOORD.\n")
@@ -668,30 +672,18 @@ if __name__ == "__main__":
     #generate_3_segments_instance_zhou_saturation(instance_type='I1-12-30-200')
     generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type='I1-12-30-200')
 
-
-
-
-
-
     #for instance_type in instance_types:
     #    file_instance_basic = os.path.join(mainDirTSPLIB, instance_type + '.tsp')
         # 1. check positions of PUP and Depot
         #temp_check_position_pup(file_instance_basic)
-
-
         #generate_3_segments_instance(file_instance_basic, instance_type)
     #files_tsp = [f for f in os.listdir(mainDirTSPLIB) if f.endswith(".tsp")]
-
-
 
    #read_file(file_instance_basic)
 
     #for file_name in ['eil76.tsp', 'eil51.tsp','eil101.tsp','berlin52.tsp']:
     #for file_name in ['berlin52.tsp']:
     #    readTSPLIB(file_name)
-
-
-
     #read_file('RC1_19')
     #read_file('R1_11')
     #read_file('C1_12')

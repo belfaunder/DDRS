@@ -24,7 +24,6 @@ def parse(file_instance):
             nr_cust = int(lines[1].split()[1])
             nr_pup = int(lines[2].split()[1])
 
-
             #flat_rate_shipping_fee = float(general_info[1])
             #deviationProb = float(general_info[2])/100
 
@@ -132,7 +131,6 @@ def parse(file_instance):
         customer = Customer(verticesReenum[i]['x'] , verticesReenum[i]['y'], i,verticesReenum[i]['prob_home'],verticesReenum[i]['prob_pup'],
                             verticesReenum[i]['shipping_fee'], closest_pup_id  )
 
-        print(customer.id, closest_pup_id)
         customers.append(customer)
     for pup in pups:
         for customer in customers:
