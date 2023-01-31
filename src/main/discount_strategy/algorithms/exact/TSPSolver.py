@@ -8,8 +8,10 @@ from copy import copy, deepcopy
 
 path_to_concorde = os.path.join((Path(os.path.abspath(__file__)).parents[6]), "pyconcorde")
 sys.path.insert(1, path_to_concorde)
-#from concorde.tsp import TSPSolver_ as TSPSolverConcorde
-#from concorde.tests.data_utils import get_dataset_path
+
+if os.name != 'nt':
+    from concorde.tsp import TSPSolver_ as TSPSolverConcorde
+    from concorde.tests.data_utils import get_dataset_path
 
 
 from src.main.discount_strategy.util.bit_operations import bitCount

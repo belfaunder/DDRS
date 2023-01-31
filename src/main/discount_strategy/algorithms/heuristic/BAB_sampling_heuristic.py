@@ -11,8 +11,7 @@ from time import process_time
 from src.main.discount_strategy.algorithms.exact.bab.BAB_super_class import BAB_super_class
 from src.main.discount_strategy.algorithms.exact.bab import BoundsCalculation
 from src.main.discount_strategy.algorithms.exact.bab.BoundsCalculation import updateBoundsFromDictionary
-from src.main.discount_strategy.algorithms.exact.bab.BoundsCalculation import updateBoundsFromLayer
-from src.main.discount_strategy.algorithms.exact.bab.BoundsCalculation import recalculateLbCovered
+
 
 from src.main.discount_strategy.util import constants
 from src.main.discount_strategy.util import probability
@@ -83,7 +82,7 @@ class BABHeuristic(BAB_super_class):
     # skip node
     def canFathom(self, node):
         def exploreNode():
-
+            #TODO: copy from the exact
             nonlocal node
             n = self.instance.NR_CUST
             p_home = self.instance.p_home
@@ -133,7 +132,6 @@ class BABHeuristic(BAB_super_class):
 
 
                         node.lbScenarios[newLbScenario] = self.instance.routeCost[newLbScenario]
-                        lbCoveredProbNew, lbDensityCoveredNew = recalculateLbCovered(p_home, node, n)
                         lbImprove = node.updateLbCovered(lbCoveredProbNew, lbDensityCoveredNew)
 
                         if lbImprove > max(0.005*(node.ubRoute - node.lbRoute), constants.EPSILON_H*self.bestNode.lbVal()):

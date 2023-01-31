@@ -39,7 +39,9 @@ if __name__ == "__main__":
                                      "i_VRPDO_discount_proportional_2segm", str(sys.argv[-1])+".txt")
     else:
         file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
-                                     "VRPDO_size_10_phome_0.2_ppup_0.0_incrate_0.03_0.txt")
+                                     "VRPDO_size_14_phome_0.2_ppup_0.0_incrate_0.06_0.txt")
+        #file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
+        #                             "VRPDO_size_10_phome_0.2_ppup_0.0_incrate_0.03_0.txt")
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()
     print(OCVRPInstance)
@@ -73,12 +75,12 @@ if __name__ == "__main__":
     #     pickle.dump(ubPrint, file)
     #painter.printConvergence(time, lbPrint, ubPrint, bab_obj)
 
-    if 2**OCVRPInstance.NR_CUST < constants.SAMPLE_SIZE:
-        estimation_bab = one_policy_cost_estimation(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)
-    else:
-        estimation_bab = sampleAverageApproximation_PoissonBinomial_1sample(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)
-
-    print(prefix, 'Estimated_BAB_cost:',estimation_bab )
-
-    EnumerationSolver = ScenarioEnumerationSolver(instance=OCVRPInstance, solverType=solverType)
-    EnumerationSolver.exactPolicyByEnumeration_withoutGurobi_2segm()
+    # if 2**OCVRPInstance.NR_CUST < constants.SAMPLE_SIZE:
+    #     estimation_bab = one_policy_cost_estimation(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)
+    # else:
+    #     estimation_bab = sampleAverageApproximation_PoissonBinomial_1sample(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)
+    #
+    # print(prefix, 'Estimated_BAB_cost:',estimation_bab )
+    #
+    # EnumerationSolver = ScenarioEnumerationSolver(instance=OCVRPInstance, solverType=solverType)
+    # EnumerationSolver.exactPolicyByEnumeration_withoutGurobi_2segm()

@@ -3,7 +3,6 @@
 import os
 from pathlib import Path
 import sys
-from src.main.discount_strategy.algorithms.exact.bab.BoundsCalculation import recalculateLbCovered
 
 class Node:
     #Reference to the next node in the same layer * /
@@ -16,7 +15,7 @@ class Node:
     #@ param state state
     __slots__ = ['noDiscountID', 'withDiscountID', 'parent', 'layer','nextNodeInLayer', 'prevNodeInLayer', 'lbRoute',
                  'ubRoute', 'lbScenarios', 'lbExpDiscount', 'ubExpDiscount', 'children','fathomedState',
-                 'tspDict','tspProbDict', 'lbCoveredWeightBest', 'exactValue','exactValueProb', 'setGivenDiscount',
+                 'tspDict','tspProbDict',  'exactValue','exactValueProb', 'setGivenDiscount',
                  'setNotGivenDiscount',  'tspAverageCost','priorityCoef','lastEnteranceDictionary','lastNumDeviatedNewTSP','number_disc']
 
 
@@ -60,9 +59,6 @@ class Node:
         self.exactValueProb = exactValueProb
         self.exactValue = exactValue
 
-        self.lbCoveredWeightBest = 0
-
-
         givenDiscount = []
         notGivenDiscount = []
 
@@ -75,9 +71,8 @@ class Node:
                 givenDiscount.append(offset+1)
 
         self.number_disc = len(givenDiscount)
-        self.setGivenDiscount = set(givenDiscount)
-        self.setNotGivenDiscount = set(notGivenDiscount)
-
+        self.setGivenDiscount = givenDiscount
+        self.setNotGivenDiscount = notGivenDiscount
 
     def lbVal(self):
         return self.lbRoute + self.lbExpDiscount
@@ -112,7 +107,6 @@ class Node:
             return False
 
 
-
     # keeps only 1 fathomed node per layer
     def fathomed(self):
         self.fathomedState = True
@@ -144,28 +138,3 @@ class Node:
         return  self.noDiscountID == other.noDiscountID and self.withDiscountID == other.withDiscountID
 
 
-    #TODO: make this work
-    def updateLbScenario(self, lbScenarioNew, p_home, n):
-
-        # in lbScenarios only those scenarios that cost more than lbScenarioNew
-        self.lbScenarios = {k: v for k, v in self.lbScenarios.items() if v > lbScenarioNew}
-        lbCoveredProbNew, lbDensityCovered = recalculateLbCovered(p_home, self , n)
-        #print("lb scenario was: ", self, self.lbRoute)
-        self.updateLbCovered(lbCoveredProbNew, lbDensityCovered)
-        improve = (1 - self.exactValueProb - self.lbCoveredProb)*(lbScenarioNew - self.lbScenario[1])
-        #print( (1- self.exactValueProb - self.lbCoveredProb),(lbScenarioNew - self.lbScenario), improve, self.lbRoute )
-        #print("in update lb scenario", lbScenarioNew, self.lbScenario, improve)
-
-        #lbScenario is a list, where [0] element is the ID of scenario and [1] is the route cost of the scenario
-        self.lbScenario[1] = lbScenarioNew
-
-        self.lbRoute += improve
-        return improve
-
-    #TODO: make this work or delete
-    def updateLbCovered(self, lbCoveredProbNew, lbDensityCovered):
-        improve = lbDensityCovered*lbCoveredProbNew - self.lbDensityCovered*self.lbCoveredProb - self.lbScenario[1]*(lbCoveredProbNew - self.lbCoveredProb)
-        self.lbCoveredProb = lbCoveredProbNew
-        self.lbDensityCovered = lbDensityCovered
-        self.lbRoute += improve
-        return improve

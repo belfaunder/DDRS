@@ -2,6 +2,7 @@
 import collections
 import numpy as np
 import heapq
+import copy
 from src.main.discount_strategy.algorithms.exact.bab.BoundsCalculation import set_probability_covered
 #from BoundsCalculation import updateBoundsFromDictionary
 import itertools
@@ -108,7 +109,7 @@ class BAB_super_class:
                     )
         lastEnteranceDictionary = None
 
-        set_probability_covered(root, self)
+        set_probability_covered(lbScenarios,0,  tspProbDict, self.instance)
         # we already added scenario 0 to the exact cost of the root - this is done in set_probability_covered function
         #root.lbScenarios[0][1] = 0
         #TODO: strange that it is not 1 Shall it be 1?
@@ -176,7 +177,6 @@ class BAB_super_class:
         # decide how to branch
         # calculate the new policy information
         # currently branch in alphabetical order, left branch gives discount, right - nodiscout
-
         noDiscountIDLeft = parent.noDiscountID
         withDiscountIDLeft = parent.withDiscountID + 2 ** (diff_customer-1)
         withDiscountIDRight = parent.withDiscountID
@@ -185,31 +185,20 @@ class BAB_super_class:
         lastEnteranceDictionary = self.root.lastEnteranceDictionary
 
         # CHANGESPROBABILITY
-        lbExpDiscountLeft = parent.lbExpDiscount + (1 - p_home[diff_customer]) * shipping_fee[diff_customer]#*constants.PROB_PLACE_ORDER
+        lbExpDiscountLeft = parent.lbExpDiscount + (1 - p_home[diff_customer]) * shipping_fee[diff_customer]
         ubExpDiscountLeft = parent.ubExpDiscount
         lbExpDiscountRight = parent.lbExpDiscount
-        ubExpDiscountRight = parent.ubExpDiscount - (1 - p_home[diff_customer]) * shipping_fee[diff_customer]#*constants.PROB_PLACE_ORDER
+        ubExpDiscountRight = parent.ubExpDiscount - (1 - p_home[diff_customer]) * shipping_fee[diff_customer]
 
-        #tspDictLeft = copy.deepcopy(parent.tspDict)
-        #tspDictRight = copy.deepcopy(parent.tspDict)
-
-        # lbRouteLeft = parent.lbRoute
-        # ubRouteLeft = parent.ubRoute
-        # lbRouteRight = parent.lbRoute
-
-        lbScenariosRight = deepcopy(parent.lbScenarios)
-        lbScenariosLeft = deepcopy(parent.lbScenarios)
-        # lbScenariosRight = {k: v for k, v in parent.lbScenarios.items() if parent.lbScenario <= v}
-        # lbScenariosLeft = {k: v for k, v in parent.lbScenarios.items() if parent.lbScenario <= v}
+        lbScenariosRight = copy.deepcopy(parent.lbScenarios)
+        lbScenariosLeft = copy.deepcopy(parent.lbScenarios)
 
         tspDictLeft = deepcopy(parent.tspDict)
         tspDictRight = deepcopy(parent.tspDict)
+
         tspProbDictRight = {}
-
-        exactValProbRight = 0
-        exactValueRight = 0
-
         tspProbDictLeft = deepcopy(parent.tspProbDict)
+
         exactValProbLeft = parent.exactValueProb
         exactValueLeft = parent.exactValue
 
@@ -218,15 +207,13 @@ class BAB_super_class:
             lastEnteranceDictionary = self.root.lastEnteranceDictionary
             exactValProbRight = parent.exactValueProb / p_home[diff_customer]
             exactValueRight = parent.exactValue / p_home[diff_customer]
-
             for i in parent.tspProbDict:
                 tspProbDictRight[i] = parent.tspProbDict[i] / p_home[diff_customer]
         else:
-            # lbRouteRight = lbScenarioRight * (1 - clbCveredProbRight) + lbCoveredProb *lbDensityCoveredRight
-
+            exactValProbRight = 0
+            exactValueRight = 0
             for gamma in tspDictRight:
                 # all elements up to and including the diff_customer equal 1
-                # scenarioProb = (1 - p_dev) ** (n - gamma) * p_dev ** (gamma - len(parent.setNotGivenDiscount) - 1)
                 for scenario in tspDictRight[gamma]:
                     if probability.scenarioPossible_2segm(scenario, withDiscountIDRight,  parent.layer + 1, n):
                         scenarioProbRight = probability.scenarioProb_2segm(scenario, withDiscountIDRight, parent.layer + 1, n,
@@ -234,20 +221,18 @@ class BAB_super_class:
                         exactValProbRight += scenarioProbRight
                         exactValueRight += self.instance.routeCost[scenario] * scenarioProbRight
                         tspProbDictRight[scenario] = scenarioProbRight
-                    # scenarioProbLeft = probability.scenarioProb_2segm(scenario, withDiscountIDLeft,
-                    #                                             parent.layer + 1, n,
-                    #                                             self.instance.p_pup_delta)
-                    # exactValProbLeft += scenarioProbLeft
-                    # exactValueLeft += self.instance.routeCost[scenario] * scenarioProbLeft
-                    #
-                    # tspProbDictLeft[scenario] = scenarioProbLeft
-
 
         #TODO: recalculate using a new function
-        lbRouteRight = exactValueRight +  (1-exactValProbRight)*self.lbScenario
+
+        lbScenariosRight = set_probability_covered(lbScenariosRight, noDiscountIDRight, tspProbDictRight, self.instance)
+
+        lbRouteRight = sum(
+            lbScenariosRight[id][1] * lbScenariosRight[id][0] for id in lbScenariosRight) + exactValueRight
+
         ubRouteRight = exactValueRight + (1-exactValProbRight) * self.ubScenario
-        lbRouteLeft = exactValueLeft +  (1 - exactValProbLeft ) * self.lbScenario
-        ubRouteLeft = exactValueLeft + (1 - exactValProbLeft) * self.ubScenario
+
+        lbRouteLeft = parent.lbRoute
+        ubRouteLeft = parent.ubRoute
 
         leftChild = self.addNode(
             parent,  lbRouteLeft, ubRouteLeft, withDiscountIDLeft, noDiscountIDLeft,
@@ -259,10 +244,6 @@ class BAB_super_class:
             exactValProbRight, exactValueRight, lastEnteranceDictionary)
 
         parent.children = [leftChild, rightChild]
-        # TODO: this lbRecalculate can be moved in the line above
-        # for node in parent.children:
-        #     lbCoveredProbNew, lbDensityCoveredNew = recalculateLbCovered(p_home, node, n)
-        #     node.updateLbCovered(lbCoveredProbNew, lbDensityCoveredNew)
 
         if parent is self.bestNode:
             if leftChild.fathomedState:
@@ -315,10 +296,8 @@ class BAB_super_class:
         node = Node(parent, lbRoute, ubRoute, withDiscountID, noDiscountID, lbExpDiscount, ubExpDiscount,
                     tspDict,tspProbDict, lbScenarios,  exactValueProb, exactValue, layer,
                     priorityCoef, lastEnteranceDictionary)
-        set_probability_covered(node, self)
 
-        node.lbRoute = sum(
-            node.lbScenarios[id][1] * node.lbScenarios[id][0] for id in node.lbScenarios) + node.exactValue
+
         if node.lbRoute + node.lbExpDiscount > self.bestNode.ubVal():
             node.fathomedState = True
             #print(node.lbRoute ,  node.lbExpDiscount,  self.bestNode.ubVal())

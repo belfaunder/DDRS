@@ -11,10 +11,10 @@ class Customer(Vertex):
     def __str__(self):
         return (str(self.id))
 
-id = 15
-scenario = 12
+# id = 15
+# scenario = 12
 
-print("id",  bin(~id &(2**4- 1)) ,"scenario", bin(scenario), ~id &(2**4- 1)& scenario, bin((~id &(2**4- 1))& scenario))
-if not (~id &(2**4- 1))& scenario:
-    print("here")
-
+# print("id",  bin(~id &(2**4- 1)) ,"scenario", bin(scenario), ~id &(2**4- 1)& scenario, bin((~id &(2**4- 1))& scenario))
+# if not (~id &(2**4- 1))& scenario:
+#     print("here")
+#

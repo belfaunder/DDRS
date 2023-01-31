@@ -128,35 +128,29 @@ class OCVRPInstance:
         # list of all possible ub insertion cost that are cheapper than min_default = dist[0,node] or dist[n+1,node]
 
     def sort_ub(self, customer):
-
         dist = self.distanceMatrix
-        n = self.NR_CUST
-
         min_default_ub = 2*dist[0, customer.id]
         min_insertion = {}
 
         min_insertion[0] = min_default_ub
-
-        for i in range(1, self.NR_CUST):
+        for i in range(1, self.NR_CUST + 1):
+        #for i in range(1, self.NR_CUST  + self.NR_PUP + 1):
             if i != customer.id:
-                if dist[i, customer.id]*2 < min_default_ub:
+                if dist[i, customer.id] * 2 < min_default_ub:
                     min_insertion[i] = dist[i, customer.id]*2
         sorted_insertion = {k: v for k, v in sorted(min_insertion.items(), key=lambda item: item[1])}
         return sorted_insertion
 
-    # list of all possible lb insertion cost that are cheapper than min_default = dist[0,node] or dist[n+1,node]
+    # list of all possible lb insertion cost that are cheaper than min_default = dist[0,node] or dist[n+1,node]
     def sort_lb(self, customer):
         dist = self.distanceMatrix
-
-        n = self.NR_CUST
-        min_default = max(0,2 * dist[0, customer.id])
         min_insertion = {}
-        min_insertion[0, 0] = min_default
+        min_insertion[0, 0] = 2 * dist[0, customer.id]
         for i in range(0, self.NR_CUST + self.NR_PUP+1):
             if i != customer.id:
                 for j in range(i, self.NR_CUST + self.NR_PUP+1):
                     if j != customer.id:
-                        if dist[i, customer.id] + dist[customer.id, j] - dist[i, j] < min_default:
+                        if dist[i, customer.id] + dist[customer.id, j] - dist[i, j] < min_insertion[0, 0]:
                             min_insertion[i, j] = max(0, dist[i, customer.id] + dist[customer.id, j] - dist[i, j])
         sorted_insertion = {k: v for k, v in sorted(min_insertion.items(), key=lambda item: item[1])}
 
@@ -169,8 +163,13 @@ class OCVRPInstance:
 
         # in the worst case we to not visit pickup points
         for i in range(self.NR_CUST + 1, self.NR_CUST + self.NR_PUP+1):
-            p_home[i] = 0
-            p_pup[i] = 1
+            prob_temp = 1
+            for pup in self.pups:
+                for cust in pup.closest_cust_id:
+                    prob_temp *= p_home[cust]
+
+            p_home[i] = prob_temp
+            p_pup[i] = 1 - prob_temp
 
         # We want to delete any benchmanrk that will not be used (because there is a better one)
         previous_insertion = {}

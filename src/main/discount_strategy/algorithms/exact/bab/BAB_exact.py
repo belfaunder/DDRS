@@ -8,7 +8,6 @@ from itertools import combinations
 from src.main.discount_strategy.algorithms.exact.bab.BoundsCalculation import updateBoundsFromDictionary
 from src.main.discount_strategy.algorithms.exact.bab.BAB_super_class import BAB_super_class
 from src.main.discount_strategy.algorithms.exact.bab.BoundsCalculation import updateBoundsWithNewTSPs
-from src.main.discount_strategy.algorithms.exact.bab.BoundsCalculation import recalculateLbCovered
 
 import numpy as np
 from time import process_time
@@ -38,7 +37,6 @@ class BABExact(BAB_super_class):
 
         # Visit all nodes until no nodes are left to branch on ( or a time limit is reached)
         start_time = process_time()
-        ubValRoot = self.root.ubVal()
         time, lbPrint, ubPrint= [], [], []
 
         first_meet_time = {}
@@ -66,9 +64,9 @@ class BABExact(BAB_super_class):
             # containing the open nodes maintains the nodes in sorted order
             nextNode = openNodes.pop()
 
-            # print("nextNode", nextNode.withDiscountID, nextNode.exactValueProb, nextNode.exactValue, nextNode.lbRoute,
+            # print("\nnextNode", nextNode.withDiscountID, bin(nextNode.withDiscountID), nextNode.withDiscountID, nextNode.exactValueProb, nextNode.exactValue, nextNode.lbRoute,
             #       nextNode.ubRoute, nextNode.lbVal(), nextNode.ubVal())
-            # print("bestNode", self.bestNode.withDiscountID, self.bestNode.lbVal() ,self.bestNode.ubVal() , len(self.instance.routeCost))
+            # print("bestNode", bin(self.bestNode.withDiscountID), self.bestNode.withDiscountID, self.bestNode.lbVal() ,self.bestNode.ubVal() , len(self.instance.routeCost))
 
             if self.isTerminalNode(nextNode):
                 continue
@@ -101,74 +99,21 @@ class BABExact(BAB_super_class):
     # skip node
     def canFathom(self, node):
         def exploreNode():
-            #TODO:finish this
+            nonlocal node
+            if node.setNotGivenDiscount:
+                for id in reversed(node.lbScenarios):
+                    newScenario = node.lbScenarios[id][2] & ~node.noDiscountID
+                    if newScenario != node.lbScenarios[id][2]:
+                        if newScenario not in self.instance.routeCost:
+                            routingCost = self.TSPSolver.tspCost(newScenario)
+                            self.instance.routeCost[newScenario] = routingCost
+                        else:
+                            routingCost = self.instance.routeCost[newScenario]
+                        node.lbRoute +=  node.lbScenarios[id][1] *(routingCost - node.lbScenarios[id][0])
+                        node.lbScenarios[id][0] = routingCost
+                        node.lbScenarios[id][2] = newScenario
             return False
 
-            nonlocal node
-            n = self.instance.NR_CUST
-            p_home = self.instance.p_home
-            numCustToVisit = max(n - max(0,math.floor((self.bestUb- self.lbScenario) / (max(0.001, np.amin(self.instance.shipping_fee[1:])
-                        * np.amin(self.instance.p_pup_delta[1:]))))), len(node.setNotGivenDiscount))
-            if numCustToVisit == 0:
-                numCustToVisit += 1
-
-            #calculate the smallest num of customers who was not visited s.t. the tspDisc does not have it
-            numVisitTemp = numCustToVisit
-
-            # retrun False if we cannot fathom the node,
-            # retrun True if we can fathom
-            # max possible numer of discounts ->n-node.layer + len(node.setGivenDiscount)
-            # while numDiscTemp>= n-node.layer + len(node.setGivenDiscount):
-            while True:
-                if numCustToVisit < n:
-                    # the list of customers who might get a discount, i.e. those who got a discount in current policy
-                    # plus those about whom we do not have a decision yet
-                    possibleDiscounts = list(range(n, node.layer ,-1)) + list(node.setGivenDiscount)[::-1]
-                    #possibleDiscounts |= node.setGivenDiscount
-                    #combinations = random_combination(possibleDiscounts, numDiscTemp)
-                    #combinations_set = combinations(possibleDiscounts, numDiscTemp)
-
-                    for combination in combinations(possibleDiscounts, n-numVisitTemp):
-                        # create a scenario that offer a discount to  " n-numVisitTemp" number of customers.
-                        # The idea is that this scenario may be not possible for some of child nodes,
-                        # but it will give a true LB anyway
-                        newLbScenario = 0
-                        for i in combination:
-                            newLbScenario += 1 << (i-1)
-                        if newLbScenario not in self.instance.routeCost:
-                            self.instance.routeCost[newLbScenario]= self.TSPSolver.tspCost(newLbScenario)
-                        else:
-                            if self.instance.routeCost[newLbScenario] == node.lbScenario:
-                                continue
-                        # the following  is true only for 2 segment model:
-                        # if the new scenario is a true LB_route, then update Lb_route
-                        # (initially all nodes have LB_route = 2**n - 1 or "visit all customers")
-                        # if newLbScenario == (2 ** n - 1 - node.noDiscountID):
-                        #     lbImprove = node.updateLbScenario(self.instance.routeCost[newLbScenario],
-                        #                                      self.instance.p_home,  n)
-                        # else:
-                        node.lbScenarios[newLbScenario] = self.instance.routeCost[newLbScenario]
-                        lbCoveredProbNew, lbDensityCoveredNew = recalculateLbCovered(p_home, node, n)
-                        lbImprove = node.updateLbCovered(lbCoveredProbNew, lbDensityCoveredNew)
-
-                        if lbImprove > max(0.005*(node.ubRoute - node.lbRoute), constants.EPSILON*self.bestNode.lbVal()):
-                            oldnumCustToVisit = numCustToVisit
-
-                            # it may happen that with new LB_route giving many discounts is not profitable,
-                            # so we calculate the max number of discounts that is still may be profitable
-                            numCustToVisit = max(
-                                n - max(0,math.floor((self.bestUb- node.lbScenario[1]) / (max(0.001, np.amin(self.instance.shipping_fee[1:]) * np.amin(self.instance.p_pup_delta[1:]))))), len(node.setNotGivenDiscount))
-                            if numCustToVisit > oldnumCustToVisit:
-                                numVisitTemp = numCustToVisit
-                                break
-                        else:
-                            #if increase is not suffucuent, stop adding new scenario and finish the function "explore the node"
-                            return False
-                    numVisitTemp += 1
-                    if numVisitTemp >=n:
-                        return False
-                else:
-                    return False
 
         # in node is the current BestNode, then update the bounds, and return False (negative answer to canFathom)
         if self.bestNode == node:
@@ -199,13 +144,13 @@ class BABExact(BAB_super_class):
                     self.openNodes.push(self.bestNode,  self.bestNode.priority())
                     self.bestNode = node
                     self.bestUb = min(self.bestUb, self.bestNode.ubVal())
-                    if not self.isLeaf(node):
+                    #if not self.isLeaf(node):
                         # add info by new tsp and should branch
-                        exploreNode()
-                        self.bestUb = min(self.bestUb, self.bestNode.ubVal())
-                        return False
-                    else:
-                        return False
+                    exploreNode()
+                    self.bestUb = min(self.bestUb, self.bestNode.ubVal())
+                    #    return False
+                    #else:
+                    return False
 
                 # epsilon optimality
                 elif (self.bestNode.ubVal() - node.lbVal()) <= constants.EPSILON * node.lbVal():

@@ -1572,10 +1572,10 @@ def experiment_variation_nrcust(folder):
     # parseBAB_RS_NODISC(os.path.join(folder, "bab_rs_nodisc_i_VRPDO_notfinished.txt"), folder, "i_VRPDO_time")
     #parseBAB_RS_NODISC(os.path.join(folder, "bab_VRPDO_discount_proportional_02_02.txt"), folder, "i_VRPDO_discount_proportional_02_02")
 
-    #parseBAB(os.path.join(folder, "01_25_bab_exact_small.txt"), folder, "01_25_bab_exact_small")
+    #parseBAB(os.path.join(folder, "01_30_bab_exact_small.txt"), folder, "01_30_bab_exact_small")
     #parseEnumeration(os.path.join(folder, "01_25_enumeration_small.txt"), folder, "01_25_enumeration_small")
     df_enum = pd.read_csv(os.path.join(folder, "01_25_enumeration_small.csv"))
-    df_bab = pd.read_csv(os.path.join(folder, "01_25_bab_exact_small.csv"))
+    df_bab = pd.read_csv(os.path.join(folder, "01_30_bab_exact_small.csv"))
 
     df_enum.drop(['nrCust_enum'], axis=1, inplace=True)
     df = df_bab.merge(df_enum, how='left', on='instance')
@@ -1920,21 +1920,21 @@ def experiment_heuristic_parameters_variation(folder):
 
 def experiment_bab_solution_time_classes(folder):
     #parseBAB(os.path.join(folder, "bab_VRPDO_disc_proportional_small_not_finished.txt"), folder, "bab_VRPDO_discount_proportional_small")
-    df_bab = pd.read_csv(os.path.join(folder, "final_bab_VRPDO_disc_proportional_small_02_02_006.csv"))
-    df_bab = df_bab[df_bab['p_pup']!=0.35].copy()
-    nr_cust = [10, 11, 12, 13, 14, 15, 16, 17, 18]
+    df_bab = pd.read_csv(os.path.join(folder, "01_30_bab_exact_small.csv"))
+    #df_bab = df_bab[df_bab['p_pup']!=0.35].copy()
+    nr_cust = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 
     for n in nr_cust:
         df_bab_temp = df_bab[(df_bab["nrCust"] == n)&(df_bab['discount_rate']==0.06)].copy()
         print(n, df_bab_temp['time_bab'].mean())
 
-    df_bab['class'] = df_bab.apply( lambda x: 'low_determinism' if x['p_pup']==0.4 else (
-        'high_determinism' if x['p_pup']==0.05 else (
+    df_bab['class'] = df_bab.apply( lambda x: 'low_determinism' if x['p_home']==0.9 else (
+        'high_determinism' if x['p_home']==0.2 else (
             'high_disc' if x['discount_rate']==0.12 else (
                 'low_disc' if x['discount_rate']==0.03 else 'normal'))), axis=1)
 
-    df_bab['class_id'] = df_bab.apply(lambda x: 2 if x['p_pup'] == 0.4 else (
-        3 if x['p_pup'] == 0.05 else (
+    df_bab['class_id'] = df_bab.apply(lambda x: 2 if x['p_home'] == 0.9 else (
+        3 if x['p_home'] == 0.2 else (
             5 if x['discount_rate'] == 0.12 else (
                 4 if x['discount_rate'] == 0.03 else  1))), axis=1)
 
@@ -1943,8 +1943,6 @@ def experiment_bab_solution_time_classes(folder):
     # writer = pd.ExcelWriter(os.path.join(folder, "bab_VRPDO_discount_proportional_small.xlsx"), engine='openpyxl')
     # df_bab.to_excel(writer, index=False)
     # writer.save()
-
-
 
     sns.set()
     sns.set(font_scale=1.1)
@@ -1957,16 +1955,16 @@ def experiment_bab_solution_time_classes(folder):
     palette = {key: value for key, value in zip(df_bab['class'].unique(), cmap)}
 
     print(palette)
-    dash_list = sns._core.unique_dashes(df_bab['class'].unique().size + 1)
-    style = {key: value for key, value in zip(df_bab['class'].unique(), dash_list[1:])}
+    #dash_list = sns._core.unique_dashes(df_bab['class'].unique().size + 1)
+    #style = {key: value for key, value in zip(df_bab['class'].unique(), dash_list[1:])}
 
-    style['normal'] =  ''  # empty string means solid
-    m = np.array(['o', 'P', 's', '^', 'D'])
+    #style['normal'] =  ''  # empty string means solid
+    m = np.array(['o', 'P', 'x', '^', 's'])
     lns = np.array(['-', '--', '-.', ':', 'dashdot'])
     #plt.figure(0)
     fig, ax = plt.subplots(1, 1, figsize=(8, 5))
     #ax, fig = plt.gca(), plt.gcf()
-    x = [10, 11, 12, 13, 14, 15, 16, 17, 18]
+    x = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 
     class_name = ['C1 base case', 'C2 low incentive effectiveness' ,'C3 high incentive effectiveness', 'C4 low incentive value', 'C5 high incentive value']
     change_x = [-0.15, -0.3, 0, 0.15, 0.3]
@@ -1988,7 +1986,7 @@ def experiment_bab_solution_time_classes(folder):
         #plt.scatter(x_print, y_min,  marker = '-', s= 16,  label = class_name[class_id-1])
         #plt.errorbar(x_print, y_min, yerr=None, marker = m[class_id-1],  ms=3, linestyle = '', mec = cmap[class_id-1],mfc= cmap[class_id-1], c = cmap[class_id-1],)
 
-        plt.errorbar(x_print, y, yerr=yerr, marker = m[class_id-1],  ms=4, linestyle = "", label = class_name[class_id-1],
+        plt.errorbar(x_print, y, yerr=yerr, marker = m[class_id-1],  ms=7, linestyle = "", label = class_name[class_id-1],
                      mec = cmap[class_id-1], mfc= cmap[class_id-1], c = cmap[class_id-1],  elinewidth=1, capsize=3)
         #plt.errorbar(x_print, y_max, yerr=None, marker='-', ms=4, linestyle='', mec=cmap[class_id - 1],
         #             mfc=cmap[class_id - 1], c=cmap[class_id - 1])
@@ -2005,8 +2003,8 @@ def experiment_bab_solution_time_classes(folder):
     plt.ylabel("Solution time (sec)")
     ax.set(yscale="log")
     ax.set(xlabel='Problem size, n')
-    ax.set_ylim(0, 1000000)
-    plt.savefig(os.path.join(path_to_images, 'Solution_time_classes.eps'), transparent=False,
+    ax.set_ylim(0, 100000)
+    plt.savefig(os.path.join(path_to_images, 'Solution_time_classes_2segm.eps'), transparent=False,
             bbox_inches='tight')
     plt.show()
 
@@ -2086,9 +2084,9 @@ if __name__ == "__main__":
     folder_2segm = os.path.join(path_to_data, "output", "VRPDO_discount_proportional_2segm")
 
     #experiment_variation_nrcust_heuristic(folder)
-    experiment_variation_nrcust(folder_2segm)
+    #experiment_variation_nrcust(folder_2segm)
     folder = os.path.join(path_to_data, "output", "VRPDO_discount_proportional")
-    # experiment_bab_solution_time_classes(folder)
+    experiment_bab_solution_time_classes(folder_2segm)
     # parseBAB(os.path.join(folder, "bab_7types_nrCust.txt"), folder, "bab_7types_nrCust")
 
     # experiment_heuristic_general()

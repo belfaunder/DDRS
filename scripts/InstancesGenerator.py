@@ -271,7 +271,6 @@ def generate_3_segments_instance_zhou_constant_density(instance_type ):
     #                         1.0: [0.0]}
     dict_probabilities = {0.2:[0.2]}
     #disc_rates = [0.3]
-    print("here")
 
     disc_rates =  [ 0.005, 0.01, 0.02, 0.05, 0.1, 0.2]
 
