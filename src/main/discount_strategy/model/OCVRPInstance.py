@@ -86,6 +86,7 @@ class OCVRPInstance:
     def __str__(self):
         s = prefix +"Instance: " + self.name + "\n" + \
             prefix+ "Number_of_customers: " + str(self.NR_CUST) + "\n" + \
+            prefix + "Number_of_pups: " + str(self.NR_PUP) + "\n" + \
             prefix + "Epsilon_precision: " + str(constants.EPSILON* 100)  + " %\n"
 
 

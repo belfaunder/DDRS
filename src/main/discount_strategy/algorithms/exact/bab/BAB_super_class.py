@@ -30,7 +30,7 @@ class PriorityQueue:
         return heapq.heappop(self._queue)[-1]
 
     def empty(self):
-        if (len(self._queue) is 0):
+        if (len(self._queue) == 0):
             return True
         else:
             return False
@@ -112,8 +112,6 @@ class BAB_super_class:
         set_probability_covered(lbScenarios,0,  tspProbDict, self.instance)
         # we already added scenario 0 to the exact cost of the root - this is done in set_probability_covered function
         #root.lbScenarios[0][1] = 0
-        #TODO: strange that it is not 1 Shall it be 1?
-        print("probability left", 1-sum(  root.lbScenarios[id][1] for id in root.lbScenarios) - root.exactValueProb)
         root.lbRoute = sum(root.lbScenarios[id][1] * root.lbScenarios[id][0] for id in root.lbScenarios) + root.exactValue
         self.nodeLayers = {}
         self.root = root
