@@ -105,8 +105,6 @@ if __name__ == '__main__':
     test()
     prof.disable()
     #prof.print_stats()
-    prof.dump_stats("main_func.prof")
-    p = pstats.Stats("main_func.prof")
-
-
+    #prof.dump_stats("main_func.prof")
+    p = pstats.Stats(prof)
     p.strip_dirs().sort_stats(pstats.SortKey.CUMULATIVE).print_stats(50)
