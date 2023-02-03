@@ -71,6 +71,13 @@ def deepcopy(sth):
 class BAB_super_class:
     def __init__(self, instance, solverType):
         self.instance = instance
+        self.pruned_insertionCost_nonleaf = 0
+        self.pruned_insertionCost_leaf = 0
+        self.pruned_cliques_nonleaf = 0
+        self.pruned_cliques_leaf = 0
+        self.pruned_rs_nonleaf = 0
+        self.pruned_rs_leaf = 0
+        self.pruned_bounds_nonleaf = 0
 
         # gurobi model for TSP is stored in TSP object and reused
         # thus to enable warm start
@@ -215,7 +222,7 @@ class BAB_super_class:
                 for scenario in tspDictRight[gamma]:
                     if probability.scenarioPossible_2segm(scenario, withDiscountIDRight,  parent.layer + 1, n):
                         scenarioProbRight = probability.scenarioProb_2segm(scenario, withDiscountIDRight, parent.layer + 1, n,
-                                                                  self.instance.p_pup_delta)
+                                                                  self.instance.p_pup_delta )
                         exactValProbRight += scenarioProbRight
                         exactValueRight += self.instance.routeCost[scenario] * scenarioProbRight
                         tspProbDictRight[scenario] = scenarioProbRight
@@ -303,8 +310,16 @@ class BAB_super_class:
 
         elif self.canFathomByTheoremCliques(node):
             node.fathomedState = True
+            if node.layer == self.instance.NR_CUST:
+                self.pruned_cliques_leaf +=1
+            else:
+                self.pruned_cliques_nonleaf += 1
         elif self.canFathomByTheoremUpperBound(node):
             node.fathomedState = True
+            if node.layer == self.instance.NR_CUST:
+                self.pruned_rs_leaf += 1
+            else:
+                self.pruned_rs_nonleaf += 1
         if layer in self.nodeLayers:
             self.nodeLayers[layer][1].nextNodeInLayer = node
             node.prevNodeInLayer = self.nodeLayers[layer][1]
@@ -326,13 +341,12 @@ class BAB_super_class:
         return False
 
     def canFathomByTheoremCliques(self, node):
-        diff_customer = node.layer-1
-
-        for other_cust in self.instance.neighbour[diff_customer+1]:
-            cust = other_cust - 1
-            if cust<diff_customer:
-                if (node.withDiscountID & (1 << diff_customer) and not node.withDiscountID & (1 << cust)) or \
-                        (not node.withDiscountID & (1 << diff_customer) and  node.withDiscountID & (1 << cust)):
+        diff_customer = node.layer
+        for other_cust in self.instance.neighbour[diff_customer]:
+            # if we defined the policy for the other_cust
+            if other_cust<diff_customer:
+                if (node.withDiscountID & (1 << diff_customer-1) and not node.withDiscountID & (1 << other_cust - 1)) or \
+                        (not node.withDiscountID & (1 << diff_customer-1) and  node.withDiscountID & (1 << other_cust - 1)):
                     return True
         return False
 

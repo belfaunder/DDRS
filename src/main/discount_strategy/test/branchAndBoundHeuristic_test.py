@@ -19,7 +19,9 @@ from src.main.discount_strategy.io import OCVRPParser
 path_to_data = constants.PATH_TO_DATA
 prefix="tag: "
 
+
 if __name__ == "__main__":
+
     #solverType = 'Concorde'
     solverType = 'Gurobi'
     print(prefix,"Heuristic Sampling")

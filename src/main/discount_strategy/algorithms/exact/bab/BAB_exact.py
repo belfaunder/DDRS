@@ -23,7 +23,7 @@ def timer(start,end):
     minutes, seconds = divmod(rem, 60)
     return("{:0>2}:{:0>2}:{:05.2f})".format(int(hours),int(minutes),seconds))
 
-prefix="tag: "
+prefix=constants.PREFIX
 
 class BABExact(BAB_super_class):
 
@@ -127,6 +127,8 @@ class BABExact(BAB_super_class):
                     self.bestUb = min(self.bestUb, self.bestNode.ubVal())
             return False
         elif node.lbVal() > self.bestUb * (1 - constants.EPSILON):
+            if node.layer < self.instance.NR_CUST:
+                self.pruned_bounds_nonleaf += 1
             return True
         else:
             updateBoundsFromDictionary(self, node)
@@ -137,6 +139,8 @@ class BABExact(BAB_super_class):
             while cycle_iteration<10:
                 cycle_iteration+=1
                 if node.lbVal() > self.bestUb * (1 - constants.EPSILON):
+                    if node.layer < self.instance.NR_CUST:
+                        self.pruned_bounds_nonleaf += 1
                     return True
 
                 # fathom by bound (found new Best Node): if current precision is small, then fathom, else - branch on the best node

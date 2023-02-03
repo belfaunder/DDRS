@@ -235,36 +235,38 @@ def parseBAB(file_path, folder, output_name):
                 if 'Instance' in line:
                     instance = (line.split(':')[1].replace('\n', '')).replace(' ', '').replace('.txt', '')
                     nrCust = int(lines[idx + 1].split(':')[1])
-                    eps = round(float(lines[idx + 2].split(':')[1].split()[0])/100, 4)
+                    nrPup = int(lines[idx + 2].split(':')[1])
+
+                    eps = round(float(lines[idx + 3].split(':')[1].split()[0])/100, 4)
                     p_home = instance.split('_')[4]
                     p_pup = instance.split('_')[6]
                     discount = (instance.split('_')[8]).split('.txt')[0]
-                    time_running = float(lines[idx + 3].split(':')[1])
-                    nodes = float(lines[idx + 4].split(':')[1])
-                    num_tsps = float(lines[idx + 5].split(':')[1])
-                    optimal = int(lines[idx + 6].split(':')[1])
-                    obj_val = float(lines[idx + 12].split('[')[1].split(',')[0])
+                    time_running = float(lines[idx + 4].split(':')[1])
+                    nodes = float(lines[idx + 5].split(':')[1])
+                    num_tsps = float(lines[idx + 6].split(':')[1])
+                    optimal = int(lines[idx + 7].split(':')[1])
+                    obj_val = float(lines[idx + 13].split('[')[1].split(',')[0])
                     # 2sd:
-                    sd = float(lines[idx + 12].split('[')[1].split(',')[0]) - float(
-                        lines[idx + 12].split('[')[1].split(',')[1])
+                    sd = float(lines[idx + 13].split('[')[1].split(',')[0]) - float(
+                        lines[idx + 13].split('[')[1].split(',')[1])
                     # obj_val = float(lines[idx + 12].split('best_known_LB')[1])
-                    gap = float(lines[idx + 8].split(':')[1])
-                    time_first_opt = float(lines[idx + 9].split(':')[1])
-                    policy_ID = int(lines[idx + 10].split(':')[1])
+                    gap = float(lines[idx + 9].split(':')[1])
+                    time_first_opt = float(lines[idx + 10].split(':')[1])
+                    policy_ID = int(lines[idx + 11].split(':')[1])
 
                     num_disc = bitCount(policy_ID)
                     # data.append([eps, nrCust,p_home, p_pup, discount, time_running, time_first_opt, nodes, num_tsps, optimal,gap, obj_val, sd,
                     #               policy_ID, num_disc, instance])
                     data.append(
-                        [eps, nrCust, p_home, p_pup, discount, time_running, time_first_opt, nodes, num_tsps, optimal,
+                        [eps, nrCust, nrPup, p_home,  discount, time_running, time_first_opt, nodes, num_tsps, optimal,
                          gap, obj_val, sd,
-                         policy_ID, num_disc, instance])
+                         policy_ID, num_disc, instance, p_pup])
             except:
-                data.append([eps, nrCust, p_home, p_pup, discount, "", "", "", "", "", "", "",
-                             "", "", "", instance])
+                data.append([eps, nrCust, nrPup, p_home,  discount, "", "", "", "", "", "", "",
+                             "", "", "", instance, p_pup])
                 print("bab problem with instance ", (line.split('/')[len(line.split('/')) - 1]), " line: ", idx)
-    rowTitle = ['eps', 'nrCust', 'p_home', 'p_pup', 'discount_rate', 'time_bab', 'time_tb', 'nodes',
-                'num_tsps', 'optimal', 'gap', 'obj_val_bab', '2sd_bab', 'policy_bab_ID', 'num_disc_bab', 'instance']
+    rowTitle = ['eps', 'nrCust',"nrPup", 'p_home', 'discount_rate', 'time_bab', 'time_tb', 'nodes',
+                'num_tsps', 'optimal', 'gap', 'obj_val_bab', '2sd_bab', 'policy_bab_ID', 'num_disc_bab', 'instance', 'p_pup', ]
     writer(os.path.join(folder, output_name + ".csv"), data, rowTitle)
 
 
@@ -418,16 +420,18 @@ def parseEnumeration(file_path, folder, output_name):
                 if 'Instance:' in line:
                     instance = (line.split(':')[1].replace('\n', '')).replace(' ', '').replace('.txt', '')
                     nrCust = int(lines[idx + 1].split(':')[1])
-                    time_calculate_all_TSPs = float(lines[idx + 3].split(':')[1])
-                    obj_val = float(lines[idx + 4].split(':')[1])
-                    time_running = float(lines[idx + 7].split()[1])
-                    policy_ID = int(lines[idx + 5].split(':')[1])
-                    data.append([nrCust, time_running,time_calculate_all_TSPs, obj_val, policy_ID, instance])
+                    nrPup = int(lines[idx + 2].split(':')[1])
+
+                    time_calculate_all_TSPs = float(lines[idx + 4].split(':')[1])
+                    obj_val = float(lines[idx + 5].split(':')[1])
+                    time_running = float(lines[idx + 8].split()[1])
+                    policy_ID = int(lines[idx + 6].split(':')[1])
+                    data.append([nrCust, nrPup, time_running,time_calculate_all_TSPs, obj_val, policy_ID, instance])
 
             except:
                 data.append(["", "", "", "", instance])
                 print("enumeration problem with instance ", (line.split('/')[len(line.split('/')) - 1]), " line: ", idx)
-    rowTitle = ['nrCust_enum', 'time_running_enum','time_calc_allTSPs', 'obj_val_enum', 'policy_enum_ID', 'instance']
+    rowTitle = ['nrCust_enum','nrPup_enum', 'time_running_enum','time_calc_allTSPs', 'obj_val_enum', 'policy_enum_ID', 'instance']
     writer(os.path.join(folder, output_name + ".csv"), data, rowTitle)
 
 
@@ -627,7 +631,6 @@ def sensitivity_disc_size_comparison_nodisc(folder, folder_data):
     # df_temp3 = df_temp2[['expDiscountCostBab','obj_val_bab' ]].copy()
     sns.lineplot(ax=ax, data=df_temp, x='discount_rate', y='obj_val_bab', linewidth=1, marker='o',
                  markersize=6, color='black', err_style="bars", err_kws={'capsize': 3}, label='Fulfillment cost')
-
     sns.lineplot(ax=ax, data=df_temp, x='discount_rate', y='expDiscountCostBab', linewidth=1, marker='^',
                  markersize=8, color='green', err_style="bars", err_kws={'capsize': 3}, label='Incentive cost')
     # bar2 = sns.barplot(data = df_temp2,  x= 'discount_rate', y='obj_val_bab',  ci=None, color='darkblue')
@@ -1307,7 +1310,7 @@ def nr_cust_variation(df):
 
         #df_slice = df[(df.nrCust == nrCust)& (df.p_pup == 0.2) & (df.discount_rate ==0.06)].copy()
 
-        if nrCust < 16:
+        if nrCust < 21:
             df_results.at[nrCust, 't_enum_av'] = df_slice['time_running_enum'].mean()
             df_results.at[nrCust, 't_enum_sd'] = df_slice['time_running_enum'].std()
             df_results.at[nrCust, 't_enum_min'] = df_slice['time_running_enum'].min()
@@ -1572,22 +1575,18 @@ def experiment_variation_nrcust(folder):
     # parseBAB_RS_NODISC(os.path.join(folder, "bab_rs_nodisc_i_VRPDO_notfinished.txt"), folder, "i_VRPDO_time")
     #parseBAB_RS_NODISC(os.path.join(folder, "bab_VRPDO_discount_proportional_02_02.txt"), folder, "i_VRPDO_discount_proportional_02_02")
 
-    #parseBAB(os.path.join(folder, "01_30_bab_exact_small.txt"), folder, "01_30_bab_exact_small")
-    #parseEnumeration(os.path.join(folder, "01_25_enumeration_small.txt"), folder, "01_25_enumeration_small")
-    df_enum = pd.read_csv(os.path.join(folder, "01_25_enumeration_small.csv"))
-    df_bab = pd.read_csv(os.path.join(folder, "01_30_bab_exact_small.csv"))
-
+    #parseBAB(os.path.join(folder, "02_02_bab_exact.txt"), folder, "02_02_bab_exact")
+    #parseEnumeration(os.path.join(folder, "02_02_enumeration.txt"), folder, "02_02_enumeration")
+    df_enum = pd.read_csv(os.path.join(folder, "02_02_enumeration.csv"))
+    df_bab = pd.read_csv(os.path.join(folder, "02_02_bab_exact.csv"))
     df_enum.drop(['nrCust_enum'], axis=1, inplace=True)
     df = df_bab.merge(df_enum, how='left', on='instance')
     nr_cust_variation(df)
 
     #parseBAB(os.path.join(folder, "bab_VRPDO_disc_proportional_small_02_02_006.txt"), folder, "bab_VRPDO_disc_proportional_small_02_02_006")
-
     #df_bab = pd.read_csv(os.path.join(folder, "i_VRPDO_time.csv"))
-
     #df_bab_tl = pd.read_csv(os.path.join(folder, "bab_3600_VRPDO_disc_proportional_02_02_006.csv"))
     #df_bab_tl = pd.read_csv(os.path.join(folder, "bab_VRPDO_discount_proportional_3600.csv"))
-
     # df_bab_tl.drop(['p_home', 'p_pup', 'discount_rate', 'time_bab', 'time_tb', 'nodes', 'num_tsps', 'policy_ID_rs',
     #                 'obj_val_rs', '2sd_rs', 'gap_rs', 'obj_val_nodisc', '2sd_nodisc', 'gap_nodisc', 'obj_val_uniform',
     #                 '2sd_uniform', 'gap_uniform', 'eps'], axis=1, inplace=True)
@@ -2082,11 +2081,13 @@ if __name__ == "__main__":
     #print_convergence_gap()
 
     folder_2segm = os.path.join(path_to_data, "output", "VRPDO_discount_proportional_2segm")
+    folder_2segm_manyPUP = os.path.join(path_to_data, "output", "VRPDO_discount_proportional_2segm_manyPUP")
+
 
     #experiment_variation_nrcust_heuristic(folder)
-    #experiment_variation_nrcust(folder_2segm)
+    experiment_variation_nrcust(folder_2segm_manyPUP)
     folder = os.path.join(path_to_data, "output", "VRPDO_discount_proportional")
-    experiment_bab_solution_time_classes(folder_2segm)
+    #experiment_bab_solution_time_classes(folder_2segm_manyPUP)
     # parseBAB(os.path.join(folder, "bab_7types_nrCust.txt"), folder, "bab_7types_nrCust")
 
     # experiment_heuristic_general()

@@ -6,7 +6,7 @@ from collections import OrderedDict
 import numpy as np
 
 from src.main.discount_strategy.util import constants
-prefix="tag: "
+prefix=constants.PREFIX
 
 class OCVRPInstance:
     '''
@@ -72,16 +72,18 @@ class OCVRPInstance:
 
             for other_cust in customers:
                 if other_cust is not cust:
-                    if  cust.shipping_fee == min([cust.shipping_fee, other_cust.shipping_fee]):
-                        if distanceMatrix[cust.id,other_cust.id] < (cust.shipping_fee*(1+cust.prob_pup/(1-cust.prob_pup-cust.prob_home+constants.EPS)) -
-                                            other_cust.shipping_fee*other_cust.prob_pup*(1-other_cust.prob_home)/
-                                                                    ((1-other_cust.prob_pup-other_cust.prob_home+constants.EPS)*(1-cust.prob_home+constants.EPS)) )/2:
-                            self.neighbour[cust.id].append(other_cust.id)
-                    else:
-                        if distanceMatrix[cust.id,other_cust.id] < (other_cust.shipping_fee*(1+other_cust.prob_pup/(1-other_cust.prob_pup-other_cust.prob_home+constants.EPS)) -
-                                            cust.shipping_fee*cust.prob_pup*(1-cust.prob_home)/
-                                                                    ((1-cust.prob_pup-cust.prob_home+constants.EPS)*(1-other_cust.prob_home+constants.EPS)) )/2:
-                            self.neighbour[cust.id].append(other_cust.id)
+                    if distanceMatrix[cust.id,other_cust.id] <= min([cust.shipping_fee, other_cust.shipping_fee])/2:
+                        self.neighbour[cust.id].append(other_cust.id)
+                    # if  cust.shipping_fee == min([cust.shipping_fee, other_cust.shipping_fee]):
+                    #     if distanceMatrix[cust.id,other_cust.id] < (cust.shipping_fee*(1+cust.prob_pup/(1-cust.prob_pup-cust.prob_home+constants.EPS)) -
+                    #                         other_cust.shipping_fee*other_cust.prob_pup*(1-other_cust.prob_home)/
+                    #                                                 ((1-other_cust.prob_pup-other_cust.prob_home+constants.EPS)*(1-cust.prob_home+constants.EPS)) )/2:
+                    #         self.neighbour[cust.id].append(other_cust.id)
+                    # else:
+                    #     if distanceMatrix[cust.id,other_cust.id] < (other_cust.shipping_fee*(1+other_cust.prob_pup/(1-other_cust.prob_pup-other_cust.prob_home+constants.EPS)) -
+                    #                         cust.shipping_fee*cust.prob_pup*(1-cust.prob_home)/
+                    #                                                 ((1-cust.prob_pup-cust.prob_home+constants.EPS)*(1-other_cust.prob_home+constants.EPS)) )/2:
+                    #         self.neighbour[cust.id].append(other_cust.id)
 
     def __str__(self):
         s = prefix +"Instance: " + self.name + "\n" + \

@@ -1,13 +1,5 @@
-import os
-import sys
-from pathlib import Path
-
 import itertools
-#import random
 from scipy.special import comb
-import math
-from itertools import dropwhile
-
 from src.main.discount_strategy.util import constants
 from src.main.discount_strategy.util import probability
 from src.main.discount_strategy.util.bit_operations import bitCount
@@ -34,7 +26,7 @@ def set_probability_covered(lbScenarios,noDiscountID, tspProbDict, instance):
 
     for id in lbScenarios:
         visited_pups = [i for i in range(instance.NR_PUP) if id & (1 << i)]
-        for number_visited_pups in range(bitCount(id)):
+        for number_visited_pups in range(bin(id).count("1")):
             for combination in itertools.combinations(visited_pups,  number_visited_pups):
                 id_to_reduce = sum((1<<offset) for offset in combination)
                 lbScenarios[id][1] -= lbScenarios[id_to_reduce][1]
@@ -254,6 +246,13 @@ def updateBoundsFromDictionary(Bab, node):
             num_may_deviate = Bab.instance.maxNumDeviated[len(setGivenDiscount)]
             setMayVary = node.setGivenDiscount
 
+            initial_probability = 1
+
+            for i in node.setGivenDiscount:
+                initial_probability *= Bab.instance.p_pup_delta[i]
+            for i in range(node.layer + 1, n + 1):
+                initial_probability *= Bab.instance.p_home[i]
+
             #gamma is the number of visited customers
             for gamma in range(n - len(setMayVary),
                                min(n + 1,
@@ -266,16 +265,20 @@ def updateBoundsFromDictionary(Bab, node):
                         node.setNotGivenDiscount) - n + node.layer):
                     scenario = node.withDiscountID
                     # make a scenario given policy and combination of deviated nodes
+                    scenarioProb = initial_probability
                     for offset in combination:
                         mask = ~(1 << (offset - 1))
                         scenario = scenario & mask
+                        scenarioProb *= Bab.instance.p_home[i]/Bab.instance.p_pup_delta[i]
                     # check if scenario is already in node
                     if scenario not in node.tspDict[gamma]:
                         scenarioCost = Bab.instance.routeCost.get(scenario)
                         if scenarioCost:
                             node.tspDict[gamma].append(scenario)
-                            scenarioProb = probability.scenarioProb_2segm(scenario, node.withDiscountID, node.layer, n,
-                                                                          Bab.instance.p_pup_delta)
+                            # scenarioProb = probability.scenarioProb_2segm(scenario, node.withDiscountID, node.layer, n,
+                            #                                               Bab.instance.p_pup_delta )
+                            # if (scenarioProb-scenarioProb1)>constants.EPS or (scenarioProb1-scenarioProb)>constants.EPS:
+                            #     print(scenarioProb, scenarioProb1)
                             node.tspProbDict[scenario] = scenarioProb
                             node.exactValueProb += scenarioProb
                             node.exactValue += scenarioCost * scenarioProb
@@ -307,6 +310,11 @@ def updateBoundsFromDictionary(Bab, node):
             #             node.ubRoute -= (Bab.ubScenario - scenarioCost) * scenarioProb
             #lastEnteranceDictionary is the last element of Route Cost that was checked for this node
             node.lastEnteranceDictionary = next(reversed(Bab.instance.routeCost))
+        else:
+            if node.layer == Bab.instance.NR_CUST:
+                Bab.pruned_insertionCost_leaf += 1
+            else:
+                Bab.pruned_insertionCost_nonleaf += 1
 
 def updateBoundsWithNewTSPs(Bab, node):
 
@@ -390,7 +398,8 @@ def updateBoundsWithNewTSPs(Bab, node):
                     node.tspDict[gamma].append(scenario)
                     added += 1
                     scenarioProb = probability.scenarioProb_2segm(scenario, node.withDiscountID, n, n,
-                                                                        Bab.instance.p_pup_delta)
+                                                                        Bab.instance.p_pup_delta )
+
                     node.tspProbDict[scenario] = scenarioProb
                     node.exactValueProb += scenarioProb
                     node.exactValue += scenarioCost * scenarioProb
