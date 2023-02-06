@@ -327,12 +327,13 @@ def parseBAB(file_path, folder, output_name):
                     nodes = float(lines[idx + 5].split(':')[1])
                     num_tsps = float(lines[idx + 6].split(':')[1])
                     optimal = int(lines[idx + 7].split(':')[1])
-                    obj_val = float(lines[idx + 13].split('[')[1].split(',')[0])
+                    obj_val = float(lines[idx + 8].split(':')[1].split('Obj_val(lb)')[0])
+                    #obj_val = float(lines[idx + 13].split('[')[1].split(',')[0])
                     # 2sd:
-                    sd = float(lines[idx + 13].split('[')[1].split(',')[0]) - float(
-                        lines[idx + 13].split('[')[1].split(',')[1])
+                    #sd = float(lines[idx + 13].split('[')[1].split(',')[0]) - float(
+                    #    lines[idx + 13].split('[')[1].split(',')[1])
                     # obj_val = float(lines[idx + 12].split('best_known_LB')[1])
-                    gap = float(lines[idx + 9].split(':')[1])
+                    #gap = float(lines[idx + 9].split(':')[1])
                     time_first_opt = float(lines[idx + 10].split(':')[1])
                     policy_ID = int(lines[idx + 11].split(':')[1])
 
@@ -340,9 +341,8 @@ def parseBAB(file_path, folder, output_name):
                     # data.append([eps, nrCust,p_home, p_pup, discount, time_running, time_first_opt, nodes, num_tsps, optimal,gap, obj_val, sd,
                     #               policy_ID, num_disc, instance])
                     data.append(
-                        [eps, nrCust, nrPup, p_home,  discount, time_running, time_first_opt, nodes, num_tsps, optimal,
-                         gap, obj_val, sd,
-                         policy_ID, num_disc, instance, p_pup])
+                        [eps, nrCust, nrPup, p_home,  discount, time_running, time_first_opt, nodes, num_tsps, optimal,'',
+                         obj_val,'', policy_ID, num_disc, instance, p_pup])
             except:
                 data.append([eps, nrCust, nrPup, p_home,  discount, "", "", "", "", "", "", "",
                              "", "", "", instance, p_pup])
@@ -1386,7 +1386,7 @@ def nr_cust_variation(df):
                               columns=['t_bab_av', 't_bab_sd','t_bab_min','t_bab_max', 'tto_best','tto_best_min', 'tto_best_max', 'n_bab_av', 'n_bab_sd','n_bab_min','n_bab_max',
                                        'sp2',
                                        'g_opt_3600', 'closed_3600', 'sp1', 't_enum_av', 't_enum_sd','t_enum_min','t_enum_max',
-                                       'n_enum'])
+                                       'n_enum', 'n_dom', 'n_dom_min','n_dom_max'])
     for nrCust in range(10, 21):
         df_slice = df[(df.nrCust == nrCust) ].copy()
 
@@ -1398,6 +1398,11 @@ def nr_cust_variation(df):
             df_results.at[nrCust, 't_enum_min'] = df_slice['time_running_enum'].min()
             df_results.at[nrCust, 't_enum_max'] = df_slice['time_running_enum'].max()
             df_results.at[nrCust, 'n_enum'] = 2 ** round(float(nrCust))
+
+            df_results.at[nrCust, 'n_dom'] = df_slice['time_bab_domcheck'].mean()
+            df_results.at[nrCust, 'n_dom_min'] = df_slice['time_bab_domcheck'].max()
+            df_results.at[nrCust, 'n_dom_max'] = df_slice['time_bab_domcheck'].max()
+
         df_results.at[nrCust, 't_bab_av'] = df_slice['time_bab'].mean()
         df_results.at[nrCust, 't_bab_sd'] = df_slice['time_bab'].std()
 
@@ -1416,9 +1421,9 @@ def nr_cust_variation(df):
         #df_results.at[nrCust, 'closed_3600'] = sum(df_slice['solved_h'])
         #print(sum(df_slice['solved_h']), nrCust)
 
-    #df_results = df_results[[ 'g_opt_3600','closed_3600','sp1','tto_best', 'tto_best_min', 'tto_best_max']].copy()
+    #df_results = df_results[[ 'g_opt_3600','closed_3600','sp1','tto_best', 'tto_best_min', 'tto_best_max']].copy()  'n_bab_av', 'n_bab_min', 'n_bab_max'
 
-    df_results = df_results[['t_enum_av', 't_enum_min', 't_enum_max', 'sp1', 't_bab_av','t_bab_min', 't_bab_max','sp2', 'n_bab_av', 'n_bab_min', 'n_bab_max']].copy()
+    df_results = df_results[['t_enum_av', 't_enum_min', 't_enum_max', 'sp1', 't_bab_av','t_bab_min', 't_bab_max','sp2','n_dom', 'n_dom_min','n_dom_max']].copy()
     print(df_results.to_latex(float_format='{:0.1f}'.format, na_rep=''))
     #print(df_results.to_latex(formatters=['{:0.2f}', None, None, '{:0.1f}','{:0.5f}','{:0.1f}'], na_rep=''))
 
@@ -1658,11 +1663,17 @@ def experiment_variation_nrcust(folder):
     #parseBAB_RS_NODISC(os.path.join(folder, "bab_VRPDO_discount_proportional_02_02.txt"), folder, "i_VRPDO_discount_proportional_02_02")
 
     #parseBAB(os.path.join(folder, "02_02_bab_exact.txt"), folder, "02_02_bab_exact")
+    #parseBAB(os.path.join(folder, "06_02_bab_exact_dominance_check.txt"), folder, "06_02_bab_exact_dominance_check")
     #parseEnumeration(os.path.join(folder, "02_02_enumeration.txt"), folder, "02_02_enumeration")
     df_enum = pd.read_csv(os.path.join(folder, "02_02_enumeration.csv"))
     df_bab = pd.read_csv(os.path.join(folder, "02_02_bab_exact.csv"))
+    df_bab_dominance_check = pd.read_csv(os.path.join(folder, "06_02_bab_exact_dominance_check.csv"))
+    df_bab_dominance_check = df_bab_dominance_check[['instance','nodes', 'time_bab']].copy()
+    df_bab_dominance_check.rename(columns={'nodes': 'nodes_domcheck', 'time_bab': 'time_bab_domcheck'}, inplace=True)
     df_enum.drop(['nrCust_enum'], axis=1, inplace=True)
     df = df_bab.merge(df_enum, how='left', on='instance')
+    df = df.merge(df_bab_dominance_check, how='left', on='instance')
+
     nr_cust_variation(df)
 
     #parseBAB(os.path.join(folder, "bab_VRPDO_disc_proportional_small_02_02_006.txt"), folder, "bab_VRPDO_disc_proportional_small_02_02_006")
@@ -2161,7 +2172,7 @@ def exp_profile(file_folder):
                 'low_disc' if x.discount_rate == 0.03 and (x.p_home == 0.4 ) else (
                 'normal' if x.discount_rate == 0.06 and (x.p_home == 0.4 ) else 'None')))), axis=1)
 
-    df_results = pd.DataFrame(index=list(range(10, 21)),
+    df_results = pd.DataFrame(index=[10,15,20],#index=list(range(10, 21)),
                               columns=['sp1','n_bab_av', 'n_bab_min', 'n_bab_max', 'sp3',
                                        'pr_ins_nonleaf', 'pr_ins_leaf', 'sp4',
                                        'pr_cliques_nonleaf', 'pr_cliques_leaf',
@@ -2169,14 +2180,13 @@ def exp_profile(file_folder):
                                        'pr_bounds_nonleaf', 'pr_bounds_leaf',
                                        'tsp_t', 'bounds_t','lb_t','branch_t'])
 
-    for problem_class in ['normal', 'low_determinism', 'high_determinism',  'high_disc', 'low_disc']:
-        #df1 = df[(df.problem_class == problem_class)].copy()
-        df1 = df.copy()
+    for problem_class in ['normal', 'low_determinism', 'high_determinism', 'low_disc', 'high_disc']:
+        df1 = df[(df.problem_class == problem_class)].copy()
+        #df1 = df.copy()
         print(problem_class)
-        for nrCust in range(10, 21):
+        for nrCust in [10, 15, 20]:
+        #for nrCust in range(10, 21):
             df_slice = df1[(df1.nrCust == nrCust)].copy()
-            if nrCust == 20:
-                print()
             # df_slice = df[(df.nrCust == nrCust)& (df.p_pup == 0.2) & (df.discount_rate ==0.06)].copy()
 
             df_results.at[nrCust, 'n_bab_av'] = int(df_slice['nodes'].mean() + 0.5)
@@ -2199,15 +2209,15 @@ def exp_profile(file_folder):
             df_results.at[nrCust, 'branch_t'] = round(df_slice['time_branch'].mean())
 
 
-        # df_results = df_results[
-        #     ['sp1','n_bab_av', 'n_bab_min', 'n_bab_max', 'sp3',
-        #                                'pr_ins_nonleaf', 'pr_ins_leaf', 'sp4',
-        #                                'pr_cliques_nonleaf', 'pr_cliques_leaf',
-        #                                'sp6','pr_rs_nonleaf','pr_rs_leaf', 'sp5',
-        #                                'pr_bounds_nonleaf', 'pr_bounds_leaf']].copy()
-
         df_results = df_results[
-            ['tsp_t', 'bounds_t', 'lb_t', 'branch_t']].copy()
+            ['sp1','n_bab_av', 'n_bab_min', 'n_bab_max', 'sp3',
+                                       'pr_ins_nonleaf', 'pr_ins_leaf', 'sp4',
+                                       'pr_cliques_nonleaf', 'pr_cliques_leaf',
+                                       'sp6','pr_rs_nonleaf','pr_rs_leaf', 'sp5',
+                                       'pr_bounds_nonleaf', 'pr_bounds_leaf']].copy()
+
+        # df_results = df_results[
+        #     ['tsp_t', 'bounds_t', 'lb_t', 'branch_t']].copy()
         print(df_results.to_latex(float_format='{:0.1f}'.format, na_rep=''))
         # print(df_results.to_latex(formatters=['{:0.2f}', None, None, '{:0.1f}','{:0.5f}','{:0.1f}'], na_rep=''))
 
@@ -2230,11 +2240,11 @@ if __name__ == "__main__":
 
 
     #experiment_variation_nrcust_heuristic(folder)
-    #experiment_variation_nrcust(folder_2segm_manyPUP)
+    experiment_variation_nrcust(folder_2segm_manyPUP)
     folder = os.path.join(path_to_data, "output", "VRPDO_discount_proportional")
     fileProfile = os.path.join(path_to_data, "output", "Profile","02_03_profile.txt")
 
-    exp_profile(fileProfile)
+    #exp_profile(fileProfile)
     #experiment_bab_solution_time_classes(folder_2segm_manyPUP)
     # parseBAB(os.path.join(folder, "bab_7types_nrCust.txt"), folder, "bab_7types_nrCust")
 

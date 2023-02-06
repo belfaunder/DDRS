@@ -19,13 +19,15 @@ class ScenarioEnumerationSolver:
         self.instance = instance
         self.TSPSolver = TSPSolver(instance = instance, solverType = solverType)
 
-    def exactPolicyByEnumeration(self):
+    def exactPolicyByEnumeration_2segm(self):
         n = self.instance.NR_CUST
         exp_discount  = np.multiply(self.instance.shipping_fee, self.instance.p_pup_delta)
         Y = range(2**n)
         routeCost = {}
-        for scenario in range(2**n):
+        start_time = process_time()
+        for scenario in range(2 ** n):
             routeCost[scenario] = self.TSPSolver.tspCost(scenario)
+        print(prefix + "time_calculation_all_TSPs:", process_time() - start_time)
         opt_model = grb.Model(name="MIP Model")
         opt_model.setParam('OutputFlag', False)
 
