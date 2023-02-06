@@ -12,9 +12,9 @@ from src.main.discount_strategy.util.bit_operations import bitCount
 #import pickle
 from src.main.discount_strategy.algorithms.exact.bab.BAB_exact import BABExact
 #from src.main.discount_strategy.algorithms.exact.enumeration.enumeration_scenarios_2_segm import ScenarioEnumerationSolver
-# from src.main.discount_strategy.algorithms.heuristic.sample_average import sampleAverageApproximation_PoissonBinomial
-# from src.main.discount_strategy.algorithms.heuristic.sample_average import sampleAverageApproximation_PoissonBinomial_1sample
-# from src.main.discount_strategy.algorithms.heuristic.sample_average import one_policy_cost_estimation
+from src.main.discount_strategy.algorithms.heuristic.sample_average import sampleAverageApproximation_PoissonBinomial
+from src.main.discount_strategy.algorithms.heuristic.sample_average import sampleAverageApproximation_PoissonBinomial_1sample
+from src.main.discount_strategy.algorithms.heuristic.sample_average import one_policy_cost_estimation
 
 from src.main.discount_strategy.io import OCVRPParser
 from src.main.discount_strategy.io import print_functions
@@ -27,8 +27,8 @@ def timer(start,end):
     return("{:0>2}:{:0>2}:{:05.2f})".format(int(hours),int(minutes),seconds))
 
 import matplotlib.pyplot as plt
-#if __name__ == "__main__":
-def test():
+if __name__ == "__main__":
+#def test():
     #solverType = 'Concorde'
     solverType = 'Gurobi'
 
@@ -40,7 +40,7 @@ def test():
                                      "i_VRPDO_discount_proportional_2segm_manyPUP", str(sys.argv[-1])+".txt")
     else:
         file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
-                                     "VRPDO_size_14_phome_0.6_ppup_0.0_incrate_0.06_0.txt")
+                                     "VRPDO_size_12_phome_0.4_ppup_0.0_incrate_0.06_0.txt")
         #file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
         #                             "VRPDO_size_10_phome_0.2_ppup_0.0_incrate_0.03_0.txt")
     OCVRPInstance = OCVRPParser.parse(file_instance)
@@ -97,14 +97,14 @@ def test():
     # EnumerationSolver = ScenarioEnumerationSolver(instance=OCVRPInstance, solverType=solverType)
     # EnumerationSolver.exactPolicyByEnumeration_withoutGurobi_2segm()
 
-prof = cProfile.Profile()
+# prof = cProfile.Profile()
 
-if __name__ == '__main__':
-    arr = []
-    prof.enable()
-    test()
-    prof.disable()
-    #prof.print_stats()
-    #prof.dump_stats("main_func.prof")
-    p = pstats.Stats(prof)
-    p.strip_dirs().sort_stats(pstats.SortKey.CUMULATIVE).print_stats(50)
+# if __name__ == '__main__':
+#     arr = []
+#     prof.enable()
+#     test()
+#     prof.disable()
+#     #prof.print_stats()
+#     #prof.dump_stats("main_func.prof")
+#     p = pstats.Stats(prof)
+#     p.strip_dirs().sort_stats(pstats.SortKey.CUMULATIVE).print_stats(50)

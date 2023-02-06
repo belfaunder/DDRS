@@ -224,6 +224,88 @@ def heuristic_bab_comparison(df, dfHeuristic):
     ax.legend()
     plt.show()
 
+def parseProfile(file_path):
+    # print("whatch out, I print the best known LB instead on Obj.Val")
+    data = []
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+        for idx, line in enumerate(lines):
+            try:
+            #if True:
+                if 'Instance:' in line:
+                    instance = (line.split(':')[1].replace('\n', '')).replace(' ', '').replace('.txt', '')
+                    nrCust = int(lines[idx + 1].split(':')[1])
+                    nrPup = int(lines[idx + 2].split(':')[1])
+                    p_home = float(instance.split('_')[4])
+                    discount = float((instance.split('_')[8]).split('.txt')[0])
+
+                    nodes = float(lines[idx + 8].split(':')[1])
+                    num_tsps = float(lines[idx + 9].split(':')[1])
+                    obj_val = float(lines[idx + 11].split(':')[2])
+                    time_first_opt = float(lines[idx + 13].split(':')[1])
+                    policy_ID = int(lines[idx + 14].split(':')[1])
+                    num_disc = bitCount(policy_ID)
+
+                    pruned_by_cliques_nonleaf = int(lines[idx + 16].split(':')[1])
+                    pruned_by_cliques_leaf = int(lines[idx + 17].split(':')[1])
+                    pruned_by_rs_nonleaf = int(lines[idx + 18].split(':')[1])
+                    pruned_by_rs_leaf = int(lines[idx + 19].split(':')[1])
+                    pruned_by_insertionCost_nonleaf = int(lines[idx + 20].split(':')[1])
+                    pruned_by_insertionCost_leaf = int(lines[idx + 21].split(':')[1])
+                    pruned_by_bounds_nonleaf = int(lines[idx + 22].split(':')[1])
+                    pruned_by_bounds_leaf = int(lines[idx + 23].split(':')[1])
+
+                    tsp_time = 0
+                    time_exact_bounds = 0
+                    time_lb_addition = 0
+                    time_branch = 0
+                    iter = idx + 25
+
+                    time_running = float(lines[idx + 7].split(':')[1])
+                    while iter < idx + 80:
+                        iter +=1
+                        if '(runBranchAndBound)' in lines[iter]:
+                            time_running = float(' '.join(lines[iter].split()).split(' ')[3])
+                        if '(tspCost)' in lines[iter]:
+                            tsp_time = float(' '.join(lines[iter].split()).split(' ')[3])
+                        if '(updateBoundsFromDictionary)' in lines[iter]:
+                            time_exact_bounds += float(' '.join(lines[iter].split()).split(' ')[3])
+                        if '(updateByInsertionCost)' in lines[iter]:
+                            time_exact_bounds -= float(' '.join(lines[iter].split()).split(' ')[3])
+                            time_lb_addition += float(' '.join(lines[iter].split()).split(' ')[3])
+
+                        if '(updateBoundsWithNewTSPs)' in lines[iter]:
+                            time_exact_bounds += float(' '.join(lines[iter].split()).split(' ')[1])
+                        if '(scenarioProb_2segm)' in lines[iter]:
+                            time_exact_bounds += float(' '.join(lines[iter].split()).split(' ')[3])
+                        if '(exploreNode)' in lines[iter]:
+                            time_lb_addition += float(' '.join(lines[iter].split()).split(' ')[1])
+                        if '(set_probability_covered)' in lines[iter]:
+                            time_lb_addition += float(' '.join(lines[iter].split()).split(' ')[3])
+                        if '(branch)' in lines[iter]:
+                            time_branch += float(' '.join(lines[iter].split()).split(' ')[3])
+
+                    # data.append([eps, nrCust,p_home, p_pup, discount, time_running, time_first_opt, nodes, num_tsps, optimal,gap, obj_val, sd,
+                    #               policy_ID, num_disc, instance])
+                    data.append(
+                        [nrCust, nrPup, p_home,  discount, time_running, time_first_opt, nodes, num_tsps,
+                          obj_val,  policy_ID, num_disc, instance,
+                         pruned_by_cliques_nonleaf*100/nodes, pruned_by_cliques_leaf*100/nodes, pruned_by_rs_nonleaf*100/nodes, pruned_by_rs_leaf*100/nodes,
+                         pruned_by_insertionCost_nonleaf*100/nodes, pruned_by_insertionCost_leaf*100/nodes, pruned_by_bounds_nonleaf*100/nodes,
+                         pruned_by_bounds_leaf*100/nodes, tsp_time*100/time_running, time_exact_bounds*100/time_running, time_lb_addition*100/time_running, time_branch*100/time_running ])
+            except:
+                #data.append([nrCust, nrPup, p_home,  discount, "", "", "", "", "", "", "",
+                #             "", "", "", instance])
+                print("bab problem with instance ", (line.split('/')[len(line.split('/')) - 1]), " line: ", idx)
+    rowTitle = ['nrCust',"nrPup", 'p_home', 'discount_rate', 'time_bab', 'time_tb', 'nodes',
+                'num_tsps', 'obj_val_bab', 'policy_bab_ID', 'num_disc_bab', 'instance',
+                'pr_cliques_nonleaf', 'pr_cliques_leaf', 'pr_rs_nonleaf', 'pr_rs_leaf',
+                'pr_insertionCost_nonleaf', 'pr_insertionCost_leaf', 'pr_bounds_nonleaf',
+                'pr_bounds_leaf','tsp_time', 'time_exact_bounds', 'time_lb_addition', 'time_branch']
+    df = pd.DataFrame(data,columns=rowTitle)
+    return df
+    #writer(os.path.join(folder, output_name + ".csv"), data, rowTitle)
+
 
 def parseBAB(file_path, folder, output_name):
     # print("whatch out, I print the best known LB instead on Obj.Val")
@@ -1111,7 +1193,7 @@ def sensitivity_prob_comparison_nodisc(folder, folder_data):
         axes[0].set_ylabel('Savings (%)', fontsize = 19)
         axes[0].legend(handles, labels,loc = 'upper left', bbox_to_anchor=(0.01, 0.99),  title=False)
 
-        plt.savefig(os.path.join(path_to_images, 'Improvement_three_plots.eps'), transparent=False,
+        plt.savefig(os.path.join(path_to_images, 'Improvement_threparcee_plots.eps'), transparent=False,
                     bbox_inches='tight')
         plt.show()
         #
@@ -2070,6 +2152,69 @@ def experiment_saturation_choice_model():
                 bbox_inches='tight')
     plt.show()
 
+def exp_profile(file_folder):
+    df = parseProfile(file_folder)
+
+    df['problem_class'] = df.apply(lambda x: 'low_determinism' if (x.p_home == 0.7)and (x.discount_rate== 0.06) else (
+        'high_determinism' if (x.p_home == 0.1 ) and (x.discount_rate== 0.06)else (
+            'high_disc' if x.discount_rate == 0.12 and (x.p_home== 0.4 ) else (
+                'low_disc' if x.discount_rate == 0.03 and (x.p_home == 0.4 ) else (
+                'normal' if x.discount_rate == 0.06 and (x.p_home == 0.4 ) else 'None')))), axis=1)
+
+    df_results = pd.DataFrame(index=list(range(10, 21)),
+                              columns=['sp1','n_bab_av', 'n_bab_min', 'n_bab_max', 'sp3',
+                                       'pr_ins_nonleaf', 'pr_ins_leaf', 'sp4',
+                                       'pr_cliques_nonleaf', 'pr_cliques_leaf',
+                                       'sp6','pr_rs_nonleaf','pr_rs_leaf', 'sp5',
+                                       'pr_bounds_nonleaf', 'pr_bounds_leaf',
+                                       'tsp_t', 'bounds_t','lb_t','branch_t'])
+
+    for problem_class in ['normal', 'low_determinism', 'high_determinism',  'high_disc', 'low_disc']:
+        #df1 = df[(df.problem_class == problem_class)].copy()
+        df1 = df.copy()
+        print(problem_class)
+        for nrCust in range(10, 21):
+            df_slice = df1[(df1.nrCust == nrCust)].copy()
+            if nrCust == 20:
+                print()
+            # df_slice = df[(df.nrCust == nrCust)& (df.p_pup == 0.2) & (df.discount_rate ==0.06)].copy()
+
+            df_results.at[nrCust, 'n_bab_av'] = int(df_slice['nodes'].mean() + 0.5)
+            df_results.at[nrCust, 'n_bab_min'] = int(df_slice['nodes'].min() + 0.5)
+            df_results.at[nrCust, 'n_bab_max'] = int(df_slice['nodes'].max() + 0.5)
+
+            df_results.at[nrCust, 'pr_ins_nonleaf'] = round(df_slice['pr_insertionCost_nonleaf'].mean())
+            df_results.at[nrCust, 'pr_ins_leaf'] = round(df_slice['pr_insertionCost_leaf'].mean())
+            df_results.at[nrCust, 'pr_cliques_nonleaf'] = round(df_slice['pr_cliques_nonleaf'].mean())
+            df_results.at[nrCust, 'pr_cliques_leaf'] = round(df_slice['pr_cliques_leaf'].mean())
+            df_results.at[nrCust, 'pr_bounds_nonleaf'] = round(df_slice['pr_bounds_nonleaf'].mean())
+            df_results.at[nrCust, 'pr_bounds_leaf'] = round(df_slice['pr_bounds_leaf'].mean())
+            df_results.at[nrCust, 'pr_rs_nonleaf'] = round(df_slice['pr_rs_nonleaf'].mean())
+            df_results.at[nrCust, 'pr_rs_leaf'] = round(df_slice['pr_rs_leaf'].mean())
+
+
+            df_results.at[nrCust, 'tsp_t'] = round(df_slice['tsp_time'].mean())
+            df_results.at[nrCust, 'bounds_t'] = round(df_slice['time_exact_bounds'].mean())
+            df_results.at[nrCust, 'lb_t'] = round(df_slice['time_lb_addition'].mean())
+            df_results.at[nrCust, 'branch_t'] = round(df_slice['time_branch'].mean())
+
+
+        # df_results = df_results[
+        #     ['sp1','n_bab_av', 'n_bab_min', 'n_bab_max', 'sp3',
+        #                                'pr_ins_nonleaf', 'pr_ins_leaf', 'sp4',
+        #                                'pr_cliques_nonleaf', 'pr_cliques_leaf',
+        #                                'sp6','pr_rs_nonleaf','pr_rs_leaf', 'sp5',
+        #                                'pr_bounds_nonleaf', 'pr_bounds_leaf']].copy()
+
+        df_results = df_results[
+            ['tsp_t', 'bounds_t', 'lb_t', 'branch_t']].copy()
+        print(df_results.to_latex(float_format='{:0.1f}'.format, na_rep=''))
+        # print(df_results.to_latex(formatters=['{:0.2f}', None, None, '{:0.1f}','{:0.5f}','{:0.1f}'], na_rep=''))
+
+        print("")
+
+
+
 
 if __name__ == "__main__":
     folder = os.path.join(path_to_data, "output", "VRPDO")
@@ -2085,8 +2230,11 @@ if __name__ == "__main__":
 
 
     #experiment_variation_nrcust_heuristic(folder)
-    experiment_variation_nrcust(folder_2segm_manyPUP)
+    #experiment_variation_nrcust(folder_2segm_manyPUP)
     folder = os.path.join(path_to_data, "output", "VRPDO_discount_proportional")
+    fileProfile = os.path.join(path_to_data, "output", "Profile","02_03_profile.txt")
+
+    exp_profile(fileProfile)
     #experiment_bab_solution_time_classes(folder_2segm_manyPUP)
     # parseBAB(os.path.join(folder, "bab_7types_nrCust.txt"), folder, "bab_7types_nrCust")
 

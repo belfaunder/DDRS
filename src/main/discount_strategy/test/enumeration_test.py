@@ -5,6 +5,8 @@ from sys import argv
 import os
 from time import process_time
 from src.main.discount_strategy.io import OCVRPParser
+import cProfile
+import pstats
 
 from src.main.discount_strategy.algorithms.exact.enumeration.enumeration_scenarios_2_segm import ScenarioEnumerationSolver
 from src.main.discount_strategy.util import constants
@@ -13,7 +15,8 @@ from src.main.discount_strategy.util import constants
 prefix="tag: "
 path_to_data = constants.PATH_TO_DATA
 
-if __name__ == "__main__":
+#if __name__ == "__main__":
+def test():
     #solverType = 'Concorde'
     solverType = 'Gurobi'
     #file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "data", "i_7_types_nr_cust",str(sys.argv[-1])+".txt")
@@ -23,7 +26,7 @@ if __name__ == "__main__":
                                      "i_VRPDO_discount_proportional_2segm_manyPUP", str(sys.argv[-1]) + ".txt")
     else:
         file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
-                                     "VRPDO_size_10_phome_0.2_ppup_0.0_incrate_0.03_0.txt")
+                                     "VRPDO_size_12_phome_0.4_ppup_0.0_incrate_0.06_0.txt")
 
     OCVRPInstance = OCVRPParser.parse(file_instance)
     print(OCVRPInstance)
@@ -45,4 +48,15 @@ if __name__ == "__main__":
 
 
 
+prof = cProfile.Profile()
+
+if __name__ == '__main__':
+    arr = []
+    prof.enable()
+    test()
+    prof.disable()
+    #prof.print_stats()
+    #prof.dump_stats("main_func.prof")
+    p = pstats.Stats(prof)
+    p.strip_dirs().sort_stats(pstats.SortKey.CUMULATIVE).print_stats(50)
 

@@ -88,12 +88,14 @@ class BAB_super_class:
         self.instance.routeCost[scenario_0] = self.TSPSolver.tspCost(scenario_0)
 
         lbScenarios = {}
-        self.ubScenario, self.lbScenario = self.TSPSolver.tspCostUbScenario()
+        self.instance.ubScenario, self.instance.lbScenario = self.TSPSolver.tspCostUbScenario()
+        lbScenarios, lbScenario = {}, self.instance.lbScenario
         # COVERED_BOUND
-        lbScenarios, lbScenario = self.set_lbScenarios()
+        #DOMINANCE_CHECK
+        #lbScenarios, lbScenario = self.set_lbScenarios()
 
-        ubRoute = self.ubScenario
-        lbRoute = self.lbScenario
+        ubRoute = self.instance.ubScenario
+        lbRoute = self.instance.lbScenario
         tspDict = {instance.NR_CUST:[scenario_0]}
         tspProbDict = {scenario_0:probability.scenarioProb_2segm(scenario_0, 0, 0, instance.NR_CUST, instance.p_pup_delta)}
 
@@ -115,11 +117,13 @@ class BAB_super_class:
                     lastEnteranceDictionary = scenario_0
                     )
         lastEnteranceDictionary = None
-
-        set_probability_covered(lbScenarios,0,  tspProbDict, self.instance)
+        # DOMINANCE_CHECK
+        #set_probability_covered(lbScenarios,0,  tspProbDict, self.instance)
         # we already added scenario 0 to the exact cost of the root - this is done in set_probability_covered function
         #root.lbScenarios[0][1] = 0
-        root.lbRoute = sum(root.lbScenarios[id][1] * root.lbScenarios[id][0] for id in root.lbScenarios) + root.exactValue
+
+        # DOMINANCE_CHECK
+        root.lbRoute = sum(root.lbScenarios[id][1] * root.lbScenarios[id][0] for id in root.lbScenarios) + root.exactValue + (1-tspProbDict[scenario_0])*lbScenario
         self.nodeLayers = {}
         self.root = root
         self.nrNodes = 1
@@ -231,10 +235,12 @@ class BAB_super_class:
 
         lbScenariosRight = set_probability_covered(lbScenariosRight, noDiscountIDRight, tspProbDictRight, self.instance)
 
-        lbRouteRight = sum(
-            lbScenariosRight[id][1] * lbScenariosRight[id][0] for id in lbScenariosRight) + exactValueRight
 
-        ubRouteRight = exactValueRight + (1-exactValProbRight) * self.ubScenario
+        #DOMINANCE_CHECK
+        lbRouteRight = sum(
+            lbScenariosRight[id][1] * lbScenariosRight[id][0] for id in lbScenariosRight) + exactValueRight + (1-exactValProbRight)*self.instance.lbScenario
+
+        ubRouteRight = exactValueRight + (1-exactValProbRight) * self.instance.ubScenario
 
         lbRouteLeft = parent.lbRoute
         ubRouteLeft = parent.ubRoute
@@ -308,18 +314,19 @@ class BAB_super_class:
             #print(node.lbRoute ,  node.lbExpDiscount,  self.bestNode.ubVal())
             #print(self.instance.instance.p_pup_home, self.instance.shipping_fee)
 
-        elif self.canFathomByTheoremCliques(node):
-            node.fathomedState = True
-            if node.layer == self.instance.NR_CUST:
-                self.pruned_cliques_leaf +=1
-            else:
-                self.pruned_cliques_nonleaf += 1
-        elif self.canFathomByTheoremUpperBound(node):
-            node.fathomedState = True
-            if node.layer == self.instance.NR_CUST:
-                self.pruned_rs_leaf += 1
-            else:
-                self.pruned_rs_nonleaf += 1
+        #DOMINANCE_CHECK
+        # elif self.canFathomByTheoremCliques(node):
+        #     node.fathomedState = True
+        #     if node.layer == self.instance.NR_CUST:
+        #         self.pruned_cliques_leaf +=1
+        #     else:
+        #         self.pruned_cliques_nonleaf += 1
+        # elif self.canFathomByTheoremUpperBound(node):
+        #     node.fathomedState = True
+        #     if node.layer == self.instance.NR_CUST:
+        #         self.pruned_rs_leaf += 1
+        #     else:
+        #         self.pruned_rs_nonleaf += 1
         if layer in self.nodeLayers:
             self.nodeLayers[layer][1].nextNodeInLayer = node
             node.prevNodeInLayer = self.nodeLayers[layer][1]

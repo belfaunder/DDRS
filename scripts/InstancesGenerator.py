@@ -354,13 +354,14 @@ def generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type ):
     instance_type = "VRPDO"
     mainDirStorage = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP")
     nr_custs = [10,11,12,13,14,15,16,17,18, 19, 20]
-    disc_rates = [0.06, 0.03, 0.12]
+    disc_rates = [0.06]
     #nr_custs = [10, 20, 40]
-    dict_probabilities = {0.0:[0.2, 0.6, 0.9]}
+    dict_probabilities = {0.0:[0.1, 0.4, 0.7]}
+    #dict_probabilities = {0.0: [0.4]}
     #disc_rates = [0.005, 0.01,0.015, 0.02,0.025, 0.03,0.035, 0.04,0.045, 0.05, 0.06, 0.07, 0.08, 0.09]
     instanceList = os.path.join(mainDirStorage, 'list.txt')
 
-    for id_instance in list(range(10)):
+    for id_instance in list(range(5)):
         shuffled_cust_list = os.path.join(mainDirZhou, 'shuffled_customers_' + str(id_instance) + '.txt')
         for nr_cust in nr_custs:
             print(nr_cust)
