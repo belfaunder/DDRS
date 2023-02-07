@@ -99,8 +99,8 @@ class BABExact(BAB_super_class):
     # skip node
     def canFathom(self, node):
         def exploreNode():
-            #DOMINANCE_CHECK
-            return False
+            #DOMINANCE_CHECK_REMOVED
+            #return False
             nonlocal node
             if node.setNotGivenDiscount:
                 for id in reversed(node.lbScenarios):

@@ -11,8 +11,8 @@ from src.main.discount_strategy.algorithms.heuristic.sample_average import impor
 
 
 def set_probability_covered(lbScenarios,noDiscountID, tspProbDict, instance):
-    # DOMINANCE_CHECK
-    return {}
+    # DOMINANCE_CHECK_REMOVED
+    #return {}
 
     for id in lbScenarios:
         lbScenarios[id][1] = 1
@@ -41,10 +41,8 @@ def set_probability_covered(lbScenarios,noDiscountID, tspProbDict, instance):
             if not ~lbScenarios[id][2]&(2**(instance.NR_CUST) - 1) & scenario:
                 lbScenarios[id][1] -=  tspProbDict[scenario]
                 break
-    #lbScenarios[id] = [scenarioCost, coveredProbability, scenario(id)]
 
     return lbScenarios
-    #print(node.lbScenarios)
 
 #CHANGESPROBABILITY
 def ub_insertion_cost(instance, setNotGivenDiscount,setGivenDiscount, diff_customer):
@@ -232,12 +230,12 @@ def updateBoundsFromDictionary(Bab, node):
     #print(len(Bab.instance.routeCost))
     # calculate the worst UB on the insetion cost given the information about customers with discount
     if node.parent is not None:
-        #DOMINANCE_CHECK
-        # if node is not Bab.bestNode:
-        #     status_not_changed = updateByInsertionCost(node, Bab)
-        # else:
-        #     status_not_changed = True
-        status_not_changed = True
+        #DOMINANCE_CHECK_REMOVED
+        #status_not_changed = True
+        if node is not Bab.bestNode:
+            status_not_changed = updateByInsertionCost(node, Bab)
+        else:
+            status_not_changed = True
 
         if status_not_changed:
             setGivenDiscount = node.setGivenDiscount
@@ -288,13 +286,13 @@ def updateBoundsFromDictionary(Bab, node):
                             node.exactValueProb += scenarioProb
                             node.exactValue += scenarioCost * scenarioProb
 
-                            #DOMINANCE_CHECK
-                            node.lbRoute += scenarioProb * (scenarioCost - Bab.instance.lbScenario)
-                            # for id in node.lbScenarios:
-                            #     if not ~node.lbScenarios[id][2] & (2 ** (Bab.instance.NR_CUST) - 1) & scenario:
-                            #         node.lbScenarios[id][1] -= node.tspProbDict[scenario]
-                            #         node.lbRoute += scenarioProb * (scenarioCost - node.lbScenarios[id][0])
-                            #         break
+                            #DOMINANCE_CHECK_REMOVED
+                            #node.lbRoute += scenarioProb * (scenarioCost - Bab.instance.lbScenario)
+                            for id in node.lbScenarios:
+                                if not ~node.lbScenarios[id][2] & (2 ** (Bab.instance.NR_CUST) - 1) & scenario:
+                                    node.lbScenarios[id][1] -= node.tspProbDict[scenario]
+                                    node.lbRoute += scenarioProb * (scenarioCost - node.lbScenarios[id][0])
+                                    break
                             node.ubRoute -= (Bab.instance.ubScenario- scenarioCost) * scenarioProb
 
             # for scenario, scenarioCost in dropwhile(lambda x: x[0] != node.lastEnteranceDictionary,  Bab.instance.routeCost.items()):
@@ -411,13 +409,13 @@ def updateBoundsWithNewTSPs(Bab, node):
                     node.tspProbDict[scenario] = scenarioProb
                     node.exactValueProb += scenarioProb
                     node.exactValue += scenarioCost * scenarioProb
-                    #DOMINANCE_CHECK
-                    node.lbRoute += scenarioProb * (scenarioCost - Bab.instance.lbScenario)
-                    # for id in node.lbScenarios:
-                    #     if not ~node.lbScenarios[id][2]&(2**(Bab.instance.NR_CUST) - 1) & scenario:
-                    #         node.lbScenarios[id][1] -= node.tspProbDict[scenario]
-                    #         node.lbRoute += scenarioProb * (scenarioCost - node.lbScenarios[id][0])
-                    #         break
+                    #DOMINANCE_CHECK_REMOVED
+                    #node.lbRoute += scenarioProb * (scenarioCost - Bab.instance.lbScenario)
+                    for id in node.lbScenarios:
+                        if not ~node.lbScenarios[id][2]&(2**(Bab.instance.NR_CUST) - 1) & scenario:
+                            node.lbScenarios[id][1] -= node.tspProbDict[scenario]
+                            node.lbRoute += scenarioProb * (scenarioCost - node.lbScenarios[id][0])
+                            break
                     node.ubRoute -= scenarioProb * (Bab.instance.ubScenario - scenarioCost)
 
                 if False:

@@ -499,16 +499,27 @@ def parseEnumeration(file_path, folder, output_name):
         for idx, line in enumerate(lines):
             try:
                 # if True:
-                if 'Instance:' in line:
-                    instance = (line.split(':')[1].replace('\n', '')).replace(' ', '').replace('.txt', '')
-                    nrCust = int(lines[idx + 1].split(':')[1])
-                    nrPup = int(lines[idx + 2].split(':')[1])
+                # if 'Instance:' in line:
+                #     instance = (line.split(':')[1].replace('\n', '')).replace(' ', '').replace('.txt', '')
+                #     nrCust = int(lines[idx + 1].split(':')[1])
+                #     nrPup = int(lines[idx + 2].split(':')[1])
+                #
+                #     time_calculate_all_TSPs = float(lines[idx + 4].split(':')[1])
+                #     obj_val = float(lines[idx + 5].split(':')[1])
+                #     time_running = float(lines[idx + 8].split()[1])
+                #     policy_ID = int(lines[idx + 6].split(':')[1])
+                #     data.append([nrCust, nrPup, time_running,time_calculate_all_TSPs, obj_val, policy_ID, instance])
+                if 'time_calculation_all_TSPs:' in line:
+                    instance =  ''
+                    nrCust = ''
+                    nrPup = 1
 
-                    time_calculate_all_TSPs = float(lines[idx + 4].split(':')[1])
-                    obj_val = float(lines[idx + 5].split(':')[1])
-                    time_running = float(lines[idx + 8].split()[1])
-                    policy_ID = int(lines[idx + 6].split(':')[1])
+                    time_calculate_all_TSPs = float(lines[idx + 0].split(':')[1])
+                    obj_val = float(lines[idx + 1].split(':')[1])
+                    time_running = float(lines[idx + 4].split()[1])
+                    policy_ID = int(lines[idx + 2].split(':')[1])
                     data.append([nrCust, nrPup, time_running,time_calculate_all_TSPs, obj_val, policy_ID, instance])
+
 
             except:
                 data.append(["", "", "", "", instance])
@@ -1664,7 +1675,7 @@ def experiment_variation_nrcust(folder):
 
     #parseBAB(os.path.join(folder, "02_02_bab_exact.txt"), folder, "02_02_bab_exact")
     #parseBAB(os.path.join(folder, "06_02_bab_exact_dominance_check.txt"), folder, "06_02_bab_exact_dominance_check")
-    #parseEnumeration(os.path.join(folder, "02_02_enumeration.txt"), folder, "02_02_enumeration")
+    parseEnumeration(os.path.join(folder, "02_06_enumeration.txt"), folder, "02_06_enumeration")
     df_enum = pd.read_csv(os.path.join(folder, "02_02_enumeration.csv"))
     df_bab = pd.read_csv(os.path.join(folder, "02_02_bab_exact.csv"))
     df_bab_dominance_check = pd.read_csv(os.path.join(folder, "06_02_bab_exact_dominance_check.csv"))
