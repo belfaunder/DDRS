@@ -40,9 +40,9 @@ if __name__ == '__main__':
 
     start_time = process_time()
     EnumerationSolver = ScenarioEnumerationSolver(instance=OCVRPInstance, solverType=solverType)
-    #EnumerationSolver.exactPolicyByEnumeration_withoutGurobi_2segm()
+    EnumerationSolver.exactPolicyByEnumeration_withoutGurobi_2segm()
 
-    EnumerationSolver.exactPolicyByEnumeration_2segm()
+    #EnumerationSolver.exactPolicyByEnumeration_2segm()
     print(prefix + 'Time_running_enumeration,s: ', process_time() - start_time)
     #EnumerationSolver.exactPolicyByEnumeration_withoutGurobi()
     #print(prefix + 'Time_running_enumeration_withouGurobi,s: ', process_time() - start_time)
