@@ -137,7 +137,8 @@ class BAB_super_class:
         #TODO: rs should be corrected for many PUPS
         rsPolicyID, rsValue = ring_star_deterministic_no_TW(instance, instance.NR_CUST)
         self.rs_policy = rsPolicyID
-        self.upperBoundNumberDiscount = bitCount(self.rs_policy)
+        print("rsPolicyID", rsPolicyID)
+        self.upperBoundNumberDiscount = self.instance.NR_CUST
 
 
     def set_lbScenarios(self):
@@ -362,7 +363,7 @@ class BAB_super_class:
         return False
 
     def canFathomByTheoremCliques_Heuristic(self, node):
-        diff_customer = node.layer-1
+        diff_customer = node.layer - 1
 
         for other_cust in self.instance.neighbourhood_enlarged[diff_customer+1]:
             cust = other_cust - 1

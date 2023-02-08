@@ -2,9 +2,7 @@ import matplotlib.pyplot as plt
 import os
 import sys
 from pathlib import Path
-path_to_util = os.path.join((Path(os.path.abspath(__file__)).parents[2]), "util")
-sys.path.insert(1, path_to_util)
-import constants
+from src.main.discount_strategy.util import constants
 path_to_images = constants.PATH_TO_IMAGES
 
 class Painter:
@@ -27,9 +25,9 @@ class Painter:
 
         ax.scatter(instance.depot.xCoord, instance.depot.yCoord, marker='^', s=60, color='blue')
         ax.text(instance.depot.xCoord + 0.35,instance.depot.yCoord + 0.35, instance.depot, fontsize=12)
-
-        ax.scatter(instance.pup.xCoord, instance.pup.yCoord, marker='s', s=60, color="blue")
-        ax.text(instance.pup.xCoord + 0.35, instance.pup.yCoord + 0.35, instance.pup, fontsize=12)
+        for pup in instance.pups:
+            ax.scatter(pup.xCoord, pup.yCoord, marker='s', s=60, color="blue")
+            ax.text(pup.xCoord + 0.35, pup.yCoord + 0.35, pup, fontsize=12)
         plt.show()
 
     def printVertexDisc(self, instance, policy):

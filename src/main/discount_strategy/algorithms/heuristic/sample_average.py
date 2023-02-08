@@ -118,6 +118,72 @@ def set_random_combination(setMayVary, prob_dev_setMayVary):
     return combination
 
 # evaluation of cost of a poliy by samplling. 1sample states that we do not sample for different gammas( number of visited people)
+def sampleAverageApproximation_PoissonBinomial_1sample_2segm(instance,setMayVary, policy, solverType, **kwargs):
+    n = instance.NR_CUST
+    p_home = instance.p_home
+    exp_discount = np.multiply(instance.shipping_fee, instance.p_pup_delta)
+    if 'solver' in kwargs:
+        solver = kwargs['solver']
+    else:
+        solver = TSPSolver(instance, solverType)
+    if 'sample_size' in kwargs:
+        sample_size = kwargs['sample_size']
+    else:
+        sample_size = constants.SAMPLE_SIZE
+
+    if 'routeCosts' in kwargs:
+        routeCosts = kwargs['routeCosts']
+    else:
+        routeCosts = {}
+        routeCosts[0] = solver.tspCost(0)
+        scenario_1 = 2 ** instance.NR_CUST - 1
+        routeCosts[scenario_1] = solver.tspCost(scenario_1)
+    prob_dev_setMayVary = []
+    total_sum_prob = 0
+    for customer in setMayVary:
+        prob_dev_setMayVary.append(p_home[customer])
+    # for offset in range(1, n+1):
+    #     mask = (1 << (offset - 1))
+    #     if mask & policy:
+    #         prob_dev_setMayVary.append(p_home[offset])
+    #         total_sum_prob += p_home[offset]
+    #     else:
+    #         prob_dev_setMayVary.append(1-p_pup[offset])
+    #         total_sum_prob += 1-p_pup[offset]
+
+    policy_cost = 0
+    for i in range(1, n + 1):
+        if policy & (1 << (i - 1)):
+            policy_cost += exp_discount[i]
+    policy_cost_error = 0
+    cumulative_sum = 0
+    sampleCost = []
+    for i in range(sample_size):
+        combination = set_random_combination(setMayVary, prob_dev_setMayVary)
+        scenario = policy
+        # make a scenario given policy and combination of deviated nodes
+        for offset in combination:
+            mask = ~(1 << (offset - 1))
+            scenario = scenario & mask
+        # scenario = 2 ** n - 1
+        # for offset in combination:
+        #     mask = (1 << (offset - 1))
+        #     scenario = scenario & ~mask
+        if scenario not in routeCosts:
+            routeCosts[scenario] = solver.tspCost(scenario)
+        sampleCost.append(routeCosts[scenario])
+    sampleCost_mean, policy_cost_error = average_error(sampleCost, sample_size)
+
+    policy_cost_lb = policy_cost +sampleCost_mean - policy_cost_error
+    policy_cost_ub = policy_cost+sampleCost_mean+ policy_cost_error
+
+    policy_cost_average = policy_cost +sampleCost_mean
+
+    if 'routeCosts' in kwargs:
+        return  [policy_cost_average, policy_cost_lb, policy_cost_ub], routeCosts
+    else:
+        return [policy_cost_average, policy_cost_lb, policy_cost_ub]
+
 def sampleAverageApproximation_PoissonBinomial_1sample(instance, policy, solverType, **kwargs):
     n = instance.NR_CUST
     p_home = instance.p_home

@@ -66,7 +66,7 @@ class OCVRPInstance:
             self.p_home[cust.id] = cust.prob_home
             self.p_pup[cust.id] = cust.prob_pup
             self.p_delta[cust.id] = 1 - cust.prob_home - cust.prob_pup
-            self.p_pup_delta[cust.id] = 1 - cust.prob_home
+            self.p_pup_delta[cust.id] = max(constants.EPS, 1 - cust.prob_home)
             self.shipping_fee[cust.id] = cust.shipping_fee
             self.neighbour[cust.id] = []
 
@@ -95,7 +95,7 @@ class OCVRPInstance:
         # "Number of pickup points: "+pickupPoints.size()+"\n"+
         # "Vehicle capacity: "+VEHIC_CAP+"\n"+
         # prefix + "Deviation probability: " + str(self.deviationProbability*100) + " %" + "\n" + \
-        # prefix + "Flat rate shipping fee: " + str(self.FLAT_RATE_SHIPPING_FEE) + "\n" +\
+        # prefix + "Flat rate shipping fee: " + str(selfp.FLAT_RATE_SHIPPING_FEE) + "\n" +\
         return s
 
     def set_enlarged_neighbourhood(self):
@@ -105,18 +105,8 @@ class OCVRPInstance:
 
             for other_cust in self.customers:
                 if other_cust is not cust:
-                    if  cust.shipping_fee == min([cust.shipping_fee, other_cust.shipping_fee]):
-                        if self.distanceMatrix[cust.id,other_cust.id] < constants.NEIGHBOURHOOD_HEURISTIC *(cust.shipping_fee*(1+cust.prob_pup/(1-cust.prob_pup-cust.prob_home+constants.EPS)) -
-                                            other_cust.shipping_fee*other_cust.prob_pup*(1-other_cust.prob_home)/
-                                                                    ((1-other_cust.prob_pup-other_cust.prob_home+constants.EPS)*(1-cust.prob_home+constants.EPS)) )/2:
-                            self.neighbourhood_enlarged[cust.id].append(other_cust.id)
-                    else:
-                        if self.distanceMatrix[cust.id,other_cust.id] < constants.NEIGHBOURHOOD_HEURISTIC *(other_cust.shipping_fee*(1+other_cust.prob_pup/(1-other_cust.prob_pup-other_cust.prob_home+constants.EPS)) -
-                                            cust.shipping_fee*cust.prob_pup*(1-cust.prob_home)/
-                                                                    ((1-cust.prob_pup-cust.prob_home+constants.EPS)*(1-other_cust.prob_home+constants.EPS)) )/2:
-                            self.neighbourhood_enlarged[cust.id].append(other_cust.id)
-
-
+                    if self.distanceMatrix[cust.id, other_cust.id] <= min([cust.shipping_fee, other_cust.shipping_fee])*constants.NEIGHBOURHOOD_HEURISTIC / 2:
+                            self.neighbour[cust.id].append(other_cust.id)
 
     def calculateInsertionBounds(self):
         ubInsertionDict = {}

@@ -33,7 +33,8 @@ HEURISTIC_SAMPLE_SIZE_RS = HEURISTIC_SAMPLE_SIZE
 
 #for epsilon-optimality of nodes(we prune the nodes that are epsilon-close to the current best node)
 EPSILON =EPS
-EPSILON_H = 0.03
+#EPSILON_H = 0.03
+EPSILON_H = EPS
 EPSILONRS = EPS
 
 # file_images = os.path.join((Path(os.path.abspath(__file__)).parents[1]),"results","images")

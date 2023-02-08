@@ -1,48 +1,13 @@
-from pathlib import Path
-import csv
-import sys
-from sys import argv
+
 import random
 import os
-#from collections import Counter
-#import numpy as np
-#import matplotlib.pyplot as plt
-from time import process_time
-def timer(start,end):
-    hours, rem = divmod(end-start, 3600)
-    minutes, seconds = divmod(rem, 60)
-    return("{:0>2}:{:0>2}:{:05.2f})".format(int(hours),int(minutes),seconds))
 
-path_to_io = os.path.join((Path(os.path.abspath(__file__)).parents[1]),"io")
-sys.path.insert(1, path_to_io)
-import OCVRPParser
-from print_functions import Painter
+from src.main.discount_strategy.io import OCVRPParser
 
-path_to_branchAndBound = os.path.join((Path(os.path.abspath(__file__)).parents[1]), "algorithms", "exact", "bab")
-sys.path.insert(2, path_to_branchAndBound)
-from BranchAndBoundExact import BranchAndBoundExact
-
-path_to_exact = os.path.join((Path(os.path.abspath(__file__)).parents[1]), "algorithms", "exact")
-sys.path.insert(3, path_to_exact)
-from ring_star_without_TW import ring_star_deterministic_no_TW
-
-path_to_stochastic = os.path.join((Path(os.path.abspath(__file__)).parents[1]), "algorithms", "stochastic")
-sys.path.insert(4, path_to_stochastic)
-from enumeration_scenarios import ScenarioEnumerationSolver
-from sample_average import sampleAverageApproximation
-
-path_to_util = os.path.join((Path(os.path.abspath(__file__)).parents[1]),"util")
-sys.path.insert(5, path_to_util)
-import constants
-
-path_to_exact =  os.path.join((Path(os.path.abspath(__file__)).parents[1]), "algorithms", "exact")
-sys.path.insert(6, path_to_exact)
-from TSPSolver import TSPSolver
-
-path_to_exact = os.path.join((Path(os.path.abspath(__file__)).parents[3]), "algorithms", "exact")
-sys.path.insert(2, path_to_exact)
-from TSPSolver import TSPSolver
-from ring_star_without_TW import ring_star_deterministic_no_TW
+from src.main.discount_strategy.util import constants
+path_to_data = constants.PATH_TO_DATA
+from src.main.discount_strategy.algorithms.exact.TSPSolver import TSPSolver
+from src.main.discount_strategy.algorithms.exact.ring_star_without_TW import ring_star_deterministic_no_TW
 
 prefix="tag: "
 
@@ -57,29 +22,18 @@ def set_scenario(sample,n):
     return scenario
 
 if __name__ == "__main__":
-
-
-    #file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "data", "instances_TSPLIB_heuristic",
-    #                             "instance_berlin52_4_50_210_3_40.txt")
-    file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "data", "instances_TSPLIB_heuristic",
-                                 "instance_berlin52_1_20_30_1_20.txt")
-
-
+    file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
+                                 "VRPDO_size_18_phome_0.4_ppup_0.0_incrate_0.06_0.txt")
 
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()
     print(OCVRPInstance)
-    painter = Painter()
-    painter.printVertex(OCVRPInstance)
-
     rsPolicyID, rsValue = ring_star_deterministic_no_TW(OCVRPInstance, OCVRPInstance.NR_CUST)
     print(bin(rsPolicyID)[2:], "RS cost", rsValue)
 
-
     n = OCVRPInstance.NR_CUST
-    p_dev = OCVRPInstance.deviationProbability
+    p_dev = OCVRPInstance.p_home
     discount = OCVRPInstance.FLAT_RATE_SHIPPING_FEE
-
 
     TSPSolver = TSPSolver(instance=OCVRPInstance, solverType='Gurobi')
     #TSPSolver.tspCost(scenario)
@@ -112,7 +66,6 @@ if __name__ == "__main__":
                 print("visited customers in sample: ", sorted(sample+must_be_visited),
                       "\nvistied customers in subsample: ", sorted(subsample+must_be_visited))
                 print("insert in sample: ",insertion_cost_sample,"\ninsert in subsample: ", insertion_cost_subsample)
-
 
     # for RS:
     scenario_without = set_scenario(must_be_visited, n)

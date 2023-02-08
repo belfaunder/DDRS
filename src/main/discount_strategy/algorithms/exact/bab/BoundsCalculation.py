@@ -5,7 +5,7 @@ from src.main.discount_strategy.util import probability
 from src.main.discount_strategy.util.bit_operations import bitCount
 
 from src.main.discount_strategy.algorithms.heuristic.sample_average import sampleAverageApproximation_PoissonBinomial
-from src.main.discount_strategy.algorithms.heuristic.sample_average import sampleAverageApproximation_PoissonBinomial_1sample
+from src.main.discount_strategy.algorithms.heuristic.sample_average import sampleAverageApproximation_PoissonBinomial_1sample_2segm
 from src.main.discount_strategy.algorithms.heuristic.sample_average import importanceSampling
 
 
@@ -458,7 +458,7 @@ def updateBoundsWithNewTSPsHeuristic(Bab, node):
     #    sample_size = constants.HEURISTIC_SAMPLE_SIZE_RS
     #else:
     sample_size = constants.HEURISTIC_SAMPLE_SIZE
-    estimation_cost_by_sampling, Bab.instance.routeCost  = sampleAverageApproximation_PoissonBinomial_1sample(instance = Bab.instance,
+    estimation_cost_by_sampling, Bab.instance.routeCost  = sampleAverageApproximation_PoissonBinomial_1sample_2segm(instance = Bab.instance, setMayVary = node.setGivenDiscount,
                      policy = node.withDiscountID,  solverType =Bab.TSPSolver.solverType, sample_size =  sample_size, routeCosts=Bab.instance.routeCost, solver = Bab.TSPSolver)
 
     #if 2 ** Bab.instance.NR_CUST < constants.HEURISTIC_SAMPLE_SIZE:
@@ -467,9 +467,6 @@ def updateBoundsWithNewTSPsHeuristic(Bab, node):
     #    estimation_cost_by_sampling, Bab.instance.routeCost  = sampleAverageApproximation_PoissonBinomial_1sample(instance = Bab.instance,
     #                                        policy = node.withDiscountID, sample_size = constants.HEURISTIC_SAMPLE_SIZE, routeCosts=Bab.instance.routeCost)
     node.exactValueProb = 1
-
-    node.lbCoveredProb = 0
     node.lbRoute = estimation_cost_by_sampling[0]-node.lbExpDiscount
     node.ubRoute = node.lbRoute
     node.exactValue = node.lbRoute
-    Bab.lbScenario  = node.lbRoute

@@ -16,6 +16,9 @@ from src.main.discount_strategy.algorithms.heuristic.sample_average import sampl
 from src.main.discount_strategy.algorithms.heuristic.sample_average import sampleAverageApproximation_PoissonBinomial_1sample
 from src.main.discount_strategy.algorithms.heuristic.sample_average import one_policy_cost_estimation
 
+from src.main.discount_strategy.io.print_functions import Painter
+
+
 from src.main.discount_strategy.io import OCVRPParser
 from src.main.discount_strategy.io import print_functions
 
@@ -39,16 +42,16 @@ if __name__ == "__main__":
         file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "data",
                                      "i_VRPDO_discount_proportional_2segm_manyPUP", str(sys.argv[-1])+".txt")
     else:
-        file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
-                                     "VRPDO_size_12_phome_0.4_ppup_0.0_incrate_0.06_0.txt")
+        file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_managerial",
+                                     "VRPDO_size_15_phome_1_ppup_0.0_incrate_0.06_nrpup1_0.txt")
         #file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
         #                             "VRPDO_size_10_phome_0.2_ppup_0.0_incrate_0.03_0.txt")
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()
     print(OCVRPInstance)
 
-    #painter = Painter()
-    #painter.printVertexDisc(OCVRPInstance, 0)
+    painter = Painter()
+    painter.printVertex(OCVRPInstance)
     # rs_policy, rs_cost = ring_star_deterministic_no_TW(OCVRPInstance, 0)
     # print(rs_cost/15)
     # print((sum(OCVRPInstance.shipping_fee[1:])/len(OCVRPInstance.shipping_fee[1:]))*(6/5)/ (rs_cost/15))
@@ -67,18 +70,18 @@ if __name__ == "__main__":
 
     bab = BABExact(instance=OCVRPInstance, solverType = solverType)
     babPolicy, time, lbPrint, ubPrint = bab.runBranchAndBound()
-    print(prefix,"pruned_by_cliques_nonleaf:", bab.pruned_cliques_nonleaf)
-    print(prefix,"pruned_by_cliques_leaf:", bab.pruned_cliques_leaf)
-
-    print(prefix,"pruned_by_rs_nonleaf:", bab.pruned_rs_nonleaf)
-    print(prefix,"pruned_by_rs_leaf:", bab.pruned_rs_leaf)
-
-    print(prefix, "pruned_by_insertionCost_nonleaf:", bab.pruned_insertionCost_nonleaf)
-    print(prefix, "pruned_by_insertionCost_leaf:", bab.pruned_insertionCost_leaf)
-
-    print(prefix, "pruned_by_bounds_nonleaf:", bab.pruned_bounds_nonleaf)
-    print(prefix, "pruned_by_bounds:", bab.nrNodes - bab.pruned_cliques_leaf - bab.pruned_cliques_nonleaf - bab.pruned_rs_leaf -\
-          bab.pruned_rs_nonleaf-  bab.pruned_insertionCost_nonleaf - bab.pruned_insertionCost_leaf -  bab.pruned_bounds_nonleaf)
+    # print(prefix,"pruned_by_cliques_nonleaf:", bab.pruned_cliques_nonleaf)
+    # print(prefix,"pruned_by_cliques_leaf:", bab.pruned_cliques_leaf)
+    #
+    # print(prefix,"pruned_by_rs_nonleaf:", bab.pruned_rs_nonleaf)
+    # print(prefix,"pruned_by_rs_leaf:", bab.pruned_rs_leaf)
+    #
+    # print(prefix, "pruned_by_insertionCost_nonleaf:", bab.pruned_insertionCost_nonleaf)
+    # print(prefix, "pruned_by_insertionCost_leaf:", bab.pruned_insertionCost_leaf)
+    #
+    # print(prefix, "pruned_by_bounds_nonleaf:", bab.pruned_bounds_nonleaf)
+    # print(prefix, "pruned_by_bounds:", bab.nrNodes - bab.pruned_cliques_leaf - bab.pruned_cliques_nonleaf - bab.pruned_rs_leaf -\
+    #       bab.pruned_rs_nonleaf-  bab.pruned_insertionCost_nonleaf - bab.pruned_insertionCost_leaf -  bab.pruned_bounds_nonleaf)
     # mainDirStorage =  os.path.join(path_to_data,"output")
     # convergence = os.path.join(mainDirStorage, 'convergence.txt')
     # with open(convergence, 'wb') as file:

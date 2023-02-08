@@ -27,9 +27,9 @@ prefix="tag: "
 
 class BABHeuristic(BAB_super_class):
 
+
     def runBranchAndBound(self):
-        #k_temp = 1
-        upperBoundNumberDiscount = bitCount(self.rs_policy)
+        self.upperBoundNumberDiscount = bitCount(self.rs_policy)
         t  = process_time()
         openNodes = self.openNodes
         # Visit all nodes until no nodes are left to branch on ( or a time limit is reached)
@@ -43,9 +43,7 @@ class BABHeuristic(BAB_super_class):
             if (process_time() - start_time) > constants.HEURISTIC_TIME_LIMIT:
                 break
 
-
             nextNode = openNodes.pop()
-
             # print("best", self.bestNode.withDiscountID, self.bestNode.formPolicy(self.instance.NR_CUST), "lbVal", self.bestNode.lbVal(),"ubVal", self.bestNode.ubVal(), self.bestNode.exactValueProb,self.bestNode.lbRoute, self.bestNode.ubRoute)
             # print("current node", nextNode.withDiscountID, nextNode.formPolicy(self.instance.NR_CUST), "lbVal", nextNode.lbVal(),"ubVal", nextNode.ubVal())
             # print("tspdict:", len(self.instance.routeCost))
@@ -57,8 +55,6 @@ class BABHeuristic(BAB_super_class):
 
             elif self.isTerminalNode(nextNode):
                 continue
-            #elif self.canFathomByTheoremUpperBound(nextNode, upperBoundNumberDiscount):
-            #    nextNode.fathomed()
             elif self.canFathomByTheoremCliques_Heuristic(nextNode):
                 nextNode.fathomed()
             elif self.canFathom(nextNode):
@@ -70,7 +66,7 @@ class BABHeuristic(BAB_super_class):
             #print("current node after fathom", nextNode.withDiscountID, nextNode.formPolicy(self.instance.NR_CUST), "lbVal", nextNode.lbVal(),"ubVal", nextNode.ubVal())
             #print()
 
-        print(prefix+ "Time_running,s: ", (process_time()-start_time))
+        print(prefix+ "Time_running,s: ", (process_time() - start_time))
         print(prefix+ "Number_nodes: ", self.nrNodes)
         print(prefix+ "Number_calculated_TSPs: ", len(self.instance.routeCost))
         print(prefix+ 'Obj_val(ub): ', self.bestNode.ubVal(), 'Obj_val(lb): ', self.bestNode.lbVal())
@@ -82,76 +78,20 @@ class BABHeuristic(BAB_super_class):
     # skip node
     def canFathom(self, node):
         def exploreNode():
-            #TODO: copy from the exact
             nonlocal node
-            n = self.instance.NR_CUST
-            p_home = self.instance.p_home
-            p_pup = self.instance.p_pup
-            numCustToVisit = max(n - max(0,math.floor((self.bestUb- node.lbScenario[1]) / (max(0.001, np.amin(self.instance.shipping_fee[1:])
-                        * np.amin(self.instance.p_pup_delta[1:]))))), len(node.setNotGivenDiscount))
-            if numCustToVisit == 0:
-                numCustToVisit += 1
-
-            #calculate the smallest num of customers who was not visited s.t. the tspDisc does not have it
-            numVisitTemp = numCustToVisit
-
-            # retrun False if we cannot fathom the node,
-            # retrun True if we can fathom
-            # max possible numer of discounts ->n-node.layer + len(node.setGivenDiscount)
-            # while numDiscTemp>= n-node.layer + len(node.setGivenDiscount):
-            while True:
-                if numCustToVisit < n:
-                    # the list of customers who might get a discount, i.e. those who got a discount in current policy
-                    # plus those about whom we do not have a decision yet
-                    possibleDiscounts = list(range(n, node.layer ,-1)) + list(node.setGivenDiscount)[::-1]
-                    #possibleDiscounts |= node.setGivenDiscount
-                    #combinations = random_combination(possibleDiscounts, numDiscTemp)
-                    #combinations_set = combinations(possibleDiscounts, numDiscTemp)
-
-                    for combination in combinations(possibleDiscounts, n-numVisitTemp):
-
-                        # create a scenario that offer a discount to  " n-numVisitTemp" number of customers.
-                        # The idea is that this scenario may be not possible for some of child nodes,
-                        # but it will give a true LB anyway
-
-                        newLbScenario = 0
-                        for i in combination:
-                            newLbScenario += 1 << (i-1)
-                        if newLbScenario not in self.instance.routeCost:
-                            self.instance.routeCost[newLbScenario]= self.TSPSolver.tspCost(newLbScenario)
+            if node.setNotGivenDiscount:
+                for id in reversed(node.lbScenarios):
+                    newScenario = node.lbScenarios[id][2] & ~node.noDiscountID
+                    if newScenario != node.lbScenarios[id][2]:
+                        if newScenario not in self.instance.routeCost:
+                            routingCost = self.TSPSolver.tspCost(newScenario)
+                            self.instance.routeCost[newScenario] = routingCost
                         else:
-                            if self.instance.routeCost[newLbScenario] == node.lbScenario:
-                                continue
-                        # the following changes are true only for 2 segment model:
-                        # if the new scenario is a true LB_route, then update Lb_route
-                        # (initially all nodes have LB_route = 2**n - 1 or "visit all customers")
-                        #if newLbScenario == (2 ** n - 1 - node.noDiscountID):
-                        #    lbImprove = node.updateLbScenario(self.instance.routeCost[newLbScenario],
-                        #                                      self.instance.p_home,
-                        #                                      self.instance.p_pup, n)
-
-
-                        node.lbScenarios[newLbScenario] = self.instance.routeCost[newLbScenario]
-                        lbImprove = node.updateLbCovered(lbCoveredProbNew, lbDensityCoveredNew)
-
-                        if lbImprove > max(0.005*(node.ubRoute - node.lbRoute), constants.EPSILON_H*self.bestNode.lbVal()):
-                            oldnumCustToVisit = numCustToVisit
-
-                            # it may happen that with new LB_route giving many discounts is not profitable,
-                            # so we calculate the max number of discounts that is still may be profitable
-                            numCustToVisit = max(
-                                n - max(0,math.floor((self.bestUb- node.lbScenario[1]) / (max(0.001, np.amin(self.instance.shipping_fee[1:]) * np.amin(self.instance.p_pup_delta[1:]))))), len(node.setNotGivenDiscount))
-                            if numCustToVisit > oldnumCustToVisit:
-                                numVisitTemp = numCustToVisit
-                                break
-                        else:
-                            #if increase is not suffucuent, stop adding new scenario and finish the function "explore the node"
-                            return False
-                    numVisitTemp += 1
-                    if numVisitTemp >=n:
-                        return False
-                else:
-                    return False
+                            routingCost = self.instance.routeCost[newScenario]
+                        node.lbRoute += node.lbScenarios[id][1] * (routingCost - node.lbScenarios[id][0])
+                        node.lbScenarios[id][0] = routingCost
+                        node.lbScenarios[id][2] = newScenario
+            return False
 
         # in node is the current BestNode, then update the bounds, and return False (negative answer to canFathom)
         if self.bestNode == node:
@@ -169,10 +109,6 @@ class BABHeuristic(BAB_super_class):
             return True
         else:
 
-            #if node.layer <= self.instance.NR_CUST:
-            #    self.fathomByLayerSibling(node)
-            #    if  node.fathomedState:
-            #        return True
             updateBoundsFromDictionary(self, node)
             # lf.instance.NR_CUST), node.ubRoute)
             if node.fathomedState:
