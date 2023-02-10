@@ -43,7 +43,7 @@ if __name__ == "__main__":
                                      "i_VRPDO_2segm_manyPUP_managerial", str(sys.argv[-1])+".txt")
     else:
         file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_managerial",
-                                     "VRPDOConstDisc_size_15_phome_0.4_ppup_0.0_incrate_0.06_nrpup1_0.txt")
+                                     "VRPDOConstDisc_size_15_phome_0.25_ppup_0.0_incrate_0.06_nrpup5_2.txt")
         #file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
         #                             "VRPDO_size_10_phome_0.2_ppup_0.0_incrate_0.03_0.txt")
 
@@ -85,10 +85,10 @@ if __name__ == "__main__":
     #     pickle.dump(lbPrint, file)
     #     pickle.dump(ubPrint, file)
     #painter.printConvergence(time, lbPrint, ubPrint, bab_obj)
-    painter = Painter()
-    painter.printVertexDisc(OCVRPInstance, babPolicy)
+    #
+    # painter = Painter()
+    # painter.printVertexDisc(OCVRPInstance, babPolicy)
     if 2**OCVRPInstance.NR_CUST < constants.SAMPLE_SIZE:
-        print("here")
         estimation_bab = one_policy_cost_estimation(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)
     else:
         estimation_bab = sampleAverageApproximation_PoissonBinomial_1sample(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)

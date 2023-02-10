@@ -2268,12 +2268,14 @@ def compare_enumeration_no_Gurobi(folder ):
 
 
 def managerial_effect_delta(folder):
+    #parseBAB(os.path.join(folder, "02_09_bab_exact_managerial_constDisc.txt"), folder,
+    #         "02_09_bab_exact_managerial_constDisc")
     #parseBAB(os.path.join(folder, "02_09_bab_exact_managerial_constDisc.txt"), folder, "02_09_bab_exact_managerial_constDisc")
-    parseBAB(os.path.join(folder, "02_08_bab_exact_managerial_DistDeptDiscount.txt"), folder, "02_08_bab_exact_managerial_DistDeptDiscount")
-    df = pd.read_csv(os.path.join(folder, "02_08_bab_exact_managerial_DistDeptDiscount.csv"))
-    #df['p_accept'] = round(1 - df['p_home'] , 2)
+    #parseBAB(os.path.join(folder, "02_08_bab_exact_managerial_DistDeptDiscount.txt"), folder, "02_08_bab_exact_managerial_DistDeptDiscount")
+    df = pd.read_csv(os.path.join(folder, "02_09_bab_exact_managerial_constDisc.csv"))
+    df['p_accept'] = round(1 - df['p_home'] , 2)
     #df['p_accept'] = round(1 - df['p_home'] + (df['discount_rate']/3 - 0.02), 2)
-    df['p_accept'] = round(1 - df['p_home'] + (df['nrPup']*0.01 - 0.03), 2)
+    #df['p_accept'] = round(1 - df['p_home'] + (df['nrPup']*0.01 - 0.03), 2)
     df['num_offered_disc_bab'] = df.apply(lambda x: round(bitCount(x['policy_bab_ID'])), axis=1)
 
     folder_data = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_managerial")
@@ -2282,7 +2284,7 @@ def managerial_effect_delta(folder):
 
     df = df[df.p_home < 1].copy()
     #df = df[df.nrPup == 5].copy()
-    df = df[df.instance_id==0].copy()
+    df = df[df.instance_id==2].copy()
     df = df[df.discount_rate==0.06].copy()
     #df = df[df.p_home==0.4].copy()
     #df = df[df.p_accept == 0.06].copy()
