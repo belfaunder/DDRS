@@ -266,13 +266,16 @@ def updateBoundsFromDictionary(Bab, node):
                     continue
                 for combination in itertools.combinations(setMayVary, gamma - len(
                         node.setNotGivenDiscount) - n + node.layer):
+                    #print("combinarion", combination, node.setNotGivenDiscount, scenario, bin(scenario)[2:])
                     scenario = node.withDiscountID
                     # make a scenario given policy and combination of deviated nodes
                     scenarioProb = initial_probability
+                    #print("initial probability", initial_probability)
                     for offset in combination:
                         mask = ~(1 << (offset - 1))
                         scenario = scenario & mask
-                        scenarioProb *= Bab.instance.p_home[i]/Bab.instance.p_pup_delta[i]
+                        scenarioProb *= Bab.instance.p_home[offset]/Bab.instance.p_pup_delta[offset]
+                        #print("offset", offset, Bab.instance.p_home[i], Bab.instance.p_pup_delta[i])
                     # check if scenario is already in node
                     if scenario not in node.tspDict[gamma]:
                         scenarioCost = Bab.instance.routeCost.get(scenario)

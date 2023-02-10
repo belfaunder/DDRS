@@ -43,9 +43,10 @@ if __name__ == "__main__":
                                      "i_VRPDO_discount_proportional_2segm_manyPUP", str(sys.argv[-1])+".txt")
     else:
         file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_managerial",
-                                     "VRPDO_size_15_phome_1_ppup_0.0_incrate_0.06_nrpup1_0.txt")
+                                     "VRPDODistDepAccept_size_2_phome_0.1_ppup_0.0_incrate_0.06_nrpup5_3.txt")
         #file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
         #                             "VRPDO_size_10_phome_0.2_ppup_0.0_incrate_0.03_0.txt")
+
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()
     print(OCVRPInstance)

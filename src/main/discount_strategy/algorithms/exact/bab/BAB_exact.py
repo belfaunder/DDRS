@@ -66,7 +66,7 @@ class BABExact(BAB_super_class):
 
             # print("\nnextNode", nextNode.withDiscountID, bin(nextNode.withDiscountID), nextNode.withDiscountID, nextNode.exactValueProb, nextNode.exactValue, nextNode.lbRoute,
             #       nextNode.ubRoute, nextNode.lbVal(), nextNode.ubVal())
-            # print("bestNode", bin(self.bestNode.withDiscountID), self.bestNode.withDiscountID, self.bestNode.lbVal() ,self.bestNode.ubVal() , len(self.instance.routeCost))
+            # print("bestNode", bin(self.bestNode.withDiscountID), self.bestNode.withDiscountID,  self.bestNode.exactValueProb, self.bestNode.lbVal() ,self.bestNode.ubVal() , len(self.instance.routeCost))
 
             if self.isTerminalNode(nextNode):
                 continue
@@ -115,8 +115,6 @@ class BABExact(BAB_super_class):
                         node.lbScenarios[id][0] = routingCost
                         node.lbScenarios[id][2] = newScenario
             return False
-
-
         # in node is the current BestNode, then update the bounds, and return False (negative answer to canFathom)
         if self.bestNode == node:
             if (node.ubVal() - node.lbVal()) > constants.EPSILON * self.bestNode.lbVal():

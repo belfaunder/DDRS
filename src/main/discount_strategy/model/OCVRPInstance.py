@@ -91,7 +91,6 @@ class OCVRPInstance:
             prefix + "Number_of_pups: " + str(self.NR_PUP) + "\n" + \
             prefix + "Epsilon_precision: " + str(constants.EPSILON* 100)  + " %\n"
 
-
         # "Number of pickup points: "+pickupPoints.size()+"\n"+
         # "Vehicle capacity: "+VEHIC_CAP+"\n"+
         # prefix + "Deviation probability: " + str(self.deviationProbability*100) + " %" + "\n" + \

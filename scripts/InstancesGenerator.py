@@ -357,64 +357,90 @@ def generate_3_segments_instance_zhou_constant_density(instance_type ):
 def generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type ):
     mainDirZhou = os.path.join(path_to_data, "data", "zhou-et-al-2017")
     dict_depot, dict_pickup, dict_customer = adapt_zhou(instance_type)
-    instance_type = "VRPDO"
+    instance_type = "VRPDODistDepAccept"
+    #instance_type = "VRPDOConstDisc"
     mainDirStorage = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_managerial")
-    nr_custs = [30]
+    nr_custs = [15]
     disc_rates = [0.06, 0.03, 0.12]
     #nr_custs = [10, 20, 40]
-    dict_probabilities = {0.0:[0, 0.1, 0.25, 0.4, 0.55, 0.7, 0.85]}
-    #dict_probabilities = {0.0: [0.4]}
+    dict_probabilities = {0.0:[0.0]}
+    #dict_probabilities = {0.0:[0, 0.1, 0.25, 0.4, 0.55, 0.7, 0.85]}
+    #dict_probiablities = {0.0: [0.4]}
     #disc_rates = [0.005, 0.01,0.015, 0.02,0.025, 0.03,0.035, 0.04,0.045, 0.05, 0.06, 0.07, 0.08, 0.09]
     instanceList = os.path.join(mainDirStorage, 'list.txt')
 
-    for id_instance in list(range(5)):
+    for id_instance in [0, 1,2,3,4]:
         shuffled_cust_list = os.path.join(mainDirZhou, 'shuffled_customers_' + str(id_instance) + '.txt')
         for nr_cust in nr_custs:
             for p_pup in dict_probabilities:
                 for p_home in dict_probabilities[p_pup]:
                     for u in disc_rates:
-                        with open(shuffled_cust_list, "rb") as file_shuffled:
-                            depots_id = pickle.load(file_shuffled)
-                            customers_id = pickle.load(file_shuffled)
-                            nr_pup = 1
-                            #pup_ids = set_pickup_point(dict_pickup, dict_customer, customers_id[:nr_cust], 15, nr_pup)
-                            pup_ids = set_pickup_point_preselected( nr_pup,nr_cust, id_instance)
+                        for nr_pup in [1,3,5]:
+                            print(nr_pup)
+                            with open(shuffled_cust_list, "rb") as file_shuffled:
+                                depots_id = pickle.load(file_shuffled)
+                                customers_id = pickle.load(file_shuffled)
+                                #pup_ids = set_pickup_point(dict_pickup, dict_customer, customers_id[:nr_cust], 15, nr_pup)
+                                pup_ids = set_pickup_point_preselected( nr_pup,nr_cust, id_instance)
 
-                            instanceName = instance_type+'_size_'+str(nr_cust) + '_phome_' + str(p_home) + '_ppup_' + \
-                                           str(p_pup) +'_incrate_'  + str(u) +'_nrpup'+str(nr_pup)+'_'+\
-                                           str(id_instance)+ '.txt'
+                                instanceName = instance_type+'_size_'+str(nr_cust) + '_phome_' + str(p_home) + '_ppup_' + \
+                                               str(p_pup) +'_incrate_'  + str(u) +'_nrpup'+str(nr_pup)+'_'+\
+                                               str(id_instance)+ '.txt'
 
-                            instanceDir = os.path.join(mainDirStorage, instanceName)
-                            with open(instanceList, 'a+', encoding='utf-8') as file:
-                                file.write("{}\n".format(instanceName.split('.txt')[0]))
-                            TSP_cost_per_customer = temp_instance(dict_customer, nr_cust, nr_pup, customers_id, [dict_pickup[pup_id]for pup_id in pup_ids], dict_depot[depots_id[0]])
+                                instanceDir = os.path.join(mainDirStorage, instanceName)
+                                with open(instanceList, 'a+', encoding='utf-8') as file:
+                                    file.write("{}\n".format(instanceName.split('.txt')[0]))
+                                TSP_cost_per_customer = temp_instance(dict_customer, nr_cust, nr_pup, customers_id, [dict_pickup[pup_id]for pup_id in pup_ids], dict_depot[depots_id[0]])
 
-                            with open(instanceDir, 'w+', encoding='utf-8') as file:
-                                file.write("NAME: {}\n".format(instanceName))
-                                file.write("SIZE: {}\n".format(nr_cust))
-                                file.write("NUMBER_PUPs: {}\n\n".format(nr_pup))
+                                with open(instanceDir, 'w+', encoding='utf-8') as file:
+                                    file.write("NAME: {}\n".format(instanceName))
+                                    file.write("SIZE: {}\n".format(nr_cust))
+                                    file.write("NUMBER_PUPs: {}\n\n".format(nr_pup))
 
-                                file.write("LOCATION COORDINATES:\n\n")
+                                    file.write("LOCATION COORDINATES:\n\n")
 
-                                file.write("DEPOT V. XCOORD. YCOORD.\n")
-                                file.write(
-                                    "{} {} {}\n\n".format(0, dict_depot[depots_id[0]]["x"],dict_depot[depots_id[0]]["y"]))
+                                    file.write("DEPOT V. XCOORD. YCOORD.\n")
+                                    file.write(
+                                        "{} {} {}\n\n".format(0, dict_depot[depots_id[0]]["x"],dict_depot[depots_id[0]]["y"]))
 
-                                file.write("PUP V. XCOORD. YCOORD.\n")
-                                iter = nr_cust
-                                for pup_id in pup_ids:
-                                    iter +=1
-                                    file.write("{} {} {}\n".format(iter, (dict_pickup[pup_id]["x"]),
-                                                                 (dict_pickup[pup_id]["y"])))
-                                file.write("\n")
+                                    file.write("PUP V. XCOORD. YCOORD.\n")
+                                    iter = nr_cust
+                                    for pup_id in pup_ids:
+                                        iter +=1
+                                        file.write("{} {} {}\n".format(iter, (dict_pickup[pup_id]["x"]),
+                                                                     (dict_pickup[pup_id]["y"])))
+                                    file.write("\n")
 
-                                file.write("CUST V. XCOORD. YCOORD. PROB_ALWAYS_HOME PROB_ALWAYS_PUP SHIPPING_FEE\n")
-                                for i in range(1,nr_cust+1):
-                                    customer_distance_to_pup = math.sqrt(( dict_pickup[pup_id]["x"]- dict_customer[customers_id[i-1]]["x"]) ** 2 +
-                                                  ( dict_pickup[pup_id]["y"] - dict_customer[customers_id[i-1]]["y"]) ** 2)
-                                    file.write("{} {} {} {} {} {}\n".format(i,  (dict_customer[customers_id[i-1]]["x"]),
-                                                                            (dict_customer[customers_id[i-1]]["y"]), p_home, p_pup,
-                                                                            round(customer_distance_to_pup * u * TSP_cost_per_customer,2)))
+                                    file.write("CUST V. XCOORD. YCOORD. PROB_ALWAYS_HOME PROB_ALWAYS_PUP SHIPPING_FEE\n")
+
+                                    total_discount = 0
+                                    for i in range(1,nr_cust+1):
+                                        distance_to_closest_pup = 10 ** 5
+                                        for pup_id in pup_ids:
+                                            distance_temp = int(math.sqrt((dict_pickup[pup_id]["x"] - dict_customer[customers_id[i-1]]["x"])** 2 +\
+                                                             (dict_pickup[pup_id]["y"] - dict_customer[customers_id[i-1]]["y"]) ** 2) + 0.5)
+                                            distance_to_closest_pup = min(distance_to_closest_pup, distance_temp)
+                                        total_discount += round(distance_to_closest_pup * u * TSP_cost_per_customer,2)
+
+                                    for i in range(1,nr_cust+1):
+                                        distance_to_closest_pup = 10 ** 5
+                                        for pup_id in pup_ids:
+                                            distance_temp = int(math.sqrt((dict_pickup[pup_id]["x"] - dict_customer[customers_id[i-1]]["x"])** 2 +\
+                                                             (dict_pickup[pup_id]["y"] - dict_customer[customers_id[i-1]]["y"]) ** 2) + 0.5)
+                                            distance_to_closest_pup = min(distance_to_closest_pup, distance_temp)
+
+                                        # customer_distance_to_pup = math.sqrt(( dict_pickup[pup_id]["x"]- dict_customer[customers_id[i-1]]["x"]) ** 2 +
+                                        #               ( dict_pickup[pup_id]["y"] - dict_customer[customers_id[i-1]]["y"]) ** 2)
+                                        if distance_to_closest_pup*4/TSP_cost_per_customer>3:
+                                            p_home = 0.1
+                                        elif distance_to_closest_pup*4/TSP_cost_per_customer < 1:
+                                            p_home = 0.9
+                                        else:
+                                            p_home = 0.6
+                                        print( distance_to_closest_pup*4/TSP_cost_per_customer, p_home)
+                                        file.write("{} {} {} {} {} {}\n".format(i,  (dict_customer[customers_id[i-1]]["x"]),
+                                                                                (dict_customer[customers_id[i-1]]["y"]), p_home, p_pup,
+                                                                                round(total_discount/ nr_cust,2))) #round(distance_to_closest_pup * u * TSP_cost_per_customer,2)
 
 def generate_3_segments_instance_zhou_saturation(instance_type ):
     mainDirZhou = os.path.join(path_to_data, "data", "zhou-et-al-2017")

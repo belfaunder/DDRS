@@ -2268,42 +2268,84 @@ def compare_enumeration_no_Gurobi(folder ):
 
 
 def managerial_effect_delta(folder):
-    #parseBAB(os.path.join(folder, "02_08_bab_exact_managerial.txt"), folder, "02_08_bab_exact_managerial")
-    df = pd.read_csv(os.path.join(folder, "02_08_bab_exact_managerial.csv"))
+    #parseBAB(os.path.join(folder, "02_09_bab_exact_managerial_constDisc.txt"), folder, "02_09_bab_exact_managerial_constDisc")
+    df = pd.read_csv(os.path.join(folder, "02_09_bab_exact_managerial_constDisc.csv"))
+    #df['p_accept'] = round(1 - df['p_home'] , 2)
     #df['p_accept'] = round(1 - df['p_home'] + (df['discount_rate']/3 - 0.02), 2)
-    df['p_accept'] = round(1 - df['p_home'] + (df['nrPup']*0.01- 0.03), 2)
+    df['p_accept'] = round(1 - df['p_home'] + (df['nrPup']*0.01 - 0.03), 2)
+    df['num_offered_disc_bab'] = df.apply(lambda x: round(bitCount(x['policy_bab_ID'])), axis=1)
 
-    df = df[df.p_accept>0.05 ].copy()
+    folder_data = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_managerial")
+    #df['exp_discount_cost_bab'] = df.apply(
+    #lambda x: calculate_exp_disc_cost(x['policy_bab_ID'], x['instance'], folder_data), axis=1)
+
+    df = df[df.p_home < 1].copy()
+    #df = df[df.nrPup == 5].copy()
     df = df[df.instance_id==0].copy()
-
     df = df[df.discount_rate==0.06].copy()
+    #df = df[df.p_home==0.4].copy()
+    #df = df[df.p_accept == 0.06].copy()
     # df['in_pup_bab'] = df.apply(
     #         lambda x: calculate_exp_pup_utilization(x['policy_bab_ID'], x['instance'], folder_data),
     #         axis=1)
-    # df['num_offered_disc_bab'] = df.apply(lambda x: round(bitCount(x['policy_bab_ID'])), axis=1)
-    #
-    #
-    # df['exp_discount_cost_bab'] = df.apply(
-    #         lambda x: calculate_exp_disc_cost(x['policy_bab_ID'], x['instance'], folder_data), axis=1)
+
     sns.set()
     sns.set(font_scale=1.2)
     sns.set_context(rc={'font.sans-serif': 'Computer Modern Sans Serif'})
     sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
     sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
     fig, axes = plt.subplots(1, 1, sharex=True)
-    sns.lineplot(ax=axes, data=df, x='p_accept', y='obj_val_bab', markers=True,
-                markersize=9, linewidth=1, hue = 'nrPup', style = 'nrPup',#discount_rate
-                palette="deep", err_style="bars", errorbar=('ci', 100), err_kws={'capsize': 3}, dashes=False)
+    if True: # effect of delta on the fulfillment cost
+        sns.lineplot(ax=axes, data=df, x='p_accept', y='obj_val_bab', markers=True,
+                    markersize=9, linewidth=1, hue = 'nrPup', style = 'nrPup',#discount_rate
+                    palette="deep", err_style="bars", errorbar=('pi', 100), err_kws={'capsize': 3}, dashes=False)
 
-    axes.set(xlabel='' + r'$\Delta$')
-    #axes.set_xticks([0.2, 0.4, 0.6, 0.8, 1.0])
-    axes.set(ylabel='Expected fulfillment cost')
-    #plt.legend(title=False, loc='lower right',ncol=2, bbox_to_anchor=(0.99, 0.01))
-    #plt.legend(title=False, loc='lower right', bbox_to_anchor=(0.99, 0.1),
-    #           labels=[r'$p = 0.0$', r'$p = 0.2$', r'$p = 0.4$', r'$p = 0.6$', r'$p = 0.8$', r'$p = 1.0$'])
-    #plt.savefig(os.path.join(path_to_images, 'Total_cost_hue_ppup_bounds.eps'), transparent=False,
-    #                    bbox_inches='tight')
-    plt.show()
+        axes.set(xlabel='' + r'$\Delta$')
+        #axes.set_xticks([0.2, 0.4, 0.6, 0.8, 1.0])
+        axes.set(ylabel='Expected fulfillment cost')
+        #plt.legend(title=False, loc='lower right', bbox_to_anchor=(0.99, 0.1),
+        #           labels=[r'$p = 0.0$', r'$p = 0.2$', r'$p = 0.4$', r'$p = 0.6$', r'$p = 0.8$', r'$p = 1.0$'])
+        #plt.savefig(os.path.join(path_to_images, 'Total_cost_hue_ppup_bounds.eps'), transparent=False,
+        #                    bbox_inches='tight')
+        plt.show()
+    if False: #effect of delta on the number of offered incentives
+        sns.lineplot(ax=axes, data=df, x='p_accept', y='num_offered_disc_bab',
+                     linewidth=1, markersize=7, markers=True, marker='o', hue = 'nrPup', style = 'nrPup',
+                     palette="deep", err_style="bars", errorbar=('pi', 100), err_kws={'capsize': 3})
+        axes.set(xlabel='' + r'$\Delta$')
+        axes.set(ylabel='Number of incentives')
+        # plt.legend(title=False, labels=[r'$\Delta = 0.2$', r'$\Delta = 0.4$', r'$\Delta = 0.6$', r'$\Delta = 0.8$', r'$\Delta = 1.0$'])
+        #plt.savefig(os.path.join(path_to_images, 'Number_incentives_delta.eps'), transparent=False, bbox_inches='tight')
+        plt.show()
+    if False: #effect of number of pickup points on the number of offered incentives
+        sns.lineplot(ax=axes, data=df, x='nrPup', y='exp_discount_cost_bab', #
+                     linewidth=1, markersize=7, markers=True, marker='o', hue = 'p_accept', style = 'p_accept',
+                     palette="deep", err_style="bars", errorbar=('pi', 100), err_kws={'capsize': 3})
+        axes.set(xlabel='' + 'Number of pickup point')
+        #axes.set(ylabel='Number of offered incentives')
+        axes.set(ylabel='Expected cost of incentives')
+        # plt.legend(title=False, labels=[r'$\Delta = 0.2$', r'$\Delta = 0.4$', r'$\Delta = 0.6$', r'$\Delta = 0.8$', r'$\Delta = 1.0$'])
+        #plt.savefig(os.path.join(path_to_images, 'Number_incentives_delta.eps'), transparent=False, bbox_inches='tight')
+        plt.show()
+    if False: #number of customers per pikcup point
+        for number_pups in [1,3,5]:
+            for discount_rate in [0.03, 0.06, 0.12]:
+                for p_home in [0, 0.4,  0.7 ]: #
+                    print('NumPUP, DiscRate, P_home',number_pups, discount_rate, p_home )
+                    df_temp = df[(df.nrPup == number_pups) & (df.discount_rate == discount_rate)  & (df.p_home == p_home) ].copy()
+                    for index, row in df_temp.iterrows():
+                        policy = row['policy_bab_ID']
+                        instance = row['instance']
+                        OCVRPInstance = OCVRPParser.parse(os.path.join(folder_data, instance + ".txt"))
+                        number_in_pup = []
+                        for pup in OCVRPInstance.pups:
+                            num_in_pup_temp = 0
+                            for i in pup.closest_cust_id:
+                                if policy & (1<<i-1):
+                                    num_in_pup_temp+=1
+
+                            number_in_pup.append(num_in_pup_temp)
+                        print(row['instance_id'], number_in_pup, round(row['exp_discount_cost_bab']))
 
 
 if __name__ == "__main__":
