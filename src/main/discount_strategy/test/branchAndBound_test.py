@@ -40,10 +40,10 @@ if __name__ == "__main__":
     print(prefix, "TIME_LIMIT:", constants.TIME_LIMIT)
     if os.name != 'nt':
         file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "data",
-                                     "i_VRPDO_discount_proportional_2segm_manyPUP", str(sys.argv[-1])+".txt")
+                                     "i_VRPDO_2segm_manyPUP_managerial", str(sys.argv[-1])+".txt")
     else:
         file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_managerial",
-                                     "VRPDODistDepAccept_size_2_phome_0.1_ppup_0.0_incrate_0.06_nrpup5_3.txt")
+                                     "VRPDOConstDisc_size_15_phome_0.4_ppup_0.0_incrate_0.06_nrpup1_0.txt")
         #file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
         #                             "VRPDO_size_10_phome_0.2_ppup_0.0_incrate_0.03_0.txt")
 
@@ -51,8 +51,7 @@ if __name__ == "__main__":
     OCVRPInstance.calculateInsertionBounds()
     print(OCVRPInstance)
 
-    painter = Painter()
-    painter.printVertex(OCVRPInstance)
+
     # rs_policy, rs_cost = ring_star_deterministic_no_TW(OCVRPInstance, 0)
     # print(rs_cost/15)
     # print((sum(OCVRPInstance.shipping_fee[1:])/len(OCVRPInstance.shipping_fee[1:]))*(6/5)/ (rs_cost/15))
@@ -68,18 +67,14 @@ if __name__ == "__main__":
     #EnumerationSolver.exactPolicyByEnumeration(True)
     #print(prefix, 'Time_enumeration ', process_time()-start_time)
     #print("\n")
-
     bab = BABExact(instance=OCVRPInstance, solverType = solverType)
     babPolicy, time, lbPrint, ubPrint = bab.runBranchAndBound()
     # print(prefix,"pruned_by_cliques_nonleaf:", bab.pruned_cliques_nonleaf)
     # print(prefix,"pruned_by_cliques_leaf:", bab.pruned_cliques_leaf)
-    #
     # print(prefix,"pruned_by_rs_nonleaf:", bab.pruned_rs_nonleaf)
     # print(prefix,"pruned_by_rs_leaf:", bab.pruned_rs_leaf)
-    #
     # print(prefix, "pruned_by_insertionCost_nonleaf:", bab.pruned_insertionCost_nonleaf)
     # print(prefix, "pruned_by_insertionCost_leaf:", bab.pruned_insertionCost_leaf)
-    #
     # print(prefix, "pruned_by_bounds_nonleaf:", bab.pruned_bounds_nonleaf)
     # print(prefix, "pruned_by_bounds:", bab.nrNodes - bab.pruned_cliques_leaf - bab.pruned_cliques_nonleaf - bab.pruned_rs_leaf -\
     #       bab.pruned_rs_nonleaf-  bab.pruned_insertionCost_nonleaf - bab.pruned_insertionCost_leaf -  bab.pruned_bounds_nonleaf)
@@ -90,13 +85,15 @@ if __name__ == "__main__":
     #     pickle.dump(lbPrint, file)
     #     pickle.dump(ubPrint, file)
     #painter.printConvergence(time, lbPrint, ubPrint, bab_obj)
+    painter = Painter()
+    painter.printVertexDisc(OCVRPInstance, babPolicy)
+    if 2**OCVRPInstance.NR_CUST < constants.SAMPLE_SIZE:
+        print("here")
+        estimation_bab = one_policy_cost_estimation(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)
+    else:
+        estimation_bab = sampleAverageApproximation_PoissonBinomial_1sample(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)
 
-    # if 2**OCVRPInstance.NR_CUST < constants.SAMPLE_SIZE:
-    #     estimation_bab = one_policy_cost_estimation(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)
-    # else:
-    #     estimation_bab = sampleAverageApproximation_PoissonBinomial_1sample(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)
-    #
-    # print(prefix, 'Estimated_BAB_cost:',estimation_bab )
+    print(prefix, 'Estimated_BAB_cost:',estimation_bab )
 
     # EnumerationSolver = ScenarioEnumerationSolver(instance=OCVRPInstance, solverType=solverType)
     # EnumerationSolver.exactPolicyByEnumeration_withoutGurobi_2segm()

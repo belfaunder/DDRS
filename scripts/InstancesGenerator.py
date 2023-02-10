@@ -363,8 +363,8 @@ def generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type ):
     nr_custs = [15]
     disc_rates = [0.06, 0.03, 0.12]
     #nr_custs = [10, 20, 40]
-    dict_probabilities = {0.0:[0.0]}
-    #dict_probabilities = {0.0:[0, 0.1, 0.25, 0.4, 0.55, 0.7, 0.85]}
+    #dict_probabilities = {0.0:[0.0]}
+    dict_probabilities = {0.0:[0, 0.1, 0.25, 0.4, 0.55, 0.7, 0.85]}
     #dict_probiablities = {0.0: [0.4]}
     #disc_rates = [0.005, 0.01,0.015, 0.02,0.025, 0.03,0.035, 0.04,0.045, 0.05, 0.06, 0.07, 0.08, 0.09]
     instanceList = os.path.join(mainDirStorage, 'list.txt')
@@ -376,13 +376,11 @@ def generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type ):
                 for p_home in dict_probabilities[p_pup]:
                     for u in disc_rates:
                         for nr_pup in [1,3,5]:
-                            print(nr_pup)
                             with open(shuffled_cust_list, "rb") as file_shuffled:
                                 depots_id = pickle.load(file_shuffled)
                                 customers_id = pickle.load(file_shuffled)
                                 #pup_ids = set_pickup_point(dict_pickup, dict_customer, customers_id[:nr_cust], 15, nr_pup)
                                 pup_ids = set_pickup_point_preselected( nr_pup,nr_cust, id_instance)
-
                                 instanceName = instance_type+'_size_'+str(nr_cust) + '_phome_' + str(p_home) + '_ppup_' + \
                                                str(p_pup) +'_incrate_'  + str(u) +'_nrpup'+str(nr_pup)+'_'+\
                                                str(id_instance)+ '.txt'
@@ -391,7 +389,6 @@ def generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type ):
                                 with open(instanceList, 'a+', encoding='utf-8') as file:
                                     file.write("{}\n".format(instanceName.split('.txt')[0]))
                                 TSP_cost_per_customer = temp_instance(dict_customer, nr_cust, nr_pup, customers_id, [dict_pickup[pup_id]for pup_id in pup_ids], dict_depot[depots_id[0]])
-
                                 with open(instanceDir, 'w+', encoding='utf-8') as file:
                                     file.write("NAME: {}\n".format(instanceName))
                                     file.write("SIZE: {}\n".format(nr_cust))
@@ -415,12 +412,10 @@ def generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type ):
 
                                     total_discount = 0
                                     for i in range(1,nr_cust+1):
-                                        distance_to_closest_pup = 10 ** 5
-                                        for pup_id in pup_ids:
-                                            distance_temp = int(math.sqrt((dict_pickup[pup_id]["x"] - dict_customer[customers_id[i-1]]["x"])** 2 +\
-                                                             (dict_pickup[pup_id]["y"] - dict_customer[customers_id[i-1]]["y"]) ** 2) + 0.5)
-                                            distance_to_closest_pup = min(distance_to_closest_pup, distance_temp)
-                                        total_discount += round(distance_to_closest_pup * u * TSP_cost_per_customer,2)
+                                        distance_to_the_first_pup = int(math.sqrt((dict_pickup[pup_ids[0]]["x"] - dict_customer[customers_id[i-1]]["x"])** 2 +\
+                                                             (dict_pickup[pup_ids[0]]["y"] - dict_customer[customers_id[i-1]]["y"]) ** 2) + 0.5)
+
+                                        total_discount += round(distance_to_the_first_pup * u * TSP_cost_per_customer,2)
 
                                     for i in range(1,nr_cust+1):
                                         distance_to_closest_pup = 10 ** 5
@@ -429,15 +424,14 @@ def generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type ):
                                                              (dict_pickup[pup_id]["y"] - dict_customer[customers_id[i-1]]["y"]) ** 2) + 0.5)
                                             distance_to_closest_pup = min(distance_to_closest_pup, distance_temp)
 
-                                        # customer_distance_to_pup = math.sqrt(( dict_pickup[pup_id]["x"]- dict_customer[customers_id[i-1]]["x"]) ** 2 +
-                                        #               ( dict_pickup[pup_id]["y"] - dict_customer[customers_id[i-1]]["y"]) ** 2)
+                                        customer_distance_to_pup = math.sqrt(( dict_pickup[pup_id]["x"]- dict_customer[customers_id[i-1]]["x"]) ** 2 +
+                                                      ( dict_pickup[pup_id]["y"] - dict_customer[customers_id[i-1]]["y"]) ** 2)
                                         if distance_to_closest_pup*4/TSP_cost_per_customer>3:
                                             p_home = 0.1
                                         elif distance_to_closest_pup*4/TSP_cost_per_customer < 1:
                                             p_home = 0.9
                                         else:
                                             p_home = 0.6
-                                        print( distance_to_closest_pup*4/TSP_cost_per_customer, p_home)
                                         file.write("{} {} {} {} {} {}\n".format(i,  (dict_customer[customers_id[i-1]]["x"]),
                                                                                 (dict_customer[customers_id[i-1]]["y"]), p_home, p_pup,
                                                                                 round(total_discount/ nr_cust,2))) #round(distance_to_closest_pup * u * TSP_cost_per_customer,2)
@@ -548,6 +542,7 @@ def temp_instance(dict_customer, nr_cust,nr_pups,customers_id, pupnodes ,depotno
         file.write("\n")
 
         file.write("CUST V. XCOORD. YCOORD. PROB_ALWAYS_HOME PROB_ALWAYS_PUP SHIPPING_FEE\n")
+
         for i in range(1, nr_cust + 1):
             file.write("{} {} {} {} {} {}\n".format(i, (dict_customer[customers_id[i - 1]]["x"]),
                                                     (dict_customer[customers_id[i - 1]]["y"]), 0.0, 0.0,0.0))
@@ -598,7 +593,6 @@ def set_pickup_point(dict_pickup, dict_customer, customers_id, nr_cust, nr_pups)
             if closest_pup_id != pup_id_best:
                 closest_pups.append(closest_pup_id)
     pup_ids = [pup_id_best] + sample(closest_pups, nr_pups-1)
-    print("pup_ids", pup_ids)
     return pup_ids
 
 def set_pickup_point_preselected(nr_pups, nr_cust, shuffle_id):

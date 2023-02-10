@@ -78,7 +78,7 @@ def samplingDeviated_PoissonBinomial(routeCosts, prob_dev_setMayVary_NORMED, set
 def one_policy_cost_estimation(instance, policy, solverType, **kwargs):
     n = instance.NR_CUST
     Y = range(2 ** n)
-    exp_discount = np.multiply(instance.shipping_fee, np.subtract(np.ones(n+1),instance.p_home)  )
+    exp_discount = np.multiply(instance.shipping_fee, np.subtract(np.ones(n+1), instance.p_home)  )
     solver = TSPSolver(instance=instance, solverType=solverType)
     cost = 0
 
@@ -90,11 +90,11 @@ def one_policy_cost_estimation(instance, policy, solverType, **kwargs):
         scenario_1 = 2 ** instance.NR_CUST - 1
         routeCosts[scenario_1] = solver.tspCost(scenario_1)
 
+
     policy_exp_disc = 0
     for i in range(1, n + 1):
         if policy & (1 << (i - 1)):
             policy_exp_disc += exp_discount[i]*constants.PROB_PLACE_ORDER
-
     cost += policy_exp_disc
 
     for scenario in Y:

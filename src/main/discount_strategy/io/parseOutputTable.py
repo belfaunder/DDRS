@@ -2269,7 +2269,8 @@ def compare_enumeration_no_Gurobi(folder ):
 
 def managerial_effect_delta(folder):
     #parseBAB(os.path.join(folder, "02_09_bab_exact_managerial_constDisc.txt"), folder, "02_09_bab_exact_managerial_constDisc")
-    df = pd.read_csv(os.path.join(folder, "02_09_bab_exact_managerial_constDisc.csv"))
+    parseBAB(os.path.join(folder, "02_08_bab_exact_managerial_DistDeptDiscount.txt"), folder, "02_08_bab_exact_managerial_DistDeptDiscount")
+    df = pd.read_csv(os.path.join(folder, "02_08_bab_exact_managerial_DistDeptDiscount.csv"))
     #df['p_accept'] = round(1 - df['p_home'] , 2)
     #df['p_accept'] = round(1 - df['p_home'] + (df['discount_rate']/3 - 0.02), 2)
     df['p_accept'] = round(1 - df['p_home'] + (df['nrPup']*0.01 - 0.03), 2)

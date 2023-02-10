@@ -103,7 +103,6 @@ def parse(file_instance):
         closest_cust_id = []
         pup = PUP(vertices[nr_cust + 1 + iter]['x'], vertices[nr_cust + 1 + iter]['y'], nr_cust + 1 + iter, closest_cust_id, iter)
         pups.append(pup)
-
     customersDistance = defaultdict(int)
 
     for i in range(1, nr_cust+1):
@@ -123,11 +122,13 @@ def parse(file_instance):
         closest_pup_id = nr_cust + 1
         distance_to_closest_pup = 10**5
         for pup in pups:
-            if int(math.sqrt((pup.xCoord - vertices[i]['x'] ) ** 2 +
-                                               (pup.yCoord - vertices[i]['y'] ) ** 2) +0.5) < distance_to_closest_pup:
-                distance_to_closest_pup = int(math.sqrt((pup.xCoord - vertices[i]['x'] ) ** 2 +
-                                               (pup.yCoord - vertices[i]['y'] ) ** 2) +0.5)
+
+            distance_temp = math.sqrt((pup.xCoord - verticesReenum[i]['x'] ) ** 2 +
+                                               (pup.yCoord - verticesReenum[i]['y'] ) ** 2)
+            if distance_temp < distance_to_closest_pup:
+                distance_to_closest_pup = distance_temp
                 closest_pup_id = pup.id
+
         customer = Customer(verticesReenum[i]['x'] , verticesReenum[i]['y'], i,verticesReenum[i]['prob_home'],verticesReenum[i]['prob_pup'],
                             verticesReenum[i]['shipping_fee'], closest_pup_id  )
 

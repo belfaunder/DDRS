@@ -46,17 +46,18 @@ class Painter:
             if (1<<(customer.id-1))&policy:
 
                 wd = ax.scatter(customer.xCoord, customer.yCoord, marker='o', s=45, color='red', label='customer with incentive')
-                #ax.text(customer.xCoord + 0.4, customer.yCoord + 0.2, customer, fontsize=10)
+                ax.text(customer.xCoord - 0.4, customer.yCoord - 0.6, customer, fontsize=10)
             else:
                 nd = ax.scatter(customer.xCoord, customer.yCoord, marker='o', s=35, color='white', edgecolors='black', label = "customer")
-                #ax.text(customer.xCoord + 0.4, customer.yCoord + 0.2, customer, fontsize=10)
-
+                ax.text(customer.xCoord - 0.4, customer.yCoord - 0.6, customer, fontsize=10)
 
 
         d = ax.scatter(instance.depot.xCoord, instance.depot.yCoord, marker='s', s=80, color='blue')
         #ax.text(instance.depot.xCoord + 0.35,instance.depot.yCoord + 0.35, instance.depot, fontsize=12)
 
-        p = ax.scatter(instance.pup.xCoord, instance.pup.yCoord, marker='^', s=80, color="blue")
+        for pup in instance.pups:
+            p = ax.scatter(pup.xCoord, pup.yCoord, marker='^', s=60, color="blue")
+            ax.text(pup.xCoord + 0.35, pup.yCoord + 0.35, pup, fontsize=12)
         #ax.text(instance.pup.xCoord - 1.35, instance.pup.yCoord - 0.55, instance.pup, fontsize=12)
 
 
