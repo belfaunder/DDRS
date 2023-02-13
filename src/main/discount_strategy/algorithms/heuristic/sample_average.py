@@ -96,7 +96,6 @@ def one_policy_cost_estimation(instance, policy, solverType, **kwargs):
         if policy & (1 << (i - 1)):
             policy_exp_disc += exp_discount[i]*constants.PROB_PLACE_ORDER
     cost += policy_exp_disc
-    print(policy_exp_disc)
 
     for scenario in Y:
         # if scenario is possible given the policy
@@ -105,7 +104,6 @@ def one_policy_cost_estimation(instance, policy, solverType, **kwargs):
             if scenario not in routeCosts:
                 routeCosts[scenario] = solver.tspCost(scenario)
             cost += scenarioProb * routeCosts[scenario]
-            print(scenario,bin(scenario), routeCosts[scenario],  scenarioProb)
 
     if 'routeCosts' in kwargs:
         return   [cost,cost,cost], routeCosts

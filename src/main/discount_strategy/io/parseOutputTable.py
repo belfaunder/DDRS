@@ -1676,8 +1676,8 @@ def experiment_variation_nrcust(folder):
     #parseBAB_RS_NODISC(os.path.join(folder, "bab_VRPDO_discount_proportional_02_02.txt"), folder, "i_VRPDO_discount_proportional_02_02")
     #parseBAB(os.path.join(folder, "02_08_bab_exact.txt"), folder, "02_08_bab_exact")
     #parseBAB(os.path.join(folder, "02_06_bab_exact_dominance_check.txt"), folder, "02_06_bab_exact_dominance_check")
-    #parseEnumeration(os.path.join(folder, "02_08_enumeration.txt"), folder, "02_08_enumeration")
-    df_enum = pd.read_csv(os.path.join(folder, "02_08_enumeration.csv"))
+    #parseEnumeration(os.path.join(folder, "02_13_enumeration.txt"), folder, "02_13_enumeration")
+    df_enum = pd.read_csv(os.path.join(folder, "02_13_enumeration.csv"))
     df_bab = pd.read_csv(os.path.join(folder, "02_08_bab_exact.csv"))
     df_bab_dominance_check = pd.read_csv(os.path.join(folder, "02_06_bab_exact_dominance_check.csv"))
     df_bab_dominance_check = df_bab_dominance_check[['instance','nodes', 'time_bab']].copy()
@@ -2367,11 +2367,11 @@ if __name__ == "__main__":
 
 
     #experiment_variation_nrcust_heuristic(folder)
-    #experiment_variation_nrcust(folder_2segm_manyPUP)
+    experiment_variation_nrcust(folder_2segm_manyPUP)
 
     #exp_profile()
     folder = os.path.join(path_to_data, "output", "i_VRPDO_2segm_manyPUP_managerial")
-    managerial_effect_delta(folder)
+    #managerial_effect_delta(folder)
 
 
     #experiment_bab_solution_time_classes(folder_2segm_manyPUP)
