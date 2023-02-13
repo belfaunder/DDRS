@@ -43,19 +43,18 @@ if __name__ == "__main__":
                                      "i_VRPDO_2segm_manyPUP_managerial", str(sys.argv[-1])+".txt")
     else:
         file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_managerial",
-                                     "VRPDOConstDisc_size_15_phome_0.4_ppup_0.0_incrate_0.06_nrpup5_1.txt")
+                                     "VRPDOConstDisc_size_15_phome_0.25_ppup_0.0_incrate_0.12_nrpup3_3.txt")
         #file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
         #                             "VRPDO_size_10_phome_0.2_ppup_0.0_incrate_0.03_0.txt")
 
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()
     print(OCVRPInstance)
+    bab = BABExact(instance=OCVRPInstance, solverType = solverType)
+    babPolicy, time, lbPrint, ubPrint = bab.runBranchAndBound()
 
-    # rs_policy, rs_cost = ring_star_deterministic_no_TW(OCVRPInstance, 0)
-    # print(rs_cost/15)
-    # print((sum(OCVRPInstance.shipping_fee[1:])/len(OCVRPInstance.shipping_fee[1:]))*(6/5)/ (rs_cost/15))
-    #"VRPDO_size_25_phome_0.2_ppup_0.2_incrate_0.4_2.txt", 122881)
-    #estimation_rs = sampleAverageApproximation_PoissonBinomial_1sample(OCVRPInstance, rsPolicy)
+
+     #estimation_rs = sampleAverageApproximation_PoissonBinomial_1sample(OCVRPInstance, rsPolicy)
     #print("estimation_rs", estimation_rs)
     #estimation_bab = sampleAverageApproximation_PoissonBinomial_1sample(OCVRPInstance, 0)
 
@@ -68,8 +67,7 @@ if __name__ == "__main__":
     #print("\n")
     #painter = Painter()
     #painter.printVertexDisc(OCVRPInstance, 7)
-    bab = BABExact(instance=OCVRPInstance, solverType = solverType)
-    babPolicy, time, lbPrint, ubPrint = bab.runBranchAndBound()
+
     # print(prefix,"pruned_by_cliques_nonleaf:", bab.pruned_cliques_nonleaf)
     # print(prefix,"pruned_by_cliques_leaf:", bab.pruned_cliques_leaf)
     # print(prefix,"pruned_by_rs_nonleaf:", bab.pruned_rs_nonleaf)
@@ -89,10 +87,12 @@ if __name__ == "__main__":
     #
     # painter = Painter()
     # painter.printVertexDisc(OCVRPInstance, babPolicy)
+    # babPolicy = 1
     # if 2**OCVRPInstance.NR_CUST < constants.SAMPLE_SIZE:
     #     estimation_bab = one_policy_cost_estimation(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)
     # else:
-    #     estimation_bab = sampleAverageApproximation_PoissonBinomial_1sample(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)
+    #     estimation_bab = sampleAverageApproximation_PoissonBinomial_1sample(instance = OCVRPInstance,
+    #                                                                         policy = babPolicy, solverType = solverType)
     #
     # print(prefix, 'Estimated_BAB_cost:',estimation_bab )
 

@@ -137,6 +137,7 @@ def parse(file_instance):
         for customer in customers:
             if customer.closest_pup_id==pup.id:
                 pup.closest_cust_id.append(customer.id)
+        #print(pup.id, pup.closest_cust_id)
     distanceMatrix = setDistances(verticesReenum, nr_cust, nr_pup)
 
     instance = OCVRPInstance(name, customers,depot, pups, distanceMatrix)

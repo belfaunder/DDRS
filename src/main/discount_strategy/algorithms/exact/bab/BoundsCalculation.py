@@ -85,6 +85,7 @@ def lb_insertion_cost(instance, setGivenDiscount,setNotGivenDiscount, diff_custo
     insertion_cost = 0
     previous_insertion = []
 
+    #prob_temp is the probability that non of the closest customers select home
     prob_temp = 1
     for pup in instance.pups:
         if diff_customer in pup.closest_cust_id:
@@ -93,12 +94,11 @@ def lb_insertion_cost(instance, setGivenDiscount,setNotGivenDiscount, diff_custo
                     prob_temp *= instance.p_home[cust]
             min_insertion_pup = 2 * instance.distanceMatrix[pup.id,0]
             for cust in setNotGivenDiscount:
-                min_insertion_pup= min(min_insertion_pup,2 * instance.distanceMatrix[pup.id,cust])
+                if cust is not diff_customer:
+                    min_insertion_pup= min(min_insertion_pup,2 * instance.distanceMatrix[pup.id,cust])
     probability_closest_pup_visited = 1 - prob_temp
 
     #minimum insertion cost for the pickup point of the diff_customer:
-
-
     p_left = 1
     for (i, j) in lb_insertion:
         if p_left > 0:
@@ -200,6 +200,7 @@ def updateByInsertionCost(node, Bab):
             additionSibling = 0
             if node.parent.children[0].fathomedState:
                 additionSibling = node.parent.children[0].lbVal() - Bab.bestNode.ubVal()
+
             else:
                 additionSibling = 0
             lbInsertionCost = lb_insertion_cost(Bab.instance, node.setGivenDiscount,node.setNotGivenDiscount, diff_customer)
@@ -231,7 +232,6 @@ def updateByInsertionCost(node, Bab):
 
 def updateBoundsFromDictionary(Bab, node):
     n = Bab.instance.NR_CUST
-    #print(len(Bab.instance.routeCost))
     # calculate the worst UB on the insetion cost given the information about customers with discount
     if node.parent is not None:
         #DOMINANCE_CHECK_REMOVED
@@ -270,25 +270,18 @@ def updateBoundsFromDictionary(Bab, node):
                     continue
                 for combination in itertools.combinations(setMayVary, gamma - len(
                         node.setNotGivenDiscount) - n + node.layer):
-                    #print("combinarion", combination, node.setNotGivenDiscount, scenario, bin(scenario)[2:])
                     scenario = node.withDiscountID
                     # make a scenario given policy and combination of deviated nodes
                     scenarioProb = initial_probability
-                    #print("initial probability", initial_probability)
                     for offset in combination:
                         mask = ~(1 << (offset - 1))
                         scenario = scenario & mask
                         scenarioProb *= Bab.instance.p_home[offset]/Bab.instance.p_pup_delta[offset]
-                        #print("offset", offset, Bab.instance.p_home[i], Bab.instance.p_pup_delta[i])
                     # check if scenario is already in node
                     if scenario not in node.tspDict[gamma]:
                         scenarioCost = Bab.instance.routeCost.get(scenario)
                         if scenarioCost:
                             node.tspDict[gamma].append(scenario)
-                            # scenarioProb = probability.scenarioProb_2segm(scenario, node.withDiscountID, node.layer, n,
-                            #                                               Bab.instance.p_pup_delta )
-                            # if (scenarioProb-scenarioProb1)>constants.EPS or (scenarioProb1-scenarioProb)>constants.EPS:
-                            #     print(scenarioProb, scenarioProb1)
                             node.tspProbDict[scenario] = scenarioProb
                             node.exactValueProb += scenarioProb
                             node.exactValue += scenarioCost * scenarioProb

@@ -1,20 +1,9 @@
-import os
-import sys
-from pathlib import Path
-import copy
 
-import math
-from itertools import combinations
 from src.main.discount_strategy.algorithms.exact.bab.BoundsCalculation import updateBoundsFromDictionary
 from src.main.discount_strategy.algorithms.exact.bab.BAB_super_class import BAB_super_class
 from src.main.discount_strategy.algorithms.exact.bab.BoundsCalculation import updateBoundsWithNewTSPs
-
-import numpy as np
 from time import process_time
-
 from src.main.discount_strategy.util import constants
-from src.main.discount_strategy.util import probability
-from src.main.discount_strategy.util.bit_operations import bitCount
 
 path_to_data = constants.PATH_TO_DATA
 
@@ -62,10 +51,10 @@ class BABExact(BAB_super_class):
             # containing the open nodes maintains the nodes in sorted order
             nextNode = openNodes.pop()
 
-            # print("\nnextNode", nextNode.withDiscountID, bin(nextNode.withDiscountID), nextNode.layer,  nextNode.withDiscountID, nextNode.exactValueProb, nextNode.exactValue, nextNode.lbRoute,
+            # print("\nnextNode", nextNode.withDiscountID, bin(nextNode.withDiscountID), nextNode.layer, nextNode.exactValueProb, nextNode.exactValue, nextNode.lbRoute,
             #       nextNode.ubRoute, nextNode.lbVal(), nextNode.ubVal())
-            #print("bestNode", bin(self.bestNode.withDiscountID), self.bestNode.withDiscountID,  self.bestNode.exactValueProb, self.bestNode.lbVal() ,self.bestNode.ubVal() , len(self.instance.routeCost))
-
+            # print("bestNode", bin(self.bestNode.withDiscountID), self.bestNode.withDiscountID,  self.bestNode.exactValueProb, self.bestNode.lbVal()  )
+            # print(len(self.instance.routeCost))
             if self.isTerminalNode(nextNode):
                 continue
             elif self.canFathom(nextNode):
@@ -144,6 +133,7 @@ class BABExact(BAB_super_class):
             return True
         else:
             updateBoundsFromDictionary(self, node)
+
             if node.fathomedState:
                 return True
             # compare the cost of a node with the best node
