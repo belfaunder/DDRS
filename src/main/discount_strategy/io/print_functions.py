@@ -46,10 +46,10 @@ class Painter:
             if (1<<(customer.id-1))&policy:
 
                 wd = ax.scatter(customer.xCoord, customer.yCoord, marker='o', s=45, color='red', label='customer with incentive')
-                ax.text(customer.xCoord - 0.4, customer.yCoord - 0.6, customer, fontsize=10)
+                ax.text(customer.xCoord - 0.4, customer.yCoord - 1, customer, fontsize=10)
             else:
                 nd = ax.scatter(customer.xCoord, customer.yCoord, marker='o', s=35, color='white', edgecolors='black', label = "customer")
-                ax.text(customer.xCoord - 0.4, customer.yCoord - 0.6, customer, fontsize=10)
+                ax.text(customer.xCoord - 0.4, customer.yCoord - 1, customer, fontsize=10)
 
 
         d = ax.scatter(instance.depot.xCoord, instance.depot.yCoord, marker='s', s=80, color='blue')
@@ -61,27 +61,27 @@ class Painter:
         #ax.text(instance.pup.xCoord - 1.35, instance.pup.yCoord - 0.55, instance.pup, fontsize=12)
 
 
-        if policy ==0:
-            plt.legend((nd, d, p),
-                           ('No Discount', 'Depot', 'PUP'),
-                           scatterpoints=1,
-                           loc='lower left',
-                           ncol=2,
-                           fontsize=8)
-        elif policy == 2**instance.NR_CUST -1:
-            plt.legend((wd, d, p),
-                       ('With Discount',  'Depot', 'PUP'),
-                       scatterpoints=1,
-                       loc='lower left',
-                       ncol=2,
-                       fontsize=8)
-        else:
-            plt.legend((wd, nd, d, p),
-                       ('Offered incentive', 'No incentive', 'Depot', 'Pickup point'),
-                       scatterpoints=1,
-                       bbox_to_anchor=(-0.01,1), loc="lower left",
-                       ncol=2,
-                       fontsize=11)
+        # if policy ==0:
+        #     plt.legend((nd, d, p),
+        #                    ('No Discount', 'Depot', 'PUP'),
+        #                    scatterpoints=1,
+        #                    loc='lower left',
+        #                    ncol=2,
+        #                    fontsize=8)
+        # elif policy == 2**instance.NR_CUST -1:
+        #     plt.legend((wd, d, p),
+        #                ('With Discount',  'Depot', 'PUP'),
+        #                scatterpoints=1,
+        #                loc='lower left',
+        #                ncol=2,
+        #                fontsize=8)
+        # else:
+        #     plt.legend((wd, nd, d, p),
+        #                ('Offered incentive', 'No incentive', 'Depot', 'Pickup point'),
+        #                scatterpoints=1,
+        #                bbox_to_anchor=(-0.01,1), loc="lower left",
+        #                ncol=2,
+        #                fontsize=11)
 
         plt.savefig(os.path.join(path_to_images, 'map.eps'), transparent=False,
                     bbox_inches='tight')

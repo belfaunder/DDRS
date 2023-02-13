@@ -176,3 +176,5 @@ def insertion_small_enough(old_strategy, x, sets, input_data):
             flag = 1
     return new_strategy,flag
 '''
+
+print(bin(30720))

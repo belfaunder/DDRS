@@ -43,14 +43,13 @@ if __name__ == "__main__":
                                      "i_VRPDO_2segm_manyPUP_managerial", str(sys.argv[-1])+".txt")
     else:
         file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_managerial",
-                                     "VRPDOConstDisc_size_15_phome_0.25_ppup_0.0_incrate_0.06_nrpup5_2.txt")
+                                     "VRPDOConstDisc_size_15_phome_0.55_ppup_0.0_incrate_0.06_nrpup1_1.txt")
         #file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
         #                             "VRPDO_size_10_phome_0.2_ppup_0.0_incrate_0.03_0.txt")
 
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()
     print(OCVRPInstance)
-
 
     # rs_policy, rs_cost = ring_star_deterministic_no_TW(OCVRPInstance, 0)
     # print(rs_cost/15)
@@ -67,6 +66,8 @@ if __name__ == "__main__":
     #EnumerationSolver.exactPolicyByEnumeration(True)
     #print(prefix, 'Time_enumeration ', process_time()-start_time)
     #print("\n")
+    # painter = Painter()
+    # painter.printVertexDisc(OCVRPInstance, 0)
     bab = BABExact(instance=OCVRPInstance, solverType = solverType)
     babPolicy, time, lbPrint, ubPrint = bab.runBranchAndBound()
     # print(prefix,"pruned_by_cliques_nonleaf:", bab.pruned_cliques_nonleaf)
@@ -88,6 +89,7 @@ if __name__ == "__main__":
     #
     # painter = Painter()
     # painter.printVertexDisc(OCVRPInstance, babPolicy)
+    #babPolicy = 0
     if 2**OCVRPInstance.NR_CUST < constants.SAMPLE_SIZE:
         estimation_bab = one_policy_cost_estimation(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)
     else:

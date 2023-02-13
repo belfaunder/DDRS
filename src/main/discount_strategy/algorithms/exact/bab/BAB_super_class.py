@@ -137,7 +137,7 @@ class BAB_super_class:
         #TODO: rs should be corrected for many PUPS
         rsPolicyID, rsValue = ring_star_deterministic_no_TW(instance, instance.NR_CUST)
         self.rs_policy = rsPolicyID
-        print("rsPolicyID", rsPolicyID)
+
         self.upperBoundNumberDiscount = self.instance.NR_CUST
 
 
@@ -214,7 +214,7 @@ class BAB_super_class:
         exactValueLeft = parent.exactValue
 
         # thus to reduce the problem with multiplication of small numbers
-        if parent.exactValueProb > constants.EPS:
+        if parent.exactValueProb > constants.EPS+1:
             lastEnteranceDictionary = self.root.lastEnteranceDictionary
             exactValProbRight = parent.exactValueProb / p_home[diff_customer]
             exactValueRight = parent.exactValue / p_home[diff_customer]
@@ -233,10 +233,7 @@ class BAB_super_class:
                         exactValueRight += self.instance.routeCost[scenario] * scenarioProbRight
                         tspProbDictRight[scenario] = scenarioProbRight
 
-        #TODO: recalculate using a new function
-
         lbScenariosRight = set_probability_covered(lbScenariosRight, noDiscountIDRight, tspProbDictRight, self.instance)
-
 
         #DOMINANCE_CHECK_REMOVED
         #lbRouteRight = sum(
@@ -304,6 +301,7 @@ class BAB_super_class:
 
     def addNode(self, parent, lbRoute, ubRoute, withDiscountID, noDiscountID, lbExpDiscount, ubExpDiscount,
                 tspDict,tspProbDict, lbScenarios, exactValueProb, exactValue, lastEnteranceDictionary):
+
         # Create a new node
         layer = parent.layer + 1
 
@@ -316,8 +314,7 @@ class BAB_super_class:
 
         if node.lbRoute + node.lbExpDiscount > self.bestNode.ubVal():
             node.fathomedState = True
-            #print(node.lbRoute ,  node.lbExpDiscount,  self.bestNode.ubVal())
-            #print(self.instance.instance.p_pup_home, self.instance.shipping_fee)
+
 
         #DOMINANCE_CHECK_REMOVED
         elif self.canFathomByTheoremCliques(node):

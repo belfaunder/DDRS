@@ -2284,7 +2284,7 @@ def managerial_effect_delta(folder):
 
     df = df[df.p_home < 1].copy()
     #df = df[df.nrPup == 5].copy()
-    df = df[df.instance_id==2].copy()
+    df = df[df.instance_id==1].copy()
     df = df[df.discount_rate==0.06].copy()
     #df = df[df.p_home==0.4].copy()
     #df = df[df.p_accept == 0.06].copy()

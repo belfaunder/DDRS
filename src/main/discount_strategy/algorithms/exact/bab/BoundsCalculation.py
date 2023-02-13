@@ -34,11 +34,11 @@ def set_probability_covered(lbScenarios,noDiscountID, tspProbDict, instance):
                 id_to_reduce = sum((1<<offset) for offset in combination)
                 lbScenarios[id][1] -= lbScenarios[id_to_reduce][1]
 
-    #TODO: carefully remove the probability from the lbScenarios wherever you add a new TSP
+    # TODO: carefully remove the probability from the lbScenarios wherever you add a new TSP
     # remove any scenario from lbCoveredProb if this scenario was included in calculation of exactValue(prob)
     for scenario in tspProbDict:
         for id in lbScenarios:
-            if not ~lbScenarios[id][2]&(2**(instance.NR_CUST) - 1) & scenario:
+            if not ~lbScenarios[id][2] & (2**(instance.NR_CUST) - 1) & scenario:
                 lbScenarios[id][1] -=  tspProbDict[scenario]
                 break
 

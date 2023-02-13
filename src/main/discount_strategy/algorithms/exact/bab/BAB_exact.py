@@ -33,8 +33,6 @@ class BABExact(BAB_super_class):
         t  = process_time()
         openNodes = self.openNodes
 
-        #print("upperBoundNumberDiscount", self.upperBoundNumberDiscount)
-
         # Visit all nodes until no nodes are left to branch on ( or a time limit is reached)
         start_time = process_time()
         time, lbPrint, ubPrint= [], [], []
@@ -64,14 +62,15 @@ class BABExact(BAB_super_class):
             # containing the open nodes maintains the nodes in sorted order
             nextNode = openNodes.pop()
 
-            # print("\nnextNode", nextNode.withDiscountID, bin(nextNode.withDiscountID), nextNode.withDiscountID, nextNode.exactValueProb, nextNode.exactValue, nextNode.lbRoute,
+            # print("\nnextNode", nextNode.withDiscountID, bin(nextNode.withDiscountID), nextNode.layer,  nextNode.withDiscountID, nextNode.exactValueProb, nextNode.exactValue, nextNode.lbRoute,
             #       nextNode.ubRoute, nextNode.lbVal(), nextNode.ubVal())
-            # print("bestNode", bin(self.bestNode.withDiscountID), self.bestNode.withDiscountID,  self.bestNode.exactValueProb, self.bestNode.lbVal() ,self.bestNode.ubVal() , len(self.instance.routeCost))
+            #print("bestNode", bin(self.bestNode.withDiscountID), self.bestNode.withDiscountID,  self.bestNode.exactValueProb, self.bestNode.lbVal() ,self.bestNode.ubVal() , len(self.instance.routeCost))
 
             if self.isTerminalNode(nextNode):
                 continue
             elif self.canFathom(nextNode):
                 nextNode.fathomed()
+
             elif self.canBranch(nextNode):
                 self.branch(nextNode, self.setCustomerToBranch(nextNode))
             if  openNodes.empty() and (not self.isLeaf(self.bestNode)):
@@ -92,7 +91,7 @@ class BABExact(BAB_super_class):
         except:
             print(prefix + "Time_first_meet_optimum,s: ", (process_time()))
         print(prefix+ 'BestPolicy_bab_ID: ', self.bestNode.withDiscountID)
-        print(prefix+ 'BestPolicy)bab: ', bin(self.bestNode.withDiscountID)[2:].zfill(self.instance.NR_CUST))
+        print(prefix+ 'BestPolicy_bab: ', bin(self.bestNode.withDiscountID)[2:].zfill(self.instance.NR_CUST))
 
         return self.bestNode.withDiscountID, time, lbPrint, ubPrint
     # Check whether the node can be fathomed, i.e.whether we can prune the node
@@ -111,8 +110,20 @@ class BABExact(BAB_super_class):
                             self.instance.routeCost[newScenario] = routingCost
                         else:
                             routingCost = self.instance.routeCost[newScenario]
+                        #check if the new lbScenario costs less than the lbScenarios, where less pups are visited
+                        new_lbScenarioRoutingCost =routingCost
+                        for pup in  self.instance.pups:
+                            if (1 << pup.number) & id:
+                                min_probability_to_visit_pup = 0
+                                for cust_id in pup.closest_cust_id:
+                                    if  (1<<cust_id) & node.withDiscountID:
+                                        min_probability_to_visit_pup = 1
+                                        break
+                                if not min_probability_to_visit_pup:
+                                    id_less_pups_visited = id & ~(1 << pup.number)
+                                    new_lbScenarioRoutingCost = min(new_lbScenarioRoutingCost, node.lbScenarios[id_less_pups_visited][0])
                         node.lbRoute +=  node.lbScenarios[id][1] *(routingCost - node.lbScenarios[id][0])
-                        node.lbScenarios[id][0] = routingCost
+                        node.lbScenarios[id][0] = new_lbScenarioRoutingCost
                         node.lbScenarios[id][2] = newScenario
             return False
         # in node is the current BestNode, then update the bounds, and return False (negative answer to canFathom)
