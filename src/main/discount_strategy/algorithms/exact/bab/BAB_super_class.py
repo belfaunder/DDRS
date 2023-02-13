@@ -310,7 +310,10 @@ class BAB_super_class:
         node = Node(parent, lbRoute, ubRoute, withDiscountID, noDiscountID, lbExpDiscount, ubExpDiscount,
                     tspDict,tspProbDict, lbScenarios,  exactValueProb, exactValue, layer,
                     priorityCoef, lastEnteranceDictionary)
-
+        # if withDiscountID== 0:
+        #     print("inBranch", layer, exactValueProb, exactValue, lbRoute)
+        #     for scenario in lbScenarios:
+        #         print(lbScenarios[scenario] )
 
         if node.lbRoute + node.lbExpDiscount > self.bestNode.ubVal():
             node.fathomedState = True

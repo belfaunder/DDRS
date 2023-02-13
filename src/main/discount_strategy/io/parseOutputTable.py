@@ -2270,12 +2270,12 @@ def compare_enumeration_no_Gurobi(folder ):
 def managerial_effect_delta(folder):
     #parseBAB(os.path.join(folder, "02_09_bab_exact_managerial_constDisc.txt"), folder,
     #         "02_09_bab_exact_managerial_constDisc")
-    #parseBAB(os.path.join(folder, "02_09_bab_exact_managerial_constDisc.txt"), folder, "02_09_bab_exact_managerial_constDisc")
+    #parseBAB(os.path.join(folder, "02_13_bab_exact_managerial_constDisc.txt"), folder, "02_13_bab_exact_managerial_constDisc")
     #parseBAB(os.path.join(folder, "02_08_bab_exact_managerial_DistDeptDiscount.txt"), folder, "02_08_bab_exact_managerial_DistDeptDiscount")
-    df = pd.read_csv(os.path.join(folder, "02_09_bab_exact_managerial_constDisc.csv"))
-    df['p_accept'] = round(1 - df['p_home'] , 2)
+    df = pd.read_csv(os.path.join(folder, "02_13_bab_exact_managerial_constDisc.csv"))
+    #df['p_accept'] = round(1 - df['p_home'] , 2)
     #df['p_accept'] = round(1 - df['p_home'] + (df['discount_rate']/3 - 0.02), 2)
-    #df['p_accept'] = round(1 - df['p_home'] + (df['nrPup']*0.01 - 0.03), 2)
+    df['p_accept'] = round(1 - df['p_home'] + (df['nrPup']*0.01 - 0.03), 2)
     df['num_offered_disc_bab'] = df.apply(lambda x: round(bitCount(x['policy_bab_ID'])), axis=1)
 
     folder_data = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_managerial")
@@ -2291,7 +2291,6 @@ def managerial_effect_delta(folder):
     # df['in_pup_bab'] = df.apply(
     #         lambda x: calculate_exp_pup_utilization(x['policy_bab_ID'], x['instance'], folder_data),
     #         axis=1)
-
     sns.set()
     sns.set(font_scale=1.2)
     sns.set_context(rc={'font.sans-serif': 'Computer Modern Sans Serif'})
@@ -2367,11 +2366,11 @@ if __name__ == "__main__":
 
 
     #experiment_variation_nrcust_heuristic(folder)
-    experiment_variation_nrcust(folder_2segm_manyPUP)
+    #experiment_variation_nrcust(folder_2segm_manyPUP)
 
     #exp_profile()
     folder = os.path.join(path_to_data, "output", "i_VRPDO_2segm_manyPUP_managerial")
-    #managerial_effect_delta(folder)
+    managerial_effect_delta(folder)
 
 
     #experiment_bab_solution_time_classes(folder_2segm_manyPUP)

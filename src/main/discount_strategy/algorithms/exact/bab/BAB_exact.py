@@ -98,6 +98,7 @@ class BABExact(BAB_super_class):
     # skip node
     def canFathom(self, node):
         def exploreNode():
+
             #DOMINANCE_CHECK_REMOVED
             #return False
             nonlocal node
@@ -111,14 +112,14 @@ class BABExact(BAB_super_class):
                         else:
                             routingCost = self.instance.routeCost[newScenario]
                         #check if the new lbScenario costs less than the lbScenarios, where less pups are visited
-                        new_lbScenarioRoutingCost =routingCost
+                        new_lbScenarioRoutingCost = routingCost
                         for pup in  self.instance.pups:
                             if (1 << pup.number) & id:
                                 min_probability_to_visit_pup = 0
                                 for cust_id in pup.closest_cust_id:
-                                    if  (1<<cust_id) & node.withDiscountID:
-                                        min_probability_to_visit_pup = 1
-                                        break
+                                   if  (1<<cust_id) & node.withDiscountID:
+                                       min_probability_to_visit_pup = 1
+                                       break
                                 if not min_probability_to_visit_pup:
                                     id_less_pups_visited = id & ~(1 << pup.number)
                                     new_lbScenarioRoutingCost = min(new_lbScenarioRoutingCost, node.lbScenarios[id_less_pups_visited][0])

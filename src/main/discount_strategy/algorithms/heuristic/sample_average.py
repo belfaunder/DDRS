@@ -104,6 +104,7 @@ def one_policy_cost_estimation(instance, policy, solverType, **kwargs):
             if scenario not in routeCosts:
                 routeCosts[scenario] = solver.tspCost(scenario)
             cost += scenarioProb * routeCosts[scenario]
+            #print(scenario, bin(scenario), scenarioProb, routeCosts[scenario])
 
     if 'routeCosts' in kwargs:
         return   [cost,cost,cost], routeCosts
@@ -234,6 +235,7 @@ def sampleAverageApproximation_PoissonBinomial_1sample(instance, policy, solverT
         if scenario not in routeCosts:
             routeCosts[scenario] = solver.tspCost(scenario)
         sampleCost.append(routeCosts[scenario])
+
     sampleCost_mean, policy_cost_error = average_error(sampleCost, sample_size)
 
     policy_cost_lb = policy_cost +sampleCost_mean - policy_cost_error

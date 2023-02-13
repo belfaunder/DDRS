@@ -43,7 +43,7 @@ if __name__ == "__main__":
                                      "i_VRPDO_2segm_manyPUP_managerial", str(sys.argv[-1])+".txt")
     else:
         file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_managerial",
-                                     "VRPDOConstDisc_size_15_phome_0.55_ppup_0.0_incrate_0.06_nrpup1_1.txt")
+                                     "VRPDOConstDisc_size_15_phome_0.4_ppup_0.0_incrate_0.06_nrpup5_1.txt")
         #file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
         #                             "VRPDO_size_10_phome_0.2_ppup_0.0_incrate_0.03_0.txt")
 
@@ -66,8 +66,8 @@ if __name__ == "__main__":
     #EnumerationSolver.exactPolicyByEnumeration(True)
     #print(prefix, 'Time_enumeration ', process_time()-start_time)
     #print("\n")
-    # painter = Painter()
-    # painter.printVertexDisc(OCVRPInstance, 0)
+    #painter = Painter()
+    #painter.printVertexDisc(OCVRPInstance, 7)
     bab = BABExact(instance=OCVRPInstance, solverType = solverType)
     babPolicy, time, lbPrint, ubPrint = bab.runBranchAndBound()
     # print(prefix,"pruned_by_cliques_nonleaf:", bab.pruned_cliques_nonleaf)
@@ -89,13 +89,12 @@ if __name__ == "__main__":
     #
     # painter = Painter()
     # painter.printVertexDisc(OCVRPInstance, babPolicy)
-    #babPolicy = 0
-    if 2**OCVRPInstance.NR_CUST < constants.SAMPLE_SIZE:
-        estimation_bab = one_policy_cost_estimation(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)
-    else:
-        estimation_bab = sampleAverageApproximation_PoissonBinomial_1sample(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)
-
-    print(prefix, 'Estimated_BAB_cost:',estimation_bab )
+    # if 2**OCVRPInstance.NR_CUST < constants.SAMPLE_SIZE:
+    #     estimation_bab = one_policy_cost_estimation(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)
+    # else:
+    #     estimation_bab = sampleAverageApproximation_PoissonBinomial_1sample(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)
+    #
+    # print(prefix, 'Estimated_BAB_cost:',estimation_bab )
 
     # EnumerationSolver = ScenarioEnumerationSolver(instance=OCVRPInstance, solverType=solverType)
     # EnumerationSolver.exactPolicyByEnumeration_withoutGurobi_2segm()

@@ -33,7 +33,11 @@ def set_probability_covered(lbScenarios,noDiscountID, tspProbDict, instance):
             for combination in itertools.combinations(visited_pups,  number_visited_pups):
                 id_to_reduce = sum((1<<offset) for offset in combination)
                 lbScenarios[id][1] -= lbScenarios[id_to_reduce][1]
-
+    for id in reversed(lbScenarios):
+        for pup in instance.pups:
+            if (1 << pup.number) & id:
+                id_less_pups_visited = id & ~(1 << pup.number)
+                lbScenarios[id][0] = min(lbScenarios[id][0], lbScenarios[id_less_pups_visited][0])
     # TODO: carefully remove the probability from the lbScenarios wherever you add a new TSP
     # remove any scenario from lbCoveredProb if this scenario was included in calculation of exactValue(prob)
     for scenario in tspProbDict:
