@@ -10,7 +10,7 @@ import random
 from src.main.discount_strategy.algorithms.exact.TSPSolver import TSPSolver
 from src.main.discount_strategy.util import constants
 from src.main.discount_strategy.util import probability
-
+import itertools
 path_to_poibin = os.path.join((Path(os.path.abspath(__file__)).parents[5]),"ext","poibin-master")
 sys.path.insert(1, path_to_poibin)
 from poibin import PoiBin
@@ -76,7 +76,14 @@ def samplingDeviated_PoissonBinomial(routeCosts, prob_dev_setMayVary_NORMED, set
 
 # evaluation of cost of a policy with enumeration of all possible scenario costs
 def one_policy_cost_estimation(instance, policy, solverType, **kwargs):
+
+
     n = instance.NR_CUST
+    setMayVary = []
+    for offset in range(n):
+        mask = 1 << offset
+        if policy & mask:
+            setMayVary.append(offset + 1)
     Y = range(2 ** n)
     exp_discount = np.multiply(instance.shipping_fee, np.subtract(np.ones(n+1), instance.p_home)  )
     solver = TSPSolver(instance=instance, solverType=solverType)
@@ -97,13 +104,25 @@ def one_policy_cost_estimation(instance, policy, solverType, **kwargs):
             policy_exp_disc += exp_discount[i]*constants.PROB_PLACE_ORDER
     cost += policy_exp_disc
 
-    for scenario in Y:
-        # if scenario is possible given the policy
-        if probability.scenarioPossible_2segm(scenario, policy, n,n):
+    for num_may_vary in  range(bin(policy).count("1") + 1) :
+        for combination in itertools.combinations(setMayVary, num_may_vary):
+            scenario = policy
+            # make a scenario given policy and combination of deviated nodes
+            for offset in combination:
+                mask = ~(1 << (offset - 1))
+                scenario = scenario & mask
             scenarioProb = probability.scenarioProb_2segm(scenario, policy, n, n, instance.p_pup_delta)
             if scenario not in routeCosts:
                 routeCosts[scenario] = solver.tspCost(scenario)
             cost += scenarioProb * routeCosts[scenario]
+
+    # for scenario in Y:
+    #     # if scenario is possible given the policy
+    #     if probability.scenarioPossible_2segm(scenario, policy, n,n):
+    #         scenarioProb = probability.scenarioProb_2segm(scenario, policy, n, n, instance.p_pup_delta)
+    #         if scenario not in routeCosts:
+    #             routeCosts[scenario] = solver.tspCost(scenario)
+    #         cost += scenarioProb * routeCosts[scenario]
             #print(scenario, bin(scenario), scenarioProb, routeCosts[scenario])
 
     if 'routeCosts' in kwargs:

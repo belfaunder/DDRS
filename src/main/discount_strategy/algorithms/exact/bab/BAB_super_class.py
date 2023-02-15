@@ -318,7 +318,6 @@ class BAB_super_class:
         if node.lbRoute + node.lbExpDiscount > self.bestNode.ubVal():
             node.fathomedState = True
 
-
         #DOMINANCE_CHECK_REMOVED
         elif self.canFathomByTheoremCliques(node):
             node.fathomedState = True
