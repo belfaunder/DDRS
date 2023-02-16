@@ -228,7 +228,6 @@ def ring_star_deterministic_no_TW_old(instance, max_number_offered_discounts, **
     #print([i for i in range(n+2) if i not in selected_disc])
     #tour = subtour(selected,[i for i in range(n+2) if i not in selected_disc])
     #print('Optimal tour: %s' % str(tour))
-
     #m.printAttr('X')
     #print(bin(policyID)[2:])
     return policyID, m.objVal

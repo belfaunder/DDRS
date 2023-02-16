@@ -33,8 +33,8 @@ if __name__ == "__main__":
         file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "data",
                                      "i_VRPDO_2segm_manyPUP_managerial", str(sys.argv[-1]) + ".txt")
     else:
-        file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_managerial",
-                                     "VRPDODistDepAccept_size_15_phome_0.9_ppup_0.0_incrate_0.03_nrpup3_4.txt")
+        file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_large",
+                                     "VRPDO2_size_10_phome_0.4_ppup_0.0_incrate_0.06_nrpup3_0.txt")
         # file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
         #                             "VRPDO_size_10_phome_0.2_ppup_0.0_incrate_0.03_0.txt")
 

@@ -372,7 +372,7 @@ def parseBAB_temp(file_path, folder, output_name):
                     l_min = instance.split('_')[10]
                     l_max = instance.split('_')[12]
                     instance_id = instance.split('_')[-1]
-                    discount = (instance.split('_')[8]).split('.txt')[0]
+                    discount = (instance.split('_')[14]).split('.txt')[0]
                     time_running = float(lines[idx + 4].split(':')[1])
                     nodes = float(lines[idx + 5].split(':')[1])
                     num_tsps = float(lines[idx + 6].split(':')[1])
@@ -413,58 +413,55 @@ def parseBAB_RS_NODISC(file_path, folder, output_name):
                 if 'Instance:' in line:
                     instance = (line.split(':')[1].replace('\n', '')).replace(' ', '').replace('.txt', '')
                     nrCust = int(lines[idx + 1].split(':')[1])
-                    eps = round(float(lines[idx + 2].split(':')[1].split()[0]), 4)
+                    nrPup = int(lines[idx + 2].split(':')[1])
                     p_home = instance.split('_')[4]
-                    p_pup = instance.split('_')[6]
                     discount_rate = (instance.split('_')[8]).split('.txt')[0]
 
-                    time_bab = float(lines[idx + 3].split(':')[1])
-                    time_tb = float(lines[idx + 9].split(':')[1])
-                    nodes = float(lines[idx + 4].split(':')[1])
-                    num_tsps = float(lines[idx + 5].split(':')[1])
-                    optimal = int(lines[idx + 6].split(':')[1])
-                    obj_val_bab = float(lines[idx + 12].split('[')[1].split(',')[0])
+                    time_bab = float(lines[idx + 4].split(':')[1])
+                    time_tb = float(lines[idx + 10].split(':')[1])
+                    nodes = float(lines[idx + 5].split(':')[1])
+                    num_tsps = float(lines[idx + 6].split(':')[1])
+                    optimal = int(lines[idx + 7].split(':')[1])
+                    obj_val_bab = float(lines[idx + 13].split('[')[1].split(',')[0])
                     # 2sd:
-                    sd_bab = float(lines[idx + 12].split('[')[1].split(',')[0]) - float(
-                        lines[idx + 12].split('[')[1].split(',')[1])
-                    policy_ID_bab = int(lines[idx + 10].split(':')[1])
+                    sd_bab = float(lines[idx + 13].split('[')[1].split(',')[0]) - float(
+                        lines[idx + 13].split('[')[1].split(',')[1])
+                    policy_ID_bab = int(lines[idx + 11].split(':')[1])
                     try:
-                        obj_val_rs = float(lines[idx + 14].split('[')[1].split(',')[0])
+                        obj_val_rs = float(lines[idx + 15].split('[')[1].split(',')[0])
                         # 2sd:
-                        sd_rs = float(lines[idx + 14].split('[')[1].split(',')[0]) - float(
-                            lines[idx + 14].split('[')[1].split(',')[1])
-                        policy_ID_rs = int(lines[idx + 13].split(':')[1])
-                        obj_val_nodisc = float(lines[idx + 15].split('[')[1].split(',')[0])
-                        sd_nodisc = float(lines[idx + 15].split('[')[1].split(',')[0]) - float(
+                        sd_rs = float(lines[idx + 15].split('[')[1].split(',')[0]) - float(
                             lines[idx + 15].split('[')[1].split(',')[1])
-                        obj_val_uniform = float(lines[idx + 16].split('[')[1].split(',')[0])
-                        sd_uniform = float(lines[idx + 16].split('[')[1].split(',')[0]) - float(
-                            lines[idx + 16].split('[')[1].split(',')[1])
+                        policy_ID_rs = int(lines[idx + 14].split(':')[1])
+                        obj_val_nodisc = float(lines[idx + 16].split('[')[1].split(',')[0])
+                        obj_val_uniform = float(lines[idx + 17].split('[')[1].split(',')[0])
+                        sd_uniform = float(lines[idx + 17].split('[')[1].split(',')[0]) - float(
+                            lines[idx + 17].split('[')[1].split(',')[1])
 
-                        gap_rs = (obj_val_rs - obj_val_bab) / obj_val_rs * 100
-                        gap_nodisc = (obj_val_nodisc - obj_val_bab) / obj_val_nodisc * 100
-                        gap_uniform = (obj_val_uniform - obj_val_bab) / obj_val_uniform * 100
+                        gap_rs = (obj_val_rs - obj_val_bab) / obj_val_bab * 100
+                        gap_nodisc = (obj_val_nodisc - obj_val_bab) / obj_val_bab * 100
+                        gap_uniform = (obj_val_uniform - obj_val_bab) / obj_val_bab * 100
                         data.append(
-                            [instance, nrCust, p_home, p_pup, discount_rate, policy_ID_bab, obj_val_bab, sd_bab, time_bab,
+                            [instance, nrCust,nrPup,  p_home,  discount_rate, policy_ID_bab, obj_val_bab, sd_bab, time_bab,
                              time_tb, nodes,
-                             num_tsps, optimal, policy_ID_rs, obj_val_rs, sd_rs, gap_rs, obj_val_nodisc, sd_nodisc,
+                             num_tsps, optimal, policy_ID_rs, obj_val_rs, sd_rs, gap_rs, obj_val_nodisc,
                              gap_nodisc,
-                             obj_val_uniform, sd_uniform, gap_uniform, eps])
+                             obj_val_uniform, sd_uniform, gap_uniform])
                     except:
                         data.append(
-                            [instance, nrCust, p_home, p_pup, discount_rate, policy_ID_bab, obj_val_bab, sd_bab,
+                            [instance, nrCust,nrPup, p_home,  discount_rate, policy_ID_bab, obj_val_bab, sd_bab,
                              time_bab,
                              time_tb, nodes,
-                             num_tsps, optimal, "", "", "", "", "", "",  "", "", "", "", eps])
+                             num_tsps, optimal, "", "", "", "", "", "",  "", "", "", ""])
 
             except:
-                data.append([eps, nrCust, p_home, p_pup, discount_rate, "", "", "", "", "", "", "",
+                data.append([ nrCust, p_home,  discount_rate, "", "", "", "", "", "", "",
                              "", "", "", instance])
                 print("bab problem with instance ", (line.split('/')[len(line.split('/')) - 1]), " line: ", idx)
-    rowTitle = ['instance', 'nrCust', 'p_home', 'p_pup', 'discount_rate', 'policy_bab_ID', 'obj_val_bab', '2sd_bab',
+    rowTitle = ['instance', 'nrCust', 'nrPup', 'p_home',  'discount_rate', 'policy_bab_ID', 'obj_val_bab', '2sd_bab',
                 'time_bab', 'time_tb', 'nodes',
-                'num_tsps', 'optimal', 'policy_ID_rs', 'obj_val_rs', '2sd_rs', 'gap_rs', 'obj_val_nodisc', '2sd_nodisc',
-                'gap_nodisc', 'obj_val_uniform', '2sd_uniform', 'gap_uniform', 'eps']
+                'num_tsps', 'optimal', 'policy_ID_rs', 'obj_val_rs', '2sd_rs', 'gap_rs', 'obj_val_nodisc',
+                'gap_nodisc', 'obj_val_uniform', '2sd_uniform', 'gap_uniform']
     writer(os.path.join(folder, output_name + ".csv"), data, rowTitle)
 
 
@@ -896,447 +893,447 @@ def sensitivity_disc_size_comparison_nodisc(folder, folder_data):
     # plt.show()
 
 
-def sensitivity_prob_comparison_nodisc(folder, folder_data):
-    # parseBAB_RS_NODISC(os.path.join(folder, "bab_rs_nodisc_i_VRPDO_prob.txt"), folder, "bab_rs_nodisc_i_VRPDO_prob")
-    df = pd.read_csv(os.path.join(folder, "bab_rs_nodisc_i_VRPDO_prob.csv"))
-    df['instance_type'] = df['instance'].apply(lambda x: str(x).split('_')[0])
-    df['in_pup_bab'] = df.apply(lambda x: calculate_exp_pup_utilization(x['policy_bab_ID'], x['instance'], folder_data),
-                                axis=1)
-
-    df['num_offered_disc_bab'] = df.apply(lambda x: round(bitCount(x['policy_bab_ID']) ), axis=1)
-    df['num_offered_disc_rs'] = df.apply(lambda x: round(bitCount(x['policy_ID_rs']) / 15 * 100), axis=1)
-    df['num_offered_disc_uniform'] = 100
-
-    df['in_pup_rs'] = df.apply(lambda x: calculate_exp_pup_utilization(x['policy_ID_rs'], x['instance'], folder_data),
-                               axis=1)
-    df['in_pup_uniform'] = df.apply(lambda x: calculate_exp_pup_utilization(32767, x['instance'], folder_data), axis=1)
-    df['p_accept'] = round(1 - df['p_pup'] - df['p_home'], 2)
-
-    df['exp_discount_cost_bab'] = df.apply(
-        lambda x: calculate_exp_disc_cost(x['policy_bab_ID'], x['instance'], folder_data), axis=1)
-    df['upper_bound'] = df.apply(lambda x: calculate_exp_disc_cost(x['policy_bab_ID'], x['instance'], folder_data),
-                                 axis=1)
-    df['exp_discount_cost_bab_percent'] = (df['exp_discount_cost_bab'] / df['obj_val_bab']) * 100
-
-    df['exp_discount_cost_rs'] = df.apply(
-        lambda x: calculate_exp_disc_cost(x['policy_ID_rs'], x['instance'], folder_data), axis=1)
-    df['exp_discount_cost_rs_percent'] = (df['exp_discount_cost_rs'] / df['obj_val_rs']) * 100
-
-    df['exp_discount_cost_uniform'] = df.apply(lambda x: calculate_exp_disc_cost(32767, x['instance'], folder_data),
-                                               axis=1)
-    df['exp_discount_cost_uniform_percent'] = (df['exp_discount_cost_uniform'] / df['obj_val_uniform']) * 100
-
-    df['nodisc_bab, %'] = round((df['obj_val_nodisc'] - df['obj_val_bab']) / df['obj_val_bab'] * 100, 1)
-    df['nodisc_rs, %'] = round((df['obj_val_nodisc'] - df['obj_val_rs']) / df['obj_val_nodisc'] * 100, 1)
-    df['nodisc_uniform, %'] = round((df['obj_val_nodisc'] - df['obj_val_uniform']) / df['obj_val_nodisc'] * 100, 1)
-    df['rs_bab_comp,%'] = df.apply(lambda x: (x['obj_val_rs'] - x['obj_val_bab']) / x['obj_val_bab'] * 100, axis=1)
-    df['all_bab_comp,%'] = df.apply(lambda x: (x['obj_val_uniform'] - x['obj_val_bab']) / x['obj_val_bab'] * 100,
-                                    axis=1)
-
-    # loss of using the best policy among d-ds, all, BM
-    df['loss_best_comp,%'] = df.apply(
-        lambda x: min(x['nodisc_bab, %'], (x['obj_val_rs'] - x['obj_val_bab']) / x['obj_val_rs'] * 100,
-                      (x['obj_val_nodisc'] - x['obj_val_bab']) / x['obj_val_nodisc'] * 100), axis=1)
-    for instance_type in df.instance_type.unique():
-        print("instance_type", instance_type)
-        df1 = df[df.instance_type == instance_type].copy()
-        discount_rates = []
-
-        rs_saving = []
-        uniform_savings = []
-        # key(p_pup):p_delta
-        dict_probabilities = {0.0: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0],
-                              0.2: [0.0, 0.2, 0.4, 0.6, 0.8],
-                              0.4: [0.0, 0.2, 0.4, 0.6],
-                              0.6: [0.0, 0.2, 0.4],
-                              0.8: [0.0, 0.2],
-                              1.0: [0.0]}
-
-        # upper and lower bounds:
-        df['lower_bound'] = df.apply(lambda x: calculate_lower_bounds(x['instance'], folder_data), axis=1)
-        df['upper_bound'] = df.apply(lambda x: calculate_upper_bounds(x['instance'], folder_data), axis=1)
-        df['improvement'] = df.apply(lambda x: 100*(x['upper_bound']-x['obj_val_bab'])/x['upper_bound'], axis=1)
-
-        # df_temp = df[
-        #     (df.p_pup == 0.0) | (df.p_pup == 0.2) | (df.p_pup == 0.4) | (df.p_pup == 0.6) | (df.p_pup == 0.8)   ].copy()
-        # sns.set()
-        # sns.set(font_scale=1.2)
-        # #rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
-        # sns.set_context(rc={'font.sans-serif': 'Computer Modern Sans Serif'})
-        # sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
-        # sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
-        # fig, axes = plt.subplots(1, 1, sharex=True)
-        #
-        # x = [ 0.2, 0.4, 0.6, 0.8, 1]
-        # cmap = sns.color_palette("deep")
-        # m = np.array(['o', 'P', 's', '^', 'D',"+"])
-        # lns = np.array(['-', '--', '-.', ':', 'dashdot'])
-        # change_x = [-0.04, -0.02, 0, 0.02,0.04]
-        # labels = [r'$p = 0.8$', r'$p = 0.6$', r'$p = 0.4$',  r'$p = 0.2$',  r'$p = 0.0$',]
-        # p_pups =  [0.8, 0.6, 0.4, 0.2, 0.0]
-        # for iter in [0,1,2,3,4]:
-        #     df_temp2 = df_temp[df_temp['p_pup'] == p_pups[iter]].copy()
-        #     y = []
-        #     yerr = []
-        #     ymin = []
-        #     ymax = []
-        #     x_print = []
-        #     for delta in x:
-        #         df_temp3 = df_temp2[df_temp2.p_accept == delta].copy()
-        #         x_print.append(delta + change_x[iter])
-        #         y.append(df_temp3['obj_val_bab'].mean())
-        #         ymin.append(df_temp3['obj_val_bab'].min())
-        #         ymax.append(df_temp3['obj_val_bab'].max())
-        #
-        #         yerr.append([df_temp3['obj_val_bab'].mean() - df_temp3['obj_val_bab'].min(),
-        #                      df_temp3['obj_val_bab'].max() - df_temp3['obj_val_bab'].mean()])
-        #
-        #     yerr = np.transpose(yerr)
-        #     # plt.scatter(x_print, y_min,  marker = '-', s= 16,  label = class_name[class_id-1])
-        #     # plt.errorbar(x_print, y_min, yerr=None, marker = m[class_id-1],  ms=3, linestyle = '', mec = cmap[class_id-1],mfc= cmap[class_id-1], c = cmap[class_id-1],)
-        #
-        #     plt.errorbar(x_print, y, yerr=yerr, marker=m[iter], ms=7, linewidth=0.5,
-        #                  label=labels[iter],
-        #                  mec=cmap[iter], mfc=cmap[iter], c=cmap[iter], elinewidth=1, capsize=3)
-
-
-        #sns.lineplot(ax=axes, data=df_temp, x='p_accept', y='obj_val_bab', hue='p_pup', style="p_pup", markers=True,
-        #             markersize=9, linewidth=1,
-        #             palette="deep", err_style="bars", ci=100, err_kws={'capsize': 3}, dashes=False)
-
-
-
-        # file_path = os.path.join(folder, "bab_rs_nodisc_i_VRPDO_prob_bounds.xlsx")
-        # writer = pd.ExcelWriter(file_path, engine='openpyxl')
-        # df.to_excel(writer, index=False)
-        # writer.save()
-        #axes.fill_between(x, df['upper_bound'].min(), df['upper_bound'].max(), alpha=0.2)
-        #axes.axhline(df['upper_bound'].mean(), ls='--')
-        # lower bound
-        #axes.axhline(df['lower_bound'].mean(), ls='--')
-
-        # axes.set(xlabel='' + r'$\Delta$')
-        # axes.set_xticks([0.2, 0.4, 0.6, 0.8, 1.0])
-        # axes.set(ylabel='Expected fulfillment cost')
-        # plt.legend(title=False, loc='lower right',ncol=2, bbox_to_anchor=(0.99, 0.01))
-        # #plt.legend(title=False, loc='lower right', bbox_to_anchor=(0.99, 0.1),
-        # #           labels=[r'$p = 0.0$', r'$p = 0.2$', r'$p = 0.4$', r'$p = 0.6$', r'$p = 0.8$', r'$p = 1.0$'])
-        # plt.savefig(os.path.join(path_to_images, 'Total_cost_hue_ppup_bounds.eps'), transparent=False,
-        #             bbox_inches='tight')
-        # plt.show()
-
-
-        # sns.set()
-        # sns.set(font_scale=1.1)
-        # rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
-        # sns.set_context(rc={'font.sans-serif': 'Computer Modern Sans Serif'})
-        # sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
-        # sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
-        # fig, axes = plt.subplots(1, 1, sharex=True)
-        # sns.lineplot(ax=axes, data=df_temp, x='p_pup', y='exp_discount_cost_bab', hue='p_accept', style="p_accept", linewidth=1,markers=True, markersize=7,
-        #             palette="deep",  err_style="bars", ci=68, err_kws={'capsize': 3})
-        # axes.set(xlabel='' + r'$p$')
-        # axes.set(ylabel='Expected incentive cost')
-        # #plt.legend(title=False, labels=[r'$p = 0.0$', r'$p = 0.2$', r'$p = 0.4$', r'$p = 0.6$'])
-        # plt.legend(title=False, labels=[r'$\Delta = 0.2$', r'$\Delta = 0.4$', r'$\Delta = 0.6$', r'$\Delta = 0.8$',
-        #                                 r'$\Delta = 1.0$'])
-        # plt.savefig(os.path.join(path_to_images, 'Incentive_cost_hue_ppup.eps'), transparent=False, bbox_inches='tight')
-        # plt.show()
-        #
-
-        # sns.set()
-        # df_temp = df[(df.p_pup == 0.0)].copy()
-        # sns.set(font_scale=1.3)
-        # #rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
-        # sns.set_context(rc={'font.sans-serif': 'Computer Modern Sans Serif'})
-        # sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
-        # sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
-        #
-        # cmap = sns.color_palette("deep")
-        # fig, axes = plt.subplots(1, 1, sharex=True)
-        # x = [ 0.2, 0.4, 0.6, 0.8, 1]
-        # y=[]
-        # yerr =[]
-        # for p_accept in x:
-        #     df_temp2 = df_temp[df_temp.p_accept == p_accept].copy()
-        #     y.append(df_temp2['num_offered_disc_bab'].mean())
-        #     yerr.append([df_temp2['num_offered_disc_bab'].mean() - df_temp2['num_offered_disc_bab'].min(),
-        #                                        df_temp2['num_offered_disc_bab'].max() - df_temp2['num_offered_disc_bab'].mean()])
-        # yerr = np.transpose(yerr)
-        # plt.errorbar(x, y, yerr=yerr, marker='D', ms=7, capsize=3,mec=cmap[4], mfc=cmap[4], c=cmap[4] )
-        #
-        # # sns.lineplot(ax=axes, data=df_temp, x='p_accept', y='num_offered_disc_bab',
-        # #              linewidth=1, markersize=7, markers=True, marker='o',
-        # #              palette="deep", err_style="bars", ci=68, err_kws={'capsize': 3})
-        # axes.set(xlabel='' + r'$\Delta$')
-        # axes.set(ylabel='Number of offered incentives')
-        # # plt.legend(title=False, labels=[r'$\Delta = 0.2$', r'$\Delta = 0.4$', r'$\Delta = 0.6$', r'$\Delta = 0.8$', r'$\Delta = 1.0$'])
-        # plt.savefig(os.path.join(path_to_images, 'Number_incentives_delta.eps'), transparent=False, bbox_inches='tight')
-        # plt.show()
-
-
-
-
-        # fontsize = 15
-        # sns.set(font_scale=1.4)
-        # sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
-        # sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
-        # sns.color_palette("Spectral", as_cmap=True)
-        # fig, axes = plt.subplots(1, 1, sharex=True)
-        # sns.lineplot(ax=axes, data=df_temp, x='p_accept', y='rs_bab_comp,%',markers=True,
-        #              markersize=8,linewidth=1,palette="deep", err_style="bars", ci=96, err_kws={'capsize': 3})
-        # #sns.relplot(data=df_temp, x='p_pup', y='p_accept',hue='gap_nodisc_mean', s=100, palette="Spectral")
-        # plt.show()
-
-        # fontsize = 15
-        # sns.set(font_scale=1.4)
-        # sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
-        # sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
-        # fig, axes = plt.subplots(1, 1, sharex=True)
-        # sns.lineplot(ax=axes, data=df_temp, x='p_pup', y='nodisc_bab, %', hue='p_home',  style="p_home",markers=True, markersize=8,
-        #              linewidth=1,palette="deep", err_style="bars", ci=68, err_kws={'capsize': 3})
-        # plt.show()
-        # sns.set(font_scale=1.4)
-        # sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
-        # sns.set_style('ticks', {"xtick.directionp_accep": "in", "ytick.direction": "in"})
-        # fig, axes = plt.subplots(1, 1, sharex=True)
-        # sns.lineplot(ax=axes, data=df_temp, x='p_pup', y='rs_bab_comp,%', hue='p_home', style="p_home", markers=True,
-        #              markersize=8,
-        #              linewidth=1, palette="deep", err_style="bars", ci=68, err_kws={'capsize': 3})
-        # plt.show()
-        # sns.set(font_scale=1.4)
-        # sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
-        # sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
-        # fig, axes = plt.subplots(1, 1, sharex=True)
-        # sns.lineplot(ax=axes, data=df_temp, x='p_pup', y='all_bab_comp,%', hue='p_home', style="p_home", markers=True,
-        #              markersize=8,
-        #              linewidth=1, palette="deep", err_style="bars", ci=68, err_kws={'capsize': 3})
-        # plt.show()
-        #
-
-        # fontsize = 15
-        # sns.set(font_scale=1.4)
-        # df_temp = df[(df.p_pup == 0.0)| (df.p_pup==0.4) | (df.p_pup ==0.8)].copy()
-        # df_temp['1p_accept'] = 1-df_temp['p_accept']
-        #
-        # rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
-        # sns.set_context(rc={'font.sans-serif': 'Computer Modern Sans Serif'})
-        # sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
-        # sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
-        # fig, axes = plt.subplots(1, 1, sharex=True)
-        # sns.lineplot(ax=axes, data=df_temp, x='p_accept', y='nodisc_bab, %', hue='p_home', style='p_home',
-        #              markers=True, markersize=8, linewidth=1, palette="deep", err_style="bars", ci=68, err_kws={'capsize': 3})
-        # axes.set(xlabel=r'$\Delta$')
-        # axes.set(ylabel='Improvement over NOI (%)')
-        # #plt.legend(title=False, labels=[r'$p = 0.0$', r'$p = 0.4$', r'$p = 0.8$'])
-        # plt.savefig(os.path.join(path_to_images, 'Bab_nodisc_comparison.eps'), transparent=False, bbox_inches='tight')
-        # plt.show()
-        #
-        # sns.set(font_scale=1.4)
-        # rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
-        # sns.set_context(rc={'font.sans-serif': 'Computer Modern Sans Serif'})
-        # sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
-        # sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
-        # fig, axes = plt.subplots(1, 1, sharex=True)
-        # sns.lineplot(ax=axes, data=df_temp, x='p_accept', y='rs_bab_comp,%',hue='p_home', style='p_home',
-        #              markers=True, markersize=8,
-        #              linewidth=1, palette="deep", err_style="bars", ci=68, err_kws={'capsize': 3})
-        # #plt.legend(title=False, labels=[r'$p = 0.0$', r'$p = 0.4$', r'$p = 0.8$'])
-        # axes.set(xlabel=r'$\Delta$')
-        # axes.set(ylabel='Improvement over D-DS (%)')
-        # plt.savefig(os.path.join(path_to_images, 'Bab_rs_comparison.eps'), transparent=False, bbox_inches='tight')
-        # plt.show()
-        #
-        # sns.set(font_scale=1.4)
-        # rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
-        # sns.set_context(rc={'font.sans-serif': 'Computer Modern Sans Serif'})
-        # sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
-        # sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
-        # fig, axes = plt.subplots(1, 1, sharex=True)
-        # sns.lineplot(ax=axes, data=df_temp, x='p_accept', y='all_bab_comp,%',  markers=True, markersize=8,hue='p_home', style='p_home',
-        #              linewidth=1, palette="deep", err_style="bars", ci=68, err_kws={'capsize': 4})
-        # axes.set(xlabel=r'$\Delta$')
-        # axes.set(ylabel='Improvement over ALL (%)')
-        # #plt.legend(title=False, labels=[r'$p = 0.0$', r'$p = 0.4$', r'$p = 0.8$'])
-        # plt.savefig(os.path.join(path_to_images, 'Bab_all_comparison.eps'), transparent=False, bbox_inches='tight')
-        # plt.show()
-
-
-        fig, axes = plt.subplots(1, 4, sharey=True, figsize=(19, 5), gridspec_kw={'width_ratios': [10, 8, 6, 4]})
-        sns.set(font_scale=1.4)
-
-        rc = {'font.sans-serif': 'Computer Modern Sans Serif'}
-        sns.set_context(rc=rc)
-        sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
-        sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
-        plt.rcParams.update(**rc)
-        cmap = sns.color_palette("deep")
-        m = np.array(['o', '^', 'D', '^', 'D', "+"])
-
-        iter = -1
-        for p_pup_param in [0.0, 0.2, 0.4, 0.6]:
-            iter += 1
-            df_temp = df[df.p_pup == p_pup_param].copy()
-
-            x = [0.2, 0.4, 0.6, 0.8, 1.0]
-            if iter == 1:
-                x = [0.2, 0.4, 0.6, 0.8]
-                #axes[iter].set_xlim(None, 0.82)
-            if iter == 2:
-                x = [0.2, 0.4, 0.6]
-                #axes[iter].set_xlim(None, 0.62)
-            if iter == 3:
-                x = [ 0.2, 0.4]
-                #axes[iter].set_xlim(0.18, 0.45)
-                #axes[iter].set_xticks([0.0, 0.2, 0.4])
-            y = []
-            yerr = []
-
-            y_d = []
-            yerr_d = []
-
-            y_noi = []
-            yerr_noi = []
-
-            x_all = [temp-0.02 for temp in x]
-            x_noi = [temp+0.02 for temp in x]
-
-            for p_accept in x:
-                df_temp2 = df_temp[df_temp.p_accept == p_accept].copy()
-                y.append(df_temp2['all_bab_comp,%'].mean())
-                yerr.append([df_temp2['all_bab_comp,%'].mean() - df_temp2['all_bab_comp,%'].min(),
-                                                   df_temp2['all_bab_comp,%'].max() - df_temp2['all_bab_comp,%'].mean()])
-
-                y_d.append(df_temp2['rs_bab_comp,%'].mean())
-                yerr_d.append([df_temp2['rs_bab_comp,%'].mean() - df_temp2['rs_bab_comp,%'].min(),
-                             df_temp2['rs_bab_comp,%'].max() - df_temp2['rs_bab_comp,%'].mean()])
-
-                y_noi.append(df_temp2['nodisc_bab, %'].mean())
-                yerr_noi.append([df_temp2['nodisc_bab, %'].mean() - df_temp2['nodisc_bab, %'].min(),
-                               df_temp2['nodisc_bab, %'].max() - df_temp2['nodisc_bab, %'].mean()])
-
-            yerr = np.transpose(yerr)
-            yerr_d = np.transpose(yerr_d)
-            yerr_noi = np.transpose(yerr_noi)
-
-            axes[iter].errorbar(x_all, y, yerr=yerr, marker=m[2], ms=7, linewidth=0.3,
-                         label="ALL", mec=cmap[2], mfc=cmap[2], c=cmap[2], elinewidth=1.5, capsize=4)
-
-            axes[iter].errorbar(x_noi, y_noi, yerr=yerr_noi, marker=m[0], ms=7, linewidth=0.3,
-                         label="NOI", mec=cmap[0], mfc=cmap[0], c=cmap[0], elinewidth=1.5, capsize=4)
-
-            axes[iter].errorbar(x, y_d, yerr=yerr_d, marker=m[1], ms=7, linewidth=0.3,
-                         label="DI", mec=cmap[1], mfc=cmap[1], c=cmap[1], elinewidth=1.5, capsize=4)
-
-            axes[iter].set(xlabel='Problem size, n')
-
-            # sns.lineplot(ax=axes[iter], data=df_temp, x='p_accept', y='all_bab_comp,%', marker="s", markersize=7,
-            #              linewidth=1,
-            #              palette="deep", err_style="bars", ci=68, err_kws={'capsize': 3}, label='ALL', legend=0)
-            # sns.lineplot(ax=axes[iter], data=df_temp, x='p_accept', y='rs_bab_comp,%', marker="o", markersize=8,
-            #              linewidth=1,
-            #              palette="deep", err_style="bars", ci=68, err_kws={'capsize': 3}, label='DI', legend=0)
-            # sns.lineplot(ax=axes[iter], data=df_temp, x='p_accept', y='nodisc_bab, %',  marker="^", markersize=9, linewidth=1,
-            #             palette="deep", err_style="bars", ci=68, err_kws={'capsize': 3}, label = 'NOI', legend=0)
-            # plt.legend(title=False,loc = 'upper right', bbox_to_anchor=(0.995, 0.995))
-
-            axes[iter].set_title(r'$p =$' + str(p_pup_param))
-            # if iter == 1:
-            #     axes[iter].set_xlim(None, 0.82)
-            # if iter == 2:
-            #     axes[iter].set_xlim(None, 0.62)
-            # if iter == 3:
-            #     axes[iter].set_xlim(None, 0.45)
-            axes[iter].set_xlabel(r'$\Delta$', fontsize=18)
-
-        handles, labels = axes[iter].get_legend_handles_labels()
-
-        axes[0].set_ylabel('Savings (%)', fontsize = 19)
-        axes[0].legend(handles, labels,loc = 'upper left', bbox_to_anchor=(0.01, 0.99),  title=False)
-
-        plt.savefig(os.path.join(path_to_images, 'Improvement_threparcee_plots.eps'), transparent=False,
-                    bbox_inches='tight')
-        plt.show()
-        #
-        # sns.set(font_scale=1.4)
-        # rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
-        # sns.set_context(rc={'font.sans-serif': 'Computer Modern Sans Serif'})
-        # sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
-        # sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
-        # fig, axes = plt.subplots(1, 1, sharex=True)
-        # sns.lineplot(ax=axes, data=df_temp, x='p_pup', y='rs_bab_comp,%',
-        #              markers=True, markersize=8,
-        #              linewidth=1, palette="deep", err_style="bars", ci=68, err_kws={'capsize': 3})
-        # #axes.set(xlabel=r'$p')
-        # axes.set(ylabel='Improvement over D-DS (%)')
-        # plt.savefig(os.path.join(path_to_images, 'Bab_rs_comparison.eps'), transparent=False, bbox_inches='tight')
-        # plt.show()
-        #
-        # sns.set(font_scale=1.4)
-        # rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
-        # sns.set_context(rc={'font.sans-serif': 'Computer Modern Sans Serif'})
-        # sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
-        # sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
-        # fig, axes = plt.subplots(1, 1, sharex=True)
-        # sns.lineplot(ax=axes, data=df_temp, x='p_pup', y='all_bab_comp,%', markers=True, markersize=8,
-        #              linewidth=1, palette="deep", err_style="bars", ci=68, err_kws={'capsize': 4})
-        # #axes.set(xlabel=r'$p$')
-        # axes.set(ylabel='Improvement over ALL (%)')
-        # plt.savefig(os.path.join(path_to_images, 'Bab_all_comparison.eps'), transparent=False, bbox_inches='tight')
-        # plt.show()
-
-        # print("bab")
-        # for p_pup in dict_probability_print:
-        #     bab_savings = []
-        #     for p_delta in dict_probability_print[p_pup]:
-        #         #bab_savings.append( str(int(round(df1.loc[(df1['p_pup'] == p_pup) & (df1['p_home'] == round((1 - p_delta - p_pup), 1)), 'obj_val_bab'].mean(),0))))
-        #         bab_savings.append(str(round(df1.loc[(df1['p_pup'] == p_pup) & (
-        #                     df1['p_home'] == round((1 - p_delta - p_pup), 1)), 'nodisc_bab, %'].mean(), 1)))
-        #         #in_pup_bab
-        #         bab_savings.append(int(round(df1.loc[(df1['p_pup'] == p_pup) & (
-        #                         df1['p_home'] == round((1 - p_delta - p_pup), 1)), 'num_offered_disc_bab'].mean(),0)))
-        #         bab_savings.append(int(round(df1.loc[(df1['p_pup'] == p_pup) & (
-        #                 df1['p_home'] == round((1 - p_delta - p_pup), 1)), 'exp_discount_cost_bab_percent'].mean(), 0)))
-        #         #append(int(round(df1.loc[(df1['p_pup'] == p_pup) & (df1['p_home'] == round((1 - p_delta - p_pup), 1)), 'obj_val_bab'].mean(),0)))
-        #     print("&$p=",p_pup,"$&", ' & '.join(map(str, bab_savings)), "\\")
-        # print("rs")
-        # for p_pup in dict_probability_print:
-        #     rs_savings = []
-        #     for p_delta in dict_probability_print[p_pup]:
-        #         # rs_savings.append(str(int(round(df1.loc[(df1['p_pup'] == p_pup) & (
-        #         #         df1['p_home'] == round((1 - p_delta - p_pup), 1)), 'obj_val_rs'].mean(),
-        #         #                                 0))))
-        #         rs_savings.append(str(round(df1.loc[(df1['p_pup'] == p_pup) & (
-        #                 df1['p_home'] == round((1 - p_delta - p_pup), 1)), 'nodisc_rs, %'].mean(), 1)))
-        #
-        #         rs_savings.append(int(round(df1.loc[(df1['p_pup'] == p_pup) & (
-        #                 df1['p_home'] == round((1 - p_delta - p_pup), 1)), 'num_offered_disc_rs'].mean())))
-        #         rs_savings.append(int(round(df1.loc[(df1['p_pup'] == p_pup) & (
-        #                 df1['p_home'] == round((1 - p_delta - p_pup), 1)), 'exp_discount_cost_rs_percent'].mean(), 0)))
-        #         rs_savings.append("ydali")
-        #         #rs_savings.append(int(round(df1.loc[(df1['p_pup'] == p_pup) & (
-        #         #        df1['p_home'] == round((1 - p_delta - p_pup), 1)), 'obj_val_rs'].mean())))
-        #
-        #     print("&$p=",p_pup,"$&",' & '.join(map(str, rs_savings)), "\\")
-        # print("uniform")
-        # for p_pup in dict_probability_print:
-        #     uniform_savings = []
-        #     for p_delta in dict_probability_print[p_pup]:
-        #         #uniform_savings.append(str(int(round(df1.loc[(df1['p_pup'] == p_pup) & (
-        #         #        df1['p_home'] == round((1 - p_delta - p_pup), 1)), 'obj_val_uniform'].mean(),
-        #         #                                     0))))
-        #         uniform_savings.append(str(round(df1.loc[(df1['p_pup'] == p_pup) & (
-        #                     df1['p_home'] == round((1 - p_delta - p_pup), 1)), 'nodisc_uniform, %'].mean(), 1)))
-        #
-        #         uniform_savings.append(int(round(df1.loc[(df1['p_pup'] == p_pup) & (
-        #                     df1['p_home'] == round((1 - p_delta - p_pup), 1)), 'num_offered_disc_uniform'].mean())))
-        #         uniform_savings.append(int(round(df1.loc[(df1['p_pup'] == p_pup) & (
-        #                 df1['p_home'] == round((1 - p_delta - p_pup), 1)), 'exp_discount_cost_uniform_percent'].mean(), 0)))
-        #         uniform_savings.append("ydali")
-        #         #uniform_savings.append(int(round(df1.loc[(df1['p_pup'] == p_pup) & (
-        #         #        df1['p_home'] == round((1 - p_delta - p_pup), 1)), 'obj_val_uniform'].mean())))
-        #
-        #     print("&$p=",p_pup,"$&", ' & '.join(map(str, uniform_savings)), "\\")
+# def sensitivity_prob_comparison_nodisc_old(folder, folder_data):
+#     parseBAB_RS_NODISC(os.path.join(folder, "bab_rs_nodisc_i_VRPDO_prob.txt"), folder, "bab_rs_nodisc_i_VRPDO_prob")
+#     df = pd.read_csv(os.path.join(folder, "bab_rs_nodisc_i_VRPDO_prob.csv"))
+#     df['instance_type'] = df['instance'].apply(lambda x: str(x).split('_')[0])
+#     df['in_pup_bab'] = df.apply(lambda x: calculate_exp_pup_utilization(x['policy_bab_ID'], x['instance'], folder_data),
+#                                 axis=1)
+#
+#     df['num_offered_disc_bab'] = df.apply(lambda x: round(bitCount(x['policy_bab_ID']) ), axis=1)
+#     df['num_offered_disc_rs'] = df.apply(lambda x: round(bitCount(x['policy_ID_rs']) / 15 * 100), axis=1)
+#     df['num_offered_disc_uniform'] = 100
+#
+#     df['in_pup_rs'] = df.apply(lambda x: calculate_exp_pup_utilization(x['policy_ID_rs'], x['instance'], folder_data),
+#                                axis=1)
+#     df['in_pup_uniform'] = df.apply(lambda x: calculate_exp_pup_utilization(32767, x['instance'], folder_data), axis=1)
+#     df['p_accept'] = round(1 - df['p_pup'] - df['p_home'], 2)
+#
+#     df['exp_discount_cost_bab'] = df.apply(
+#         lambda x: calculate_exp_disc_cost(x['policy_bab_ID'], x['instance'], folder_data), axis=1)
+#     df['upper_bound'] = df.apply(lambda x: calculate_exp_disc_cost(x['policy_bab_ID'], x['instance'], folder_data),
+#                                  axis=1)
+#     df['exp_discount_cost_bab_percent'] = (df['exp_discount_cost_bab'] / df['obj_val_bab']) * 100
+#
+#     df['exp_discount_cost_rs'] = df.apply(
+#         lambda x: calculate_exp_disc_cost(x['policy_ID_rs'], x['instance'], folder_data), axis=1)
+#     df['exp_discount_cost_rs_percent'] = (df['exp_discount_cost_rs'] / df['obj_val_rs']) * 100
+#
+#     df['exp_discount_cost_uniform'] = df.apply(lambda x: calculate_exp_disc_cost(32767, x['instance'], folder_data),
+#                                                axis=1)
+#     df['exp_discount_cost_uniform_percent'] = (df['exp_discount_cost_uniform'] / df['obj_val_uniform']) * 100
+#
+#     df['nodisc_bab, %'] = round((df['obj_val_nodisc'] - df['obj_val_bab']) / df['obj_val_bab'] * 100, 1)
+#     df['nodisc_rs, %'] = round((df['obj_val_nodisc'] - df['obj_val_rs']) / df['obj_val_nodisc'] * 100, 1)
+#     df['nodisc_uniform, %'] = round((df['obj_val_nodisc'] - df['obj_val_uniform']) / df['obj_val_nodisc'] * 100, 1)
+#     df['rs_bab_comp,%'] = df.apply(lambda x: (x['obj_val_rs'] - x['obj_val_bab']) / x['obj_val_bab'] * 100, axis=1)
+#     df['all_bab_comp,%'] = df.apply(lambda x: (x['obj_val_uniform'] - x['obj_val_bab']) / x['obj_val_bab'] * 100,
+#                                     axis=1)
+#
+#     # loss of using the best policy among d-ds, all, BM
+#     df['loss_best_comp,%'] = df.apply(
+#         lambda x: min(x['nodisc_bab, %'], (x['obj_val_rs'] - x['obj_val_bab']) / x['obj_val_rs'] * 100,
+#                       (x['obj_val_nodisc'] - x['obj_val_bab']) / x['obj_val_nodisc'] * 100), axis=1)
+#     for instance_type in df.instance_type.unique():
+#         print("instance_type", instance_type)
+#         df1 = df[df.instance_type == instance_type].copy()
+#         discount_rates = []
+#
+#         rs_saving = []
+#         uniform_savings = []
+#         # key(p_pup):p_delta
+#         dict_probabilities = {0.0: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0],
+#                               0.2: [0.0, 0.2, 0.4, 0.6, 0.8],
+#                               0.4: [0.0, 0.2, 0.4, 0.6],
+#                               0.6: [0.0, 0.2, 0.4],
+#                               0.8: [0.0, 0.2],
+#                               1.0: [0.0]}
+#
+#         # upper and lower bounds:
+#         df['lower_bound'] = df.apply(lambda x: calculate_lower_bounds(x['instance'], folder_data), axis=1)
+#         df['upper_bound'] = df.apply(lambda x: calculate_upper_bounds(x['instance'], folder_data), axis=1)
+#         df['improvement'] = df.apply(lambda x: 100*(x['upper_bound']-x['obj_val_bab'])/x['upper_bound'], axis=1)
+#
+#         # df_temp = df[
+#         #     (df.p_pup == 0.0) | (df.p_pup == 0.2) | (df.p_pup == 0.4) | (df.p_pup == 0.6) | (df.p_pup == 0.8)   ].copy()
+#         # sns.set()
+#         # sns.set(font_scale=1.2)
+#         # #rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+#         # sns.set_context(rc={'font.sans-serif': 'Computer Modern Sans Serif'})
+#         # sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
+#         # sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
+#         # fig, axes = plt.subplots(1, 1, sharex=True)
+#         #
+#         # x = [ 0.2, 0.4, 0.6, 0.8, 1]
+#         # cmap = sns.color_palette("deep")
+#         # m = np.array(['o', 'P', 's', '^', 'D',"+"])
+#         # lns = np.array(['-', '--', '-.', ':', 'dashdot'])
+#         # change_x = [-0.04, -0.02, 0, 0.02,0.04]
+#         # labels = [r'$p = 0.8$', r'$p = 0.6$', r'$p = 0.4$',  r'$p = 0.2$',  r'$p = 0.0$',]
+#         # p_pups =  [0.8, 0.6, 0.4, 0.2, 0.0]
+#         # for iter in [0,1,2,3,4]:
+#         #     df_temp2 = df_temp[df_temp['p_pup'] == p_pups[iter]].copy()
+#         #     y = []
+#         #     yerr = []
+#         #     ymin = []
+#         #     ymax = []
+#         #     x_print = []
+#         #     for delta in x:
+#         #         df_temp3 = df_temp2[df_temp2.p_accept == delta].copy()
+#         #         x_print.append(delta + change_x[iter])
+#         #         y.append(df_temp3['obj_val_bab'].mean())
+#         #         ymin.append(df_temp3['obj_val_bab'].min())
+#         #         ymax.append(df_temp3['obj_val_bab'].max())
+#         #
+#         #         yerr.append([df_temp3['obj_val_bab'].mean() - df_temp3['obj_val_bab'].min(),
+#         #                      df_temp3['obj_val_bab'].max() - df_temp3['obj_val_bab'].mean()])
+#         #
+#         #     yerr = np.transpose(yerr)
+#         #     # plt.scatter(x_print, y_min,  marker = '-', s= 16,  label = class_name[class_id-1])
+#         #     # plt.errorbar(x_print, y_min, yerr=None, marker = m[class_id-1],  ms=3, linestyle = '', mec = cmap[class_id-1],mfc= cmap[class_id-1], c = cmap[class_id-1],)
+#         #
+#         #     plt.errorbar(x_print, y, yerr=yerr, marker=m[iter], ms=7, linewidth=0.5,
+#         #                  label=labels[iter],
+#         #                  mec=cmap[iter], mfc=cmap[iter], c=cmap[iter], elinewidth=1, capsize=3)
+#
+#
+#         #sns.lineplot(ax=axes, data=df_temp, x='p_accept', y='obj_val_bab', hue='p_pup', style="p_pup", markers=True,
+#         #             markersize=9, linewidth=1,
+#         #             palette="deep", err_style="bars", ci=100, err_kws={'capsize': 3}, dashes=False)
+#
+#
+#
+#         # file_path = os.path.join(folder, "bab_rs_nodisc_i_VRPDO_prob_bounds.xlsx")
+#         # writer = pd.ExcelWriter(file_path, engine='openpyxl')
+#         # df.to_excel(writer, index=False)
+#         # writer.save()
+#         #axes.fill_between(x, df['upper_bound'].min(), df['upper_bound'].max(), alpha=0.2)
+#         #axes.axhline(df['upper_bound'].mean(), ls='--')
+#         # lower bound
+#         #axes.axhline(df['lower_bound'].mean(), ls='--')
+#
+#         # axes.set(xlabel='' + r'$\Delta$')
+#         # axes.set_xticks([0.2, 0.4, 0.6, 0.8, 1.0])
+#         # axes.set(ylabel='Expected fulfillment cost')
+#         # plt.legend(title=False, loc='lower right',ncol=2, bbox_to_anchor=(0.99, 0.01))
+#         # #plt.legend(title=False, loc='lower right', bbox_to_anchor=(0.99, 0.1),
+#         # #           labels=[r'$p = 0.0$', r'$p = 0.2$', r'$p = 0.4$', r'$p = 0.6$', r'$p = 0.8$', r'$p = 1.0$'])
+#         # plt.savefig(os.path.join(path_to_images, 'Total_cost_hue_ppup_bounds.eps'), transparent=False,
+#         #             bbox_inches='tight')
+#         # plt.show()
+#
+#
+#         # sns.set()
+#         # sns.set(font_scale=1.1)
+#         # rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+#         # sns.set_context(rc={'font.sans-serif': 'Computer Modern Sans Serif'})
+#         # sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
+#         # sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
+#         # fig, axes = plt.subplots(1, 1, sharex=True)
+#         # sns.lineplot(ax=axes, data=df_temp, x='p_pup', y='exp_discount_cost_bab', hue='p_accept', style="p_accept", linewidth=1,markers=True, markersize=7,
+#         #             palette="deep",  err_style="bars", ci=68, err_kws={'capsize': 3})
+#         # axes.set(xlabel='' + r'$p$')
+#         # axes.set(ylabel='Expected incentive cost')
+#         # #plt.legend(title=False, labels=[r'$p = 0.0$', r'$p = 0.2$', r'$p = 0.4$', r'$p = 0.6$'])
+#         # plt.legend(title=False, labels=[r'$\Delta = 0.2$', r'$\Delta = 0.4$', r'$\Delta = 0.6$', r'$\Delta = 0.8$',
+#         #                                 r'$\Delta = 1.0$'])
+#         # plt.savefig(os.path.join(path_to_images, 'Incentive_cost_hue_ppup.eps'), transparent=False, bbox_inches='tight')
+#         # plt.show()
+#         #
+#
+#         # sns.set()
+#         # df_temp = df[(df.p_pup == 0.0)].copy()
+#         # sns.set(font_scale=1.3)
+#         # #rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+#         # sns.set_context(rc={'font.sans-serif': 'Computer Modern Sans Serif'})
+#         # sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
+#         # sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
+#         #
+#         # cmap = sns.color_palette("deep")
+#         # fig, axes = plt.subplots(1, 1, sharex=True)
+#         # x = [ 0.2, 0.4, 0.6, 0.8, 1]
+#         # y=[]
+#         # yerr =[]
+#         # for p_accept in x:
+#         #     df_temp2 = df_temp[df_temp.p_accept == p_accept].copy()
+#         #     y.append(df_temp2['num_offered_disc_bab'].mean())
+#         #     yerr.append([df_temp2['num_offered_disc_bab'].mean() - df_temp2['num_offered_disc_bab'].min(),
+#         #                                        df_temp2['num_offered_disc_bab'].max() - df_temp2['num_offered_disc_bab'].mean()])
+#         # yerr = np.transpose(yerr)
+#         # plt.errorbar(x, y, yerr=yerr, marker='D', ms=7, capsize=3,mec=cmap[4], mfc=cmap[4], c=cmap[4] )
+#         #
+#         # # sns.lineplot(ax=axes, data=df_temp, x='p_accept', y='num_offered_disc_bab',
+#         # #              linewidth=1, markersize=7, markers=True, marker='o',
+#         # #              palette="deep", err_style="bars", ci=68, err_kws={'capsize': 3})
+#         # axes.set(xlabel='' + r'$\Delta$')
+#         # axes.set(ylabel='Number of offered incentives')
+#         # # plt.legend(title=False, labels=[r'$\Delta = 0.2$', r'$\Delta = 0.4$', r'$\Delta = 0.6$', r'$\Delta = 0.8$', r'$\Delta = 1.0$'])
+#         # plt.savefig(os.path.join(path_to_images, 'Number_incentives_delta.eps'), transparent=False, bbox_inches='tight')
+#         # plt.show()
+#
+#
+#
+#
+#         # fontsize = 15
+#         # sns.set(font_scale=1.4)
+#         # sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
+#         # sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
+#         # sns.color_palette("Spectral", as_cmap=True)
+#         # fig, axes = plt.subplots(1, 1, sharex=True)
+#         # sns.lineplot(ax=axes, data=df_temp, x='p_accept', y='rs_bab_comp,%',markers=True,
+#         #              markersize=8,linewidth=1,palette="deep", err_style="bars", ci=96, err_kws={'capsize': 3})
+#         # #sns.relplot(data=df_temp, x='p_pup', y='p_accept',hue='gap_nodisc_mean', s=100, palette="Spectral")
+#         # plt.show()
+#
+#         # fontsize = 15
+#         # sns.set(font_scale=1.4)
+#         # sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
+#         # sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
+#         # fig, axes = plt.subplots(1, 1, sharex=True)
+#         # sns.lineplot(ax=axes, data=df_temp, x='p_pup', y='nodisc_bab, %', hue='p_home',  style="p_home",markers=True, markersize=8,
+#         #              linewidth=1,palette="deep", err_style="bars", ci=68, err_kws={'capsize': 3})
+#         # plt.show()
+#         # sns.set(font_scale=1.4)
+#         # sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
+#         # sns.set_style('ticks', {"xtick.directionp_accep": "in", "ytick.direction": "in"})
+#         # fig, axes = plt.subplots(1, 1, sharex=True)
+#         # sns.lineplot(ax=axes, data=df_temp, x='p_pup', y='rs_bab_comp,%', hue='p_home', style="p_home", markers=True,
+#         #              markersize=8,
+#         #              linewidth=1, palette="deep", err_style="bars", ci=68, err_kws={'capsize': 3})
+#         # plt.show()
+#         # sns.set(font_scale=1.4)
+#         # sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
+#         # sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
+#         # fig, axes = plt.subplots(1, 1, sharex=True)
+#         # sns.lineplot(ax=axes, data=df_temp, x='p_pup', y='all_bab_comp,%', hue='p_home', style="p_home", markers=True,
+#         #              markersize=8,
+#         #              linewidth=1, palette="deep", err_style="bars", ci=68, err_kws={'capsize': 3})
+#         # plt.show()
+#         #
+#
+#         # fontsize = 15
+#         # sns.set(font_scale=1.4)
+#         # df_temp = df[(df.p_pup == 0.0)| (df.p_pup==0.4) | (df.p_pup ==0.8)].copy()
+#         # df_temp['1p_accept'] = 1-df_temp['p_accept']
+#         #
+#         # rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+#         # sns.set_context(rc={'font.sans-serif': 'Computer Modern Sans Serif'})
+#         # sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
+#         # sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
+#         # fig, axes = plt.subplots(1, 1, sharex=True)
+#         # sns.lineplot(ax=axes, data=df_temp, x='p_accept', y='nodisc_bab, %', hue='p_home', style='p_home',
+#         #              markers=True, markersize=8, linewidth=1, palette="deep", err_style="bars", ci=68, err_kws={'capsize': 3})
+#         # axes.set(xlabel=r'$\Delta$')
+#         # axes.set(ylabel='Improvement over NOI (%)')
+#         # #plt.legend(title=False, labels=[r'$p = 0.0$', r'$p = 0.4$', r'$p = 0.8$'])
+#         # plt.savefig(os.path.join(path_to_images, 'Bab_nodisc_comparison.eps'), transparent=False, bbox_inches='tight')
+#         # plt.show()
+#         #
+#         # sns.set(font_scale=1.4)
+#         # rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+#         # sns.set_context(rc={'font.sans-serif': 'Computer Modern Sans Serif'})
+#         # sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
+#         # sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
+#         # fig, axes = plt.subplots(1, 1, sharex=True)
+#         # sns.lineplot(ax=axes, data=df_temp, x='p_accept', y='rs_bab_comp,%',hue='p_home', style='p_home',
+#         #              markers=True, markersize=8,
+#         #              linewidth=1, palette="deep", err_style="bars", ci=68, err_kws={'capsize': 3})
+#         # #plt.legend(title=False, labels=[r'$p = 0.0$', r'$p = 0.4$', r'$p = 0.8$'])
+#         # axes.set(xlabel=r'$\Delta$')
+#         # axes.set(ylabel='Improvement over D-DS (%)')
+#         # plt.savefig(os.path.join(path_to_images, 'Bab_rs_comparison.eps'), transparent=False, bbox_inches='tight')
+#         # plt.show()
+#         #
+#         # sns.set(font_scale=1.4)
+#         # rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+#         # sns.set_context(rc={'font.sans-serif': 'Computer Modern Sans Serif'})
+#         # sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
+#         # sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
+#         # fig, axes = plt.subplots(1, 1, sharex=True)
+#         # sns.lineplot(ax=axes, data=df_temp, x='p_accept', y='all_bab_comp,%',  markers=True, markersize=8,hue='p_home', style='p_home',
+#         #              linewidth=1, palette="deep", err_style="bars", ci=68, err_kws={'capsize': 4})
+#         # axes.set(xlabel=r'$\Delta$')
+#         # axes.set(ylabel='Improvement over ALL (%)')
+#         # #plt.legend(title=False, labels=[r'$p = 0.0$', r'$p = 0.4$', r'$p = 0.8$'])
+#         # plt.savefig(os.path.join(path_to_images, 'Bab_all_comparison.eps'), transparent=False, bbox_inches='tight')
+#         # plt.show()
+#
+#
+#         fig, axes = plt.subplots(1, 4, sharey=True, figsize=(19, 5), gridspec_kw={'width_ratios': [10, 8, 6, 4]})
+#         sns.set(font_scale=1.4)
+#
+#         rc = {'font.sans-serif': 'Computer Modern Sans Serif'}
+#         sns.set_context(rc=rc)
+#         sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
+#         sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
+#         plt.rcParams.update(**rc)
+#         cmap = sns.color_palette("deep")
+#         m = np.array(['o', '^', 'D', '^', 'D', "+"])
+#
+#         iter = -1
+#         for p_pup_param in [0.0, 0.2, 0.4, 0.6]:
+#             iter += 1
+#             df_temp = df[df.p_pup == p_pup_param].copy()
+#
+#             x = [0.2, 0.4, 0.6, 0.8, 1.0]
+#             if iter == 1:
+#                 x = [0.2, 0.4, 0.6, 0.8]
+#                 #axes[iter].set_xlim(None, 0.82)
+#             if iter == 2:
+#                 x = [0.2, 0.4, 0.6]
+#                 #axes[iter].set_xlim(None, 0.62)
+#             if iter == 3:
+#                 x = [ 0.2, 0.4]
+#                 #axes[iter].set_xlim(0.18, 0.45)
+#                 #axes[iter].set_xticks([0.0, 0.2, 0.4])
+#             y = []
+#             yerr = []
+#
+#             y_d = []
+#             yerr_d = []
+#
+#             y_noi = []
+#             yerr_noi = []
+#
+#             x_all = [temp-0.02 for temp in x]
+#             x_noi = [temp+0.02 for temp in x]
+#
+#             for p_accept in x:
+#                 df_temp2 = df_temp[df_temp.p_accept == p_accept].copy()
+#                 y.append(df_temp2['all_bab_comp,%'].mean())
+#                 yerr.append([df_temp2['all_bab_comp,%'].mean() - df_temp2['all_bab_comp,%'].min(),
+#                                                    df_temp2['all_bab_comp,%'].max() - df_temp2['all_bab_comp,%'].mean()])
+#
+#                 y_d.append(df_temp2['rs_bab_comp,%'].mean())
+#                 yerr_d.append([df_temp2['rs_bab_comp,%'].mean() - df_temp2['rs_bab_comp,%'].min(),
+#                              df_temp2['rs_bab_comp,%'].max() - df_temp2['rs_bab_comp,%'].mean()])
+#
+#                 y_noi.append(df_temp2['nodisc_bab, %'].mean())
+#                 yerr_noi.append([df_temp2['nodisc_bab, %'].mean() - df_temp2['nodisc_bab, %'].min(),
+#                                df_temp2['nodisc_bab, %'].max() - df_temp2['nodisc_bab, %'].mean()])
+#
+#             yerr = np.transpose(yerr)
+#             yerr_d = np.transpose(yerr_d)
+#             yerr_noi = np.transpose(yerr_noi)
+#
+#             axes[iter].errorbar(x_all, y, yerr=yerr, marker=m[2], ms=7, linewidth=0.3,
+#                          label="ALL", mec=cmap[2], mfc=cmap[2], c=cmap[2], elinewidth=1.5, capsize=4)
+#
+#             axes[iter].errorbar(x_noi, y_noi, yerr=yerr_noi, marker=m[0], ms=7, linewidth=0.3,
+#                          label="NOI", mec=cmap[0], mfc=cmap[0], c=cmap[0], elinewidth=1.5, capsize=4)
+#
+#             axes[iter].errorbar(x, y_d, yerr=yerr_d, marker=m[1], ms=7, linewidth=0.3,
+#                          label="DI", mec=cmap[1], mfc=cmap[1], c=cmap[1], elinewidth=1.5, capsize=4)
+#
+#             axes[iter].set(xlabel='Problem size, n')
+#
+#             # sns.lineplot(ax=axes[iter], data=df_temp, x='p_accept', y='all_bab_comp,%', marker="s", markersize=7,
+#             #              linewidth=1,
+#             #              palette="deep", err_style="bars", ci=68, err_kws={'capsize': 3}, label='ALL', legend=0)
+#             # sns.lineplot(ax=axes[iter], data=df_temp, x='p_accept', y='rs_bab_comp,%', marker="o", markersize=8,
+#             #              linewidth=1,
+#             #              palette="deep", err_style="bars", ci=68, err_kws={'capsize': 3}, label='DI', legend=0)
+#             # sns.lineplot(ax=axes[iter], data=df_temp, x='p_accept', y='nodisc_bab, %',  marker="^", markersize=9, linewidth=1,
+#             #             palette="deep", err_style="bars", ci=68, err_kws={'capsize': 3}, label = 'NOI', legend=0)
+#             # plt.legend(title=False,loc = 'upper right', bbox_to_anchor=(0.995, 0.995))
+#
+#             axes[iter].set_title(r'$p =$' + str(p_pup_param))
+#             # if iter == 1:
+#             #     axes[iter].set_xlim(None, 0.82)
+#             # if iter == 2:
+#             #     axes[iter].set_xlim(None, 0.62)
+#             # if iter == 3:
+#             #     axes[iter].set_xlim(None, 0.45)
+#             axes[iter].set_xlabel(r'$\Delta$', fontsize=18)
+#
+#         handles, labels = axes[iter].get_legend_handles_labels()
+#
+#         axes[0].set_ylabel('Savings (%)', fontsize = 19)
+#         axes[0].legend(handles, labels,loc = 'upper left', bbox_to_anchor=(0.01, 0.99),  title=False)
+#
+#         plt.savefig(os.path.join(path_to_images, 'Improvement_threparcee_plots.eps'), transparent=False,
+#                     bbox_inches='tight')
+#         plt.show()
+#         #
+#         # sns.set(font_scale=1.4)
+#         # rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+#         # sns.set_context(rc={'font.sans-serif': 'Computer Modern Sans Serif'})
+#         # sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
+#         # sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
+#         # fig, axes = plt.subplots(1, 1, sharex=True)
+#         # sns.lineplot(ax=axes, data=df_temp, x='p_pup', y='rs_bab_comp,%',
+#         #              markers=True, markersize=8,
+#         #              linewidth=1, palette="deep", err_style="bars", ci=68, err_kws={'capsize': 3})
+#         # #axes.set(xlabel=r'$p')
+#         # axes.set(ylabel='Improvement over D-DS (%)')
+#         # plt.savefig(os.path.join(path_to_images, 'Bab_rs_comparison.eps'), transparent=False, bbox_inches='tight')
+#         # plt.show()
+#         #
+#         # sns.set(font_scale=1.4)
+#         # rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+#         # sns.set_context(rc={'font.sans-serif': 'Computer Modern Sans Serif'})
+#         # sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
+#         # sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
+#         # fig, axes = plt.subplots(1, 1, sharex=True)
+#         # sns.lineplot(ax=axes, data=df_temp, x='p_pup', y='all_bab_comp,%', markers=True, markersize=8,
+#         #              linewidth=1, palette="deep", err_style="bars", ci=68, err_kws={'capsize': 4})
+#         # #axes.set(xlabel=r'$p$')
+#         # axes.set(ylabel='Improvement over ALL (%)')
+#         # plt.savefig(os.path.join(path_to_images, 'Bab_all_comparison.eps'), transparent=False, bbox_inches='tight')
+#         # plt.show()
+#
+#         # print("bab")
+#         # for p_pup in dict_probability_print:
+#         #     bab_savings = []
+#         #     for p_delta in dict_probability_print[p_pup]:
+#         #         #bab_savings.append( str(int(round(df1.loc[(df1['p_pup'] == p_pup) & (df1['p_home'] == round((1 - p_delta - p_pup), 1)), 'obj_val_bab'].mean(),0))))
+#         #         bab_savings.append(str(round(df1.loc[(df1['p_pup'] == p_pup) & (
+#         #                     df1['p_home'] == round((1 - p_delta - p_pup), 1)), 'nodisc_bab, %'].mean(), 1)))
+#         #         #in_pup_bab
+#         #         bab_savings.append(int(round(df1.loc[(df1['p_pup'] == p_pup) & (
+#         #                         df1['p_home'] == round((1 - p_delta - p_pup), 1)), 'num_offered_disc_bab'].mean(),0)))
+#         #         bab_savings.append(int(round(df1.loc[(df1['p_pup'] == p_pup) & (
+#         #                 df1['p_home'] == round((1 - p_delta - p_pup), 1)), 'exp_discount_cost_bab_percent'].mean(), 0)))
+#         #         #append(int(round(df1.loc[(df1['p_pup'] == p_pup) & (df1['p_home'] == round((1 - p_delta - p_pup), 1)), 'obj_val_bab'].mean(),0)))
+#         #     print("&$p=",p_pup,"$&", ' & '.join(map(str, bab_savings)), "\\")
+#         # print("rs")
+#         # for p_pup in dict_probability_print:
+#         #     rs_savings = []
+#         #     for p_delta in dict_probability_print[p_pup]:
+#         #         # rs_savings.append(str(int(round(df1.loc[(df1['p_pup'] == p_pup) & (
+#         #         #         df1['p_home'] == round((1 - p_delta - p_pup), 1)), 'obj_val_rs'].mean(),
+#         #         #                                 0))))
+#         #         rs_savings.append(str(round(df1.loc[(df1['p_pup'] == p_pup) & (
+#         #                 df1['p_home'] == round((1 - p_delta - p_pup), 1)), 'nodisc_rs, %'].mean(), 1)))
+#         #
+#         #         rs_savings.append(int(round(df1.loc[(df1['p_pup'] == p_pup) & (
+#         #                 df1['p_home'] == round((1 - p_delta - p_pup), 1)), 'num_offered_disc_rs'].mean())))
+#         #         rs_savings.append(int(round(df1.loc[(df1['p_pup'] == p_pup) & (
+#         #                 df1['p_home'] == round((1 - p_delta - p_pup), 1)), 'exp_discount_cost_rs_percent'].mean(), 0)))
+#         #         rs_savings.append("ydali")
+#         #         #rs_savings.append(int(round(df1.loc[(df1['p_pup'] == p_pup) & (
+#         #         #        df1['p_home'] == round((1 - p_delta - p_pup), 1)), 'obj_val_rs'].mean())))
+#         #
+#         #     print("&$p=",p_pup,"$&",' & '.join(map(str, rs_savings)), "\\")
+#         # print("uniform")
+#         # for p_pup in dict_probability_print:
+#         #     uniform_savings = []
+#         #     for p_delta in dict_probability_print[p_pup]:
+#         #         #uniform_savings.append(str(int(round(df1.loc[(df1['p_pup'] == p_pup) & (
+#         #         #        df1['p_home'] == round((1 - p_delta - p_pup), 1)), 'obj_val_uniform'].mean(),
+#         #         #                                     0))))
+#         #         uniform_savings.append(str(round(df1.loc[(df1['p_pup'] == p_pup) & (
+#         #                     df1['p_home'] == round((1 - p_delta - p_pup), 1)), 'nodisc_uniform, %'].mean(), 1)))
+#         #
+#         #         uniform_savings.append(int(round(df1.loc[(df1['p_pup'] == p_pup) & (
+#         #                     df1['p_home'] == round((1 - p_delta - p_pup), 1)), 'num_offered_disc_uniform'].mean())))
+#         #         uniform_savings.append(int(round(df1.loc[(df1['p_pup'] == p_pup) & (
+#         #                 df1['p_home'] == round((1 - p_delta - p_pup), 1)), 'exp_discount_cost_uniform_percent'].mean(), 0)))
+#         #         uniform_savings.append("ydali")
+#         #         #uniform_savings.append(int(round(df1.loc[(df1['p_pup'] == p_pup) & (
+#         #         #        df1['p_home'] == round((1 - p_delta - p_pup), 1)), 'obj_val_uniform'].mean())))
+#         #
+#         #     print("&$p=",p_pup,"$&", ' & '.join(map(str, uniform_savings)), "\\")
 
 
 def print_convergence_gap():
@@ -1618,8 +1615,7 @@ def nr_cust_variation_heuristic(df, df_small):
     axes.set(xlabel='Instance size')
     axes.set(ylabel='Solution time, s')
     # axes.set(ylabel='Solution time, s (log-scale)')
-    # plt.legend(title=False, loc='lower right', bbox_to_anchor=(0.99, 0.12),
-    #           labels=[r'$p = 0.0$', r'$p = 0.2$', r'$p = 0.4$', r'$p = 0.6$', r'$p = 0.8$', r'$p = 1.0$'])
+
     plt.savefig(os.path.join(path_to_images, 'heuristic_running_time.eps'), transparent=False, bbox_inches='tight')
     # plt.show()
 
@@ -2367,21 +2363,19 @@ def managerial_effect_delta(folder):
     #parseBAB(os.path.join(folder, "02_13_bab_exact_managerial.txt"), folder,
     #        "02_13_bab_exact_managerial")
     #parseBAB(os.path.join(folder, "02_13_bab_exact_managerial_constDisc.txt"), folder, "02_13_bab_exact_managerial_constDisc")
-    #parseBAB_temp(os.path.join(folder, "02_13_bab_exact_managerial_DistDeptDiscount.txt"), folder, "02_13_bab_exact_managerial_DistDeptDiscount")
+    #parseBAB(os.path.join(folder, "02_13_bab_exact_managerial_DistDeptDiscount.txt"), folder, "02_13_bab_exact_managerial_DistDeptDiscount")
     df = pd.read_csv(os.path.join(folder, "02_13_bab_exact_managerial.csv"))
-    #df['p_accept'] = round(1 - df['p_home'] , 2)
+    df['p_accept'] = round(1 - df['p_home'] , 2)
     #df['p_accept'] = round(1 - df['p_home'] + (df['discount_rate']/3 - 0.02), 2)
-    df['p_accept'] = round(1 - df['p_home'] + (df['nrPup']*0.01 - 0.03), 2)
+    #df['p_accept'] = round(1 - df['p_home'] + (df['nrPup']*0.01 - 0.03), 2)
     df['num_offered_disc_bab'] = df.apply(lambda x: round(bitCount(x['policy_bab_ID'])), axis=1)
-
     folder_data = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_managerial")
-    df['exp_discount_cost_bab'] = df.apply(
-    lambda x: calculate_exp_disc_cost(x['policy_bab_ID'], x['instance'], folder_data), axis=1)
-
-    df = df[df.p_home < 1].copy()
+    #df['exp_discount_cost_bab'] = df.apply(
+    #lambda x: calculate_exp_disc_cost(x['policy_bab_ID'], x['instance'], folder_data), axis=1)
+    #df = df[df.p_home < 1].copy()
     #df = df[df.nrPup == 5].copy()
     #df = df[df.instance_id == 1].copy()
-    #df = df[df.discount_rate==0.06].copy()
+    df = df[ df['discount_rate'].isin([0.015, 0.03, 0.06, 0.12, 0.24])].copy()
     #df = df[df.p_home==0.4].copy()
     #df = df[df.p_accept == 0.6].copy()
     # df['in_pup_bab'] = df.apply(
@@ -2395,20 +2389,24 @@ def managerial_effect_delta(folder):
     sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
     fig, axes = plt.subplots(1, 1, sharex=True)
     if False: # effect of delta on the fulfillment cost
-        fig, axes = plt.subplots(2, 4, sharex=True)
+        fig, axes = plt.subplots(2, 4, sharex=True, sharey=True)
         df['discount_rate_print'] = df['discount_rate'] + (df['nrPup'] * 0.001 - 0.003)
 
         iter1, iter2 =-1, -1
         for (l_min, l_max) in [(1, 3), (1, 8)]:
+            iter2 = -1
             iter1+=1
             for (p_min, p_av, p_max) in [(0.95,0.5, 0.05), (0.95,0.5, 0.3), (0.8,0.5, 0.05),(0.8,0.5, 0.3) ]:
                 iter2 +=1
-                df1 = df[df.l_min == l_min & df.l_max == l_max &
-                         df.p_min == p_min & df.p_max == p_max & df.p_av == p_av].copy()
-                sns.lineplot(ax=axes[iter1, iter2], data=df1, x='discount_rate_print', y='obj_val_bab', markers=True,
+                #axes[iter1, iter2].set_title(str(l_max)+' '+str(p_min)+' '+str(p_max))
+                df1 = df[(df.l_min == l_min) & (df.l_max == l_max) &
+                         (df.p_min == p_min) & (df.p_max == p_max) & (df.p_av == p_av)].copy()
+                sns.lineplot(ax=axes[iter1, iter2], data=df1, x='discount_rate_print', y='num_offered_disc_bab', markers=True,
                              markersize=9, linewidth=1, hue = 'nrPup', style = 'nrPup',#discount_rate   nrPup
-                             palette="deep", err_style="bars", errorbar=('pi', 100), err_kws={'capsize': 3}, dashes=False)
+                             palette="deep", err_style="bars", errorbar=('pi', 100), err_kws={'capsize': 3},
+                             dashes=False, legend = False ).set(title=str(l_max)+' '+str(p_min)+' '+str(p_max))
 
+        #plt.legend( loc='lower left', bbox_to_anchor=(1.0, 1.0))
         # axes[iter1,iter2].set(xlabel='' + 'discount rate')ht
         # sns.lineplot(ax=axes, data=df, x='discount_rate_print', y='obj_val_bab', markers=True,
         #             markersize=9, linewidth=1, hue = 'nrPup', style = 'nrPup',#discount_rate   nrPup
@@ -2469,10 +2467,10 @@ def managerial_effect_delta(folder):
     if True: #number of customers per pikcup point
         df = df[["p_accept", "p_home", 'discount_rate', 'num_offered_disc_bab', 'nrPup', 'policy_bab_ID', 'instance']].copy()
         df['num1']=0
-        df['num2'] = 0
-        df['num3'] = 0
-        df['num4'] =0
-        df['num5'] = 0
+        df['num2']=0
+        df['num3']=0
+        df['num4']=0
+        df['num5']=0
         for index, row in df.iterrows():
             policy = row['policy_bab_ID']
             instance = row['instance']
@@ -2480,7 +2478,6 @@ def managerial_effect_delta(folder):
 
             num_in_each_pup = []
             for pup in OCVRPInstance.pups:
-
                 num_in_pup_temp = 0
                 for i in pup.closest_cust_id:
                     if policy & (1 << i - 1):
@@ -2494,8 +2491,9 @@ def managerial_effect_delta(folder):
                         df.at[index, 'num' + str(iter)] = num
 
         #if True:
-        for p_home in [0.25]:
+        for p_home in [0.55]:
         #for discount_rate in [0.03, 0.06, 0.12]:
+            df_temp = df.copy()
             df_temp = df[(df.p_home == p_home)].copy()
             df_temp.set_index('discount_rate', inplace=True, drop=True)
             df1 = df_temp[(df_temp.nrPup == 1)].copy()
@@ -2507,33 +2505,115 @@ def managerial_effect_delta(folder):
             df5 = df_temp[(df_temp.nrPup == 5)].copy()
             df5 = df5[['num1', 'num2', 'num3', 'num4', 'num5']].copy()
             df5 = df5.groupby(level='discount_rate').mean()
-            plot_clustered_stacked([df1, df3, df5], "", "temp_p_home-"+str(p_home)+".eps", ['1', '3', '5'])
+            print()
+            plot_clustered_stacked([df1, df3, df5], "", "VRPDO"+".eps", ['1', '3', '5'])
+
+def sensitivity_comparison_nodisc_rs(folder):
+    #parseBAB_RS_NODISC(os.path.join(folder, "02_15_bab_nodisc_rs_distdep.txt"), folder, "02_15_bab_nodisc_rs_distdep")
+    df = pd.read_csv(os.path.join(folder, "02_15_bab_nodisc_rs_managerial.csv"))
+    df['instance_type'] =  df['instance'].apply(lambda x: str(x).split('_')[0])
+    #df = df[df.instance_type=='VRPDODistDepAccept2'].copy()
+    df = df[df.instance_type == 'VRPDO'].copy()
+
+    df['p_accept'] = round(1 - df['p_home'] + (df['nrPup'] * 0.01 - 0.03), 2)
+    #df['p_accept'] = round(1 - df['p_home'], 2)
+    df_results = pd.DataFrame(columns=['p_accept', 'discount_rate','nrPup', 'algo','savings' ])
+    iter = 0
+    algo_addition = {'DI': -0.02, 'ALL': 0, 'NOI': 0.02}
+    for index, row in df.iterrows():
+        for i in range(3):
+            df_results.at[iter+i, 'instance'] = row['instance']
+            df_results.at[iter+i, 'p_accept'] = row['p_accept']  #-0.02 + 0.02*i
+            df_results.at[iter+i, 'discount_rate'] = row['discount_rate']
+            df_results.at[iter + i, 'nrPup'] = row['nrPup']
+            if i==0:
+                df_results.at[iter+i, 'algo'] = 'NOI'
+                df_results.at[iter+i, 'savings'] =  max(row['gap_nodisc'], 0)
+            elif i==1:
+                df_results.at[iter+i, 'algo'] = 'DI'
+                df_results.at[iter+i, 'savings'] =  max(row['gap_rs'], 0)
+            elif i==2:
+                df_results.at[iter+i, 'algo'] = 'ALL'
+                df_results.at[iter+i, 'savings'] =  max(row['gap_uniform'], 0)
+        iter += 3
+
+    sns.set()
+    sns.set(font_scale=1.2)
+    sns.set_context(rc={'font.sans-serif': 'Computer Modern Sans Serif'})
+    sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
+    sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
+
+    if True:
+        # df_temp = df_results.copy()
+        #df_temp = df_results[df_results.algo == 'rs'].copy()
+        if False: # impact of delta on savings  and different agorithms 3 plots
+            df_temp = df_results[df_results.discount_rate == 0.06].copy()
+            df_temp['discount_rate_print'] = df_temp['discount_rate'] + (df_temp['nrPup'] * 0.001 - 0.003)
+            fig, axes = plt.subplots(1, 3, sharex=True,  figsize=(15, 5))
+            iter = 0
+            for algo in ['ALL', 'DI', 'NOI']:
+                axes[iter].title.set_text(algo)
+                df1 = df_temp[df_temp.algo == algo].copy()
+                sns.lineplot(ax=axes[iter], data=df1, x='p_accept', y='savings', markers=True,
+                             markersize=11, linewidth=1, hue='nrPup', style='nrPup',  # algo   nrPup
+                             palette="deep", err_style="bars", errorbar=('pi', 100), err_kws={'capsize': 5}, legend = False)
+                axes[iter].set(xlabel='' + r'$\Delta$')
+                axes[iter].set(xlabel='' + r'$\Delta$')
+                axes[iter].set_ylim(-0.2, None)
+                iter += 1
+            axes[0].set(ylabel='Savings (%)')
+            plt.legend(title='Number of pickup points', loc='upper left', bbox_to_anchor=(0.0, 1.0),
+                      labels=['1', '3', '5'])
+            plt.savefig(os.path.join(path_to_images, 'Savings_ALL_NOI_DI.eps'), transparent=False,
+                      bbox_inches='tight')
+            plt.show()
+        if False: # impact of delta on savings for 1 pickup point and different agorithms
+            df_temp = df_results[df_results.nrPup == 1].copy()
+            df_temp = df_results[df_results.discount_rate == 0.06].copy()
+            df_temp['discount_rate_print'] = df_temp['discount_rate'] + (df_temp['nrPup'] * 0.001 - 0.003)
+            for p_accept in [0.6]:
+                fig, axes = plt.subplots(1, 1, sharex=True)
+                df1 = df_temp.copy()
+               # df1 = df_temp[df_temp.p_accept == p_accept].copy()
+                sns.lineplot(ax=axes, data=df1, x='p_accept', y='savings', markers=True,
+                             markersize=11, linewidth=1, hue='algo', style='algo',  # algo   nrPup
+                             palette="deep", err_style="bars", errorbar=('pi', 100), err_kws={'capsize': 5})
+                #sns.scatterplot(ax=axes, data=df1, x='p_accept', y='savings', markers=True,
+                #                hue='algo', style='algo',  #    nrPup algo
+                #                palette="deep", legend=False)
+                axes.set(xlabel='' + r'$\Delta$')
+                axes.set(ylabel='Savings (%)')
+                plt.legend(title = 'None')
+                #axes.set(yscale="log")
+                #plt.legend(title='Number of pickup points', loc='lower left', bbox_to_anchor=(0.0, 0.0),
+                #           labels=['1', '3', '5'])
+                plt.savefig(os.path.join(path_to_images, 'Savings_1pup_ALL_NOI_DI.eps'), transparent=False,
+                           bbox_inches='tight')
+                plt.show()
+
 
 
 
 
 if __name__ == "__main__":
-    folder = os.path.join(path_to_data, "output", "VRPDO")
+    folder = os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison")
     folder_data_disc = os.path.join(path_to_data, "data", "i_VRPDO_old")
     folder_data_prob = os.path.join(path_to_data, "data", "i_VRPDO_prob")
 
     # sensitivity_disc_size_comparison_nodisc(folder, folder_data_disc)
-    #sensitivity_prob_comparison_nodisc(folder,folder_data_prob)
+    sensitivity_comparison_nodisc_rs(folder)
     #print_convergence_gap()
 
     folder_2segm = os.path.join(path_to_data, "output", "VRPDO_discount_proportional_2segm")
     folder_2segm_manyPUP = os.path.join(path_to_data, "output", "VRPDO_discount_proportional_2segm_manyPUP")
 
     #compare_enumeration_no_Gurobi(folder_2segm_manyPUP)
-
-
     #experiment_variation_nrcust_heuristic(folder)
     #experiment_variation_nrcust(folder_2segm_manyPUP)
 
     #exp_profile()
     folder = os.path.join(path_to_data, "output", "i_VRPDO_2segm_manyPUP_managerial")
-    managerial_effect_delta(folder)
-
+    #managerial_effect_delta(folder)
 
     #experiment_bab_solution_time_classes(folder_2segm_manyPUP)
     # parseBAB(os.path.join(folder, "bab_7types_nrCust.txt"), folder, "bab_7types_nrCust")

@@ -357,41 +357,46 @@ def generate_3_segments_instance_zhou_constant_density(instance_type ):
 def generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type ):
     mainDirZhou = os.path.join(path_to_data, "data", "zhou-et-al-2017")
     dict_depot, dict_pickup, dict_customer = adapt_zhou(instance_type)
-    instance_type = "VRPDODistDepAccept"
-    #instance_type = "VRPDOConstDisc"
-    mainDirStorage = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_managerial_temp")
-    nr_custs = [15]
-    disc_rates = [ 0.03, 0.12]
+    #instance_type = "VRPDODistDepAccept"
+    instance_type = "VRPDO"
+    mainDirStorage = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_large")
+    #nr_custs = [15]
+    nr_custs = [10, 15, 20, 25, 30, 35, 40, 45, 50]
+    disc_rates = [  0.03, 0.06, 0.12]
+    #disc_rates = [0.015, 0.24]
     #nr_custs = [10, 20, 40]
-    #dict_probabilities = {0.0:[0, 0.1, 0.25, 0.4, 0.55, 0.7, 0.85]}
+    dict_probabilities = {0.0:[0, 0.1, 0.25, 0.4, 0.55, 0.7, 0.85]}
     dict_probabilities = {0.0: [0.4]}
     #disc_rates = [0.005, 0.01,0.015, 0.02,0.025, 0.03,0.035, 0.04,0.045, 0.05, 0.06, 0.07, 0.08, 0.09]
     instanceList = os.path.join(mainDirStorage, 'list.txt')
 
-    for id_instance in [0, 2,3]:
+    for id_instance in [0, 1,2, 3, 4]:
         shuffled_cust_list = os.path.join(mainDirZhou, 'shuffled_customers_' + str(id_instance) + '.txt')
         for nr_cust in nr_custs:
-            p_pup, p_home = 0,0
-            # for p_pup in dict_probabilities:
-            #    for p_home in dict_probabilities[p_pup]:
-            for (l_min, l_max) in [(1,3), (1,8)]:
-                for p_min in [0.95,  0.8]:
-                    for p_av in [  0.5 ]:
-                        for p_max in [0.05, 0.3]:
+            #p_pup, p_home = 0,0
+            for p_pup in dict_probabilities:
+               for p_home in dict_probabilities[p_pup]:
+            #for (l_min, l_max) in [(1,4)]:
+            #    for p_min in [0.9]:
+            #        for p_av in [ 0.5 ]:
+            #            for p_max in [0.1]:
+                    if True:
+                        if True:
                             for u in disc_rates:
-                                for nr_pup in [1, 5]:
+                                for nr_pup in [1,3,5]:
+                                    #p_pup, p_home = 0, 0
                                     with open(shuffled_cust_list, "rb") as file_shuffled:
                                         depots_id = pickle.load(file_shuffled)
                                         customers_id = pickle.load(file_shuffled)
                                         #pup_ids = set_pickup_point(dict_pickup, dict_customer, customers_id[:nr_cust], 15, nr_pup)
                                         pup_ids = set_pickup_point_preselected( nr_pup,nr_cust, id_instance)
-                                        # instanceName = instance_type+'2_size_'+str(nr_cust) + '_phome_' + str(p_home) + '_ppup_' + \
-                                        #                str(p_pup) +'_incrate_'  + str(u) +'_nrpup'+str(nr_pup)+'_'+\
-                                        #                str(id_instance)+ '.txt'
+                                        instanceName = instance_type+'2_size_'+str(nr_cust) + '_phome_' + str(p_home) + '_ppup_' + \
+                                                       str(p_pup) +'_incrate_'  + str(u) +'_nrpup'+str(nr_pup)+'_'+\
+                                                       str(id_instance)+ '.txt'
 
-                                        instanceName = instance_type + '2_size_' + str(nr_cust) + '_pmin_' + str(
-                                            p_min) + '_pav_' + str(p_av)+'_pmax_' + str(p_max)+'_lmin_' + str(l_min)+'_lmax_' + str(l_max) +'_incrate_'  + str(u) +'_nrpup'+str(nr_pup)+'_'+\
-                                                        str(id_instance)+ '.txt'
+                                        # instanceName = instance_type + '2_size_' + str(nr_cust) + '_pmin_' + str(
+                                        #     p_min) + '_pav_' + str(p_av)+'_pmax_' + str(p_max)+'_lmin_' + str(l_min)+'_lmax_' + str(l_max) +'_incrate_'  + str(u) +'_nrpup'+str(nr_pup)+'_'+\
+                                        #                 str(id_instance)+ '.txt'
 
                                         instanceDir = os.path.join(mainDirStorage, instanceName)
                                         with open(instanceList, 'a+', encoding='utf-8') as file:
@@ -434,24 +439,25 @@ def generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type ):
 
                                                 customer_distance_to_pup = math.sqrt(( dict_pickup[pup_id]["x"]- dict_customer[customers_id[i-1]]["x"]) ** 2 +
                                                               ( dict_pickup[pup_id]["y"] - dict_customer[customers_id[i-1]]["y"]) ** 2)
-
-                                                if distance_to_closest_pup*4/TSP_cost_per_customer>l_max:
-                                                    p_home = 1-p_max
-                                                elif distance_to_closest_pup*4/TSP_cost_per_customer < l_min:
-                                                    p_home = 1-p_min
-                                                else:
-                                                    p_home = 1-p_av
-                                                print(i, distance_to_closest_pup*4/TSP_cost_per_customer , p_home)
+                                                #
+                                                # if distance_to_closest_pup*4/TSP_cost_per_customer>l_max:
+                                                #     p_home = 1-p_max
+                                                # elif distance_to_closest_pup*4/TSP_cost_per_customer < l_min:
+                                                #     p_home = 1-p_min
+                                                # else:
+                                                #     p_home = 1-p_av
+                                                #print(i, distance_to_closest_pup*4/TSP_cost_per_customer , p_home)
                                                 file.write("{} {} {} {} {} {}\n".format(i,  (dict_customer[customers_id[i-1]]["x"]),
                                                                                         (dict_customer[customers_id[i-1]]["y"]), p_home, p_pup,
-                                                                                        round(total_discount/ nr_cust,2))) #round(distance_to_closest_pup * u * TSP_cost_per_customer,2)
+                                                                                         round(distance_to_closest_pup * u * TSP_cost_per_customer,2) )) #  round(total_discount/ nr_cust,2)
 
 def generate_3_segments_instance_zhou_saturation(instance_type ):
     mainDirZhou = os.path.join(path_to_data, "data", "zhou-et-al-2017")
     dict_depot, dict_pickup, dict_customer = adapt_zhou(instance_type)
     instance_type = "VRPDO"
     mainDirStorage = os.path.join(path_to_data, "data", "i_VRPDO_saturation")
-    nr_custs = [15]
+    nr_custs = [10, 15, 20, 25, 30, 35, 40, 45, 50]
+    #nr_custs = [15]
     dict_disc_prob = saturation()
     instanceList = os.path.join(mainDirStorage, 'list.txt')
 
