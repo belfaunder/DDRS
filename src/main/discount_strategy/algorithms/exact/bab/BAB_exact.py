@@ -51,14 +51,17 @@ class BABExact(BAB_super_class):
             # containing the open nodes maintains the nodes in sorted order
             nextNode = openNodes.pop()
 
-            # print("\nnextNode", nextNode.withDiscountID, bin(nextNode.withDiscountID), nextNode.layer, nextNode.exactValueProb, nextNode.exactValue, nextNode.lbRoute,
-            #       nextNode.ubRoute, nextNode.lbVal(), nextNode.ubVal())
-            # print("bestNode", bin(self.bestNode.withDiscountID), self.bestNode.withDiscountID,  self.bestNode.exactValueProb, self.bestNode.lbVal()  )
+            #print("\nnextNode", nextNode.withDiscountID, bin(nextNode.withDiscountID), nextNode.layer, nextNode.exactValueProb, nextNode.exactValue, nextNode.lbRoute,
+            #    nextNode.lbVal())
+            #print("bestNode", bin(self.bestNode.withDiscountID), self.bestNode.withDiscountID,  self.bestNode.exactValueProb, self.bestNode.lbRoute, self.bestNode.lbVal()  )
             # print(len(self.instance.routeCost))
+            #for id in nextNode.lbScenarios:
+            #    print(id, bin(id), nextNode.lbScenarios[id])
             if self.isTerminalNode(nextNode):
                 continue
             elif self.canFathom(nextNode):
                 nextNode.fathomed()
+
 
             elif self.canBranch(nextNode):
                 self.branch(nextNode, self.setCustomerToBranch(nextNode))
@@ -92,6 +95,7 @@ class BABExact(BAB_super_class):
             #return False
             nonlocal node
             if node.setNotGivenDiscount:
+
                 for id in reversed(node.lbScenarios):
                     newScenario = node.lbScenarios[id][2] & ~node.noDiscountID
                     if newScenario != node.lbScenarios[id][2]:
@@ -100,6 +104,7 @@ class BABExact(BAB_super_class):
                             self.instance.routeCost[newScenario] = routingCost
                         else:
                             routingCost = self.instance.routeCost[newScenario]
+
                         #check if the new lbScenario costs less than the lbScenarios, where less pups are visited
                         new_lbScenarioRoutingCost = routingCost
                         for pup in  self.instance.pups:
@@ -112,9 +117,13 @@ class BABExact(BAB_super_class):
                                 if not min_probability_to_visit_pup:
                                     id_less_pups_visited = id & ~(1 << pup.number)
                                     new_lbScenarioRoutingCost = min(new_lbScenarioRoutingCost, node.lbScenarios[id_less_pups_visited][0])
-                        node.lbRoute +=  node.lbScenarios[id][1] *(routingCost - node.lbScenarios[id][0])
+                        node.lbRoute +=  node.lbScenarios[id][1] *(new_lbScenarioRoutingCost - node.lbScenarios[id][0])
                         node.lbScenarios[id][0] = new_lbScenarioRoutingCost
                         node.lbScenarios[id][2] = newScenario
+                cost_should_be = 0
+                for id in node.lbScenarios:
+                    cost_should_be+= node.lbScenarios[id][0]*node.lbScenarios[id][1]
+
             return False
         # in node is the current BestNode, then update the bounds, and return False (negative answer to canFathom)
         if self.bestNode == node:
@@ -127,7 +136,7 @@ class BABExact(BAB_super_class):
                     exploreNode()
                     self.bestUb = min(self.bestUb, self.bestNode.ubVal())
             return False
-        elif node.lbVal() > self.bestUb * (1 - constants.EPSILON):
+        elif node.lbVal() > self.bestUb :
             if node.layer < self.instance.NR_CUST:
                 self.pruned_bounds_nonleaf += 1
             return True
@@ -140,7 +149,7 @@ class BABExact(BAB_super_class):
             cycle_iteration = 0
             while cycle_iteration<10:
                 cycle_iteration+=1
-                if node.lbVal() > self.bestUb * (1 - constants.EPSILON):
+                if node.lbVal() > self.bestUb:
                     if node.layer < self.instance.NR_CUST:
                         self.pruned_bounds_nonleaf += 1
                     return True

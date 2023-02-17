@@ -200,11 +200,11 @@ def updateByInsertionCost(node, Bab):
             additionSibling = 0
             if node.parent.children[0].fathomedState:
                 additionSibling = node.parent.children[0].lbVal() - Bab.bestNode.ubVal()
-
             else:
                 additionSibling = 0
             lbInsertionCost = lb_insertion_cost(Bab.instance, node.setGivenDiscount,node.setNotGivenDiscount, diff_customer)
-            if lbInsertionCost + additionSibling > -constants.EPS*Bab.bestNode.lbVal():
+            if lbInsertionCost + additionSibling > 0:
+                print("here", node.withDiscountID, lbInsertionCost)
                 node.lbRoute = node.parent.children[0].lbVal() + lbInsertionCost + additionSibling
                 node.ubRoute = node.lbRoute
                 node.lbExpDiscount = 0
@@ -219,7 +219,8 @@ def updateByInsertionCost(node, Bab):
                 additionSibling = 0
             ubInsertionCost = ub_insertion_cost(Bab.instance, node.setNotGivenDiscount, node.setGivenDiscount, diff_customer)
 
-            if -ubInsertionCost + additionSibling > -constants.EPS*Bab.bestNode.lbVal():
+            if -ubInsertionCost + additionSibling > 0:
+                print("hereu", node.withDiscountID, ubInsertionCost)
                 node.lbRoute = node.parent.children[1].lbVal() - ubInsertionCost + constants.EPS + additionSibling
                 node.ubRoute = node.lbRoute
                 node.lbExpDiscount = 0
@@ -235,11 +236,10 @@ def updateBoundsFromDictionary(Bab, node):
     # calculate the worst UB on the insetion cost given the information about customers with discount
     if node.parent is not None:
         #DOMINANCE_CHECK_REMOVED
-        #status_not_changed = True
         if node is not Bab.bestNode:
-            status_not_changed = updateByInsertionCost(node, Bab)
+          status_not_changed = updateByInsertionCost(node, Bab)
         else:
-            status_not_changed = True
+          status_not_changed = True
 
         if status_not_changed:
             setGivenDiscount = node.setGivenDiscount

@@ -84,7 +84,6 @@ class OCVRPInstance:
                     #                         cust.shipping_fee*cust.prob_pup*(1-cust.prob_home)/
                     #                                                 ((1-cust.prob_pup-cust.prob_home+constants.EPS)*(1-other_cust.prob_home+constants.EPS)) )/2:
                     #         self.neighbour[cust.id].append(other_cust.id)
-
     def __str__(self):
         s = prefix +"Instance: " + self.name + "\n" + \
             prefix+ "Number_of_customers: " + str(self.NR_CUST) + "\n" + \

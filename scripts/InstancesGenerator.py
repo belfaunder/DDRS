@@ -359,14 +359,14 @@ def generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type ):
     dict_depot, dict_pickup, dict_customer = adapt_zhou(instance_type)
     #instance_type = "VRPDODistDepAccept"
     instance_type = "VRPDO"
-    mainDirStorage = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_large")
-    #nr_custs = [15]
-    nr_custs = [10, 15, 20, 25, 30, 35, 40, 45, 50]
-    disc_rates = [  0.03, 0.06, 0.12]
+    mainDirStorage = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_30")
+    nr_custs = [15]
+    #nr_custs = [10, 15, 20, 25, 30, 35, 40, 45, 50]
+    disc_rates = [  0.03, 0.06, 0.12, 0.24]
     #disc_rates = [0.015, 0.24]
     #nr_custs = [10, 20, 40]
     dict_probabilities = {0.0:[0, 0.1, 0.25, 0.4, 0.55, 0.7, 0.85]}
-    dict_probabilities = {0.0: [0.4]}
+    #dict_probabilities = {0.0: [0.4]}
     #disc_rates = [0.005, 0.01,0.015, 0.02,0.025, 0.03,0.035, 0.04,0.045, 0.05, 0.06, 0.07, 0.08, 0.09]
     instanceList = os.path.join(mainDirStorage, 'list.txt')
 
@@ -390,7 +390,7 @@ def generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type ):
                                         customers_id = pickle.load(file_shuffled)
                                         #pup_ids = set_pickup_point(dict_pickup, dict_customer, customers_id[:nr_cust], 15, nr_pup)
                                         pup_ids = set_pickup_point_preselected( nr_pup,nr_cust, id_instance)
-                                        instanceName = instance_type+'2_size_'+str(nr_cust) + '_phome_' + str(p_home) + '_ppup_' + \
+                                        instanceName = instance_type+'_size_'+str(nr_cust) + '_phome_' + str(p_home) + '_ppup_' + \
                                                        str(p_pup) +'_incrate_'  + str(u) +'_nrpup'+str(nr_pup)+'_'+\
                                                        str(id_instance)+ '.txt'
 
