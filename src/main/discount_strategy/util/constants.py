@@ -2,7 +2,7 @@ from pathlib import Path
 import os
 # == == == == == = SAA PARAMS == == == == == == ==
 #SAMPLE_SIZE = 20000
-SAMPLE_SIZE = 1000
+SAMPLE_SIZE = 10000
 NUMBER_OF_SAMPLES = 10
 
 # == == == == == = VRP MODEL PARAMS == == == == == == ==
@@ -32,10 +32,10 @@ HEURISTIC_SAMPLE_SIZE_RS = HEURISTIC_SAMPLE_SIZE
 # == == == == == == Branch and Bound == == == == == == == == ==
 
 #for epsilon-optimality of nodes(we prune the nodes that are epsilon-close to the current best node)
-EPSILON =EPS
+EPSILON =0
 #EPSILON_H = 0.03
 EPSILON_H = 0
-EPSILONRS = EPS
+EPSILONRS = 0
 
 # file_images = os.path.join((Path(os.path.abspath(__file__)).parents[1]),"results","images")
 #segment_probability[0] - proability of always home

@@ -82,6 +82,9 @@ class BAB_super_class:
         # gurobi model for TSP is stored in TSP object and reused
         # thus to enable warm start
         self.TSPSolver = TSPSolver(instance=instance, solverType=solverType)
+        self.TSPSolver.tspCost(7167)
+        self.TSPSolver.tspCost(32767)
+        print()
 
         # add two scnenarios which function as a LB and UB
         scenario_0 = 0
@@ -214,7 +217,7 @@ class BAB_super_class:
         exactValueLeft = parent.exactValue
 
         # thus to reduce the problem with multiplication of small numbers
-        if parent.exactValueProb > constants.EPS+1:
+        if parent.exactValueProb > constants.EPS:
             lastEnteranceDictionary = self.root.lastEnteranceDictionary
             exactValProbRight = parent.exactValueProb / p_home[diff_customer]
             exactValueRight = parent.exactValue / p_home[diff_customer]

@@ -37,8 +37,8 @@ if __name__ == "__main__":
         file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "data",
                                      "i_VRPDO_2segm_manyPUP_managerial", str(sys.argv[-1])+".txt")
     else:
-        file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_managerial",
-                                     "VRPDO_size_15_phome_0_ppup_0.0_incrate_0.06_nrpup5_0.txt")
+        file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_30",
+                                     "VRPDO_size_15_phome_0_ppup_0.0_incrate_0.24_nrpup3_2.txt")
         #file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
         #                             "VRPDO_size_10_phome_0.2_ppup_0.0_incrate_0.03_0.txt")
 
@@ -46,14 +46,16 @@ if __name__ == "__main__":
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()
     print(OCVRPInstance)
-    babPolicy = 3985
+    for cust in OCVRPInstance.customers:
+        print(cust.id, cust.shipping_fee)
+    babPolicy = 7167
+    #print(bin(babPolicy), babPolicy)
+    #print((bin(6399)[2:].zfill(15), 6399))
+    #print((bin(1023)[2:].zfill(15), 1023))
+    #print((bin(7167)[2:].zfill(15), 7167))
 
-
-    print(bin(babPolicy), babPolicy)
     painter = Painter()
     painter.printVertexDisc(OCVRPInstance, babPolicy)
-
-
 
     bab = BABExact(instance=OCVRPInstance, solverType = solverType)
     babPolicy, time, lbPrint, ubPrint = bab.runBranchAndBound()
@@ -82,13 +84,13 @@ if __name__ == "__main__":
     #     pickle.dump(ubPrint, file)
     #painter.printConvergence(time, lbPrint, ubPrint, bab_obj)
     #
-
-    if 2**2**bitCount(babPolicy) < constants.SAMPLE_SIZE:
-        estimation_bab = one_policy_cost_estimation(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)
-    else:
-        estimation_bab = sampleAverageApproximation_PoissonBinomial_1sample(instance = OCVRPInstance,
-                                                                            policy = babPolicy, solverType = solverType)
-    print(prefix, 'Estimated_BAB_cost:',estimation_bab )
+    #
+    # if 2**bitCount(babPolicy) < constants.SAMPLE_SIZE:
+    #     estimation_bab = one_policy_cost_estimation(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)
+    # else:
+    #     estimation_bab = sampleAverageApproximation_PoissonBinomial_1sample(instance = OCVRPInstance,
+    #                                                                         policy = babPolicy, solverType = solverType)
+    # print(prefix, 'Estimated_BAB_cost:',estimation_bab )
 
     # EnumerationSolver = ScenarioEnumerationSolver(instance=OCVRPInstance, solverType=solverType)
     # EnumerationSolver.exactPolicyByEnumeration_withoutGurobi_2segm()

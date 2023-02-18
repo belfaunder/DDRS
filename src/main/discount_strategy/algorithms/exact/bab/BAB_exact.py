@@ -51,9 +51,13 @@ class BABExact(BAB_super_class):
             # containing the open nodes maintains the nodes in sorted order
             nextNode = openNodes.pop()
 
-            #print("\nnextNode", nextNode.withDiscountID, bin(nextNode.withDiscountID), nextNode.layer, nextNode.exactValueProb, nextNode.exactValue, nextNode.lbRoute,
-            #    nextNode.lbVal())
-            #print("bestNode", bin(self.bestNode.withDiscountID), self.bestNode.withDiscountID,  self.bestNode.exactValueProb, self.bestNode.lbRoute, self.bestNode.lbVal()  )
+
+            #print("\nnextNode", nextNode.withDiscountID, bin(nextNode.withDiscountID), nextNode.layer,
+            #      nextNode.exactValueProb, nextNode.exactValue, nextNode.lbRoute,
+            #   nextNode.lbVal(), nextNode.ubVal())
+            #print("bestNode", bin(self.bestNode.withDiscountID), self.bestNode.withDiscountID,
+            #      self.bestNode.exactValueProb, self.bestNode.lbRoute, self.bestNode.lbVal() ,self.bestNode.ubVal()  )
+
             # print(len(self.instance.routeCost))
             #for id in nextNode.lbScenarios:
             #    print(id, bin(id), nextNode.lbScenarios[id])
@@ -62,11 +66,13 @@ class BABExact(BAB_super_class):
             elif self.canFathom(nextNode):
                 nextNode.fathomed()
 
-
             elif self.canBranch(nextNode):
                 self.branch(nextNode, self.setCustomerToBranch(nextNode))
             if  openNodes.empty() and (not self.isLeaf(self.bestNode)):
                 self.openNodes.push(self.bestNode, self.bestNode.ubRoute)
+
+
+
 
         print(prefix+ "Time_running,s: ", (process_time()-start_time))
         print(prefix+ "Number_nodes: ", self.nrNodes)

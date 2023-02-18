@@ -144,17 +144,19 @@ class TSPSolver:
 
             # m.write("upd.lp")
             #vals = self.baseModel.getAttr('x', x_vars)
-            #selected = grb.tuplelist((i, j) for i, j in vals.keys() if vals[i, j] > 0.5)
-            #print(selected)
+            # selected = grb.tuplelist((i, j) for i, j in vals.keys() if vals[i, j] > 0.5)
+            # print(selected)
+            # for tuple in selected:
+            #     print(tuple, self.instance.distanceMatrix[tuple])
 
             #tour = subtour(selected, set_visit)
             #assert len(tour) == n - len(skip)+1
 
-            #print('')
-            #print('Optimal tour: %s' % str(tour))
-
-            #print(scenario, 'Optimal cost: %g' %  self.baseModel.objVal)
-            #print('')
+            # print('')
+            # print('Optimal tour: %s' % str(tour))
+            #
+            # print(scenarioID, 'Optimal cost: %g' %  self.baseModel.objVal)
+            # print('')
             tsp_cost = self.baseModel.objVal
         else:
             # TODO - this would be more difficult or simply delete it

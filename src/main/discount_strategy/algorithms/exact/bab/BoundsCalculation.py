@@ -204,7 +204,6 @@ def updateByInsertionCost(node, Bab):
                 additionSibling = 0
             lbInsertionCost = lb_insertion_cost(Bab.instance, node.setGivenDiscount,node.setNotGivenDiscount, diff_customer)
             if lbInsertionCost + additionSibling > 0:
-                print("here", node.withDiscountID, lbInsertionCost)
                 node.lbRoute = node.parent.children[0].lbVal() + lbInsertionCost + additionSibling
                 node.ubRoute = node.lbRoute
                 node.lbExpDiscount = 0
@@ -220,7 +219,6 @@ def updateByInsertionCost(node, Bab):
             ubInsertionCost = ub_insertion_cost(Bab.instance, node.setNotGivenDiscount, node.setGivenDiscount, diff_customer)
 
             if -ubInsertionCost + additionSibling > 0:
-                print("hereu", node.withDiscountID, ubInsertionCost)
                 node.lbRoute = node.parent.children[1].lbVal() - ubInsertionCost + constants.EPS + additionSibling
                 node.ubRoute = node.lbRoute
                 node.lbExpDiscount = 0

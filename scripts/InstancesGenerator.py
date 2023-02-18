@@ -350,17 +350,21 @@ def generate_3_segments_instance_zhou_constant_density(instance_type ):
                                     #                                        round(random.uniform( max(0,p_pup - 0.1), min(1,p_pup+0.1)),2),
                                     #                                        round(customer_distance_to_pup*u)))
 
-                                    file.write("{} {} {} {} {} {}\n".format(i,  (dict_customer[customers_id[i-1]]["x"]-minx)*coef,
-                                                                            (dict_customer[customers_id[i-1]]["y"]-miny)*coef, p_home, p_pup,
-                                                                            round(customer_distance_to_pup * u,2)))
+                                    file.write("{} {} {} {} {} {}\n".format(i,  round((dict_customer[customers_id[i-1]]["x"]-minx)*coef,2),
+                                                                            round((dict_customer[customers_id[i-1]]["y"]-miny)*coef,2), p_home, p_pup,
+                                                                            round(customer_distance_to_pup * u,2))) #this devision by 10 is because we multiply all coordinates by 10
 
 def generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type ):
     mainDirZhou = os.path.join(path_to_data, "data", "zhou-et-al-2017")
     dict_depot, dict_pickup, dict_customer = adapt_zhou(instance_type)
+    for dict in [dict_depot, dict_pickup, dict_customer]:
+        for i in dict:
+            dict[i]['x'] *= 10
+            dict[i]['y'] *= 10
     #instance_type = "VRPDODistDepAccept"
     instance_type = "VRPDO"
     mainDirStorage = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_30")
-    nr_custs = [15]
+    nr_custs = [30]
     #nr_custs = [10, 15, 20, 25, 30, 35, 40, 45, 50]
     disc_rates = [  0.03, 0.06, 0.12, 0.24]
     #disc_rates = [0.015, 0.24]
@@ -447,9 +451,9 @@ def generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type ):
                                                 # else:
                                                 #     p_home = 1-p_av
                                                 #print(i, distance_to_closest_pup*4/TSP_cost_per_customer , p_home)
-                                                file.write("{} {} {} {} {} {}\n".format(i,  (dict_customer[customers_id[i-1]]["x"]),
-                                                                                        (dict_customer[customers_id[i-1]]["y"]), p_home, p_pup,
-                                                                                         round(distance_to_closest_pup * u * TSP_cost_per_customer,2) )) #  round(total_discount/ nr_cust,2)
+                                                file.write("{} {} {} {} {} {}\n".format(i,  round(dict_customer[customers_id[i-1]]["x"],2),
+                                                                                        round(dict_customer[customers_id[i-1]]["y"],2), p_home, p_pup,
+                                                                                         round(distance_to_closest_pup * u * TSP_cost_per_customer/10,2) )) #  round(total_discount/ nr_cust,2)
 
 def generate_3_segments_instance_zhou_saturation(instance_type ):
     mainDirZhou = os.path.join(path_to_data, "data", "zhou-et-al-2017")

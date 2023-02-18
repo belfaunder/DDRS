@@ -8,6 +8,7 @@ from src.main.discount_strategy.model.OCVRPInstance import OCVRPInstance
 from src.main.discount_strategy.model.Customer import Customer
 from src.main.discount_strategy.model.Depot import Depot
 from src.main.discount_strategy.model.PUP import PUP
+from src.main.discount_strategy.util import distance
 
 # module method
 # parse the csv file given the file name, number of customer, deviation probability
@@ -33,8 +34,8 @@ def parse(file_instance):
                 vertices[int(custInfo[0])] = {}
                 vertices[int(custInfo[0])]['x'] = float(custInfo[1])
                 vertices[int(custInfo[0])]['y'] = float(custInfo[2])
-                vertices[int(custInfo[0])]['prob_home'] = max(float(custInfo[3]), constants.EPS/2)
-                vertices[int(custInfo[0])]['prob_pup'] = max(float(custInfo[4]), constants.EPS/2)
+                vertices[int(custInfo[0])]['prob_home'] = float(custInfo[3])
+                vertices[int(custInfo[0])]['prob_pup'] = float(custInfo[4])
                 vertices[int(custInfo[0])]['shipping_fee'] = float(custInfo[5])
 
             vertices[0] = {}
@@ -61,8 +62,8 @@ def parse(file_instance):
                 #d[(i, j)] = math.sqrt((nodes[i]['x'] - nodes[j]['x']) ** 2 +
                 #                               (nodes[i]['y'] - nodes[j]['y']) ** 2)
                 #EUC_2D : rounded Euclidean distances metric from TSPLIN format
-                d[(i, j)] = int(math.sqrt((nodes[i]['x'] - nodes[j]['x']) ** 2 +
-                                               (nodes[i]['y'] - nodes[j]['y']) ** 2) +0.5)
+                d[(i, j)] = distance.set_distance(nodes[i]['x'],nodes[i]['y'], nodes[j]['x'],nodes[j]['y'])
+
                 j += 1
             while j < n + constants.FLEET_SIZE + 1:
                 d[(i, j)] = d[(i, j - 1)]

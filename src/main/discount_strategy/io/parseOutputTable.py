@@ -2605,8 +2605,8 @@ def managerial_effect_delta(folder):
         plt.show()
 
 def sensitivity_comparison_nodisc_rs(folder):
-    #parseBAB_RS_NODISC(os.path.join(folder, "02_15_bab_nodisc_rs_managerial.txt"), folder, "02_15_bab_nodisc_rs_managerial")
-    df = pd.read_csv(os.path.join(folder, "02_15_bab_nodisc_rs_managerial.csv"))
+    #parseBAB_RS_NODISC(os.path.join(folder, "02_18_bab_nodisc_rs_15.txt"), folder, "02_18_bab_nodisc_rs_15")
+    df = pd.read_csv(os.path.join(folder, "02_18_bab_nodisc_rs_15.csv"))
     df['instance_type'] =  df['instance'].apply(lambda x: str(x).split('_')[0])
     #df = df[df.instance_type=='VRPDODistDepAccept2'].copy()
     df = df[df.instance_type == 'VRPDO'].copy()
@@ -2683,8 +2683,8 @@ def sensitivity_comparison_nodisc_rs(folder):
                 #axes.set(yscale="log")
                 #plt.legend(title='Number of pickup points', loc='lower left', bbox_to_anchor=(0.0, 0.0),
                 #           labels=['1', '3', '5'])
-                plt.savefig(os.path.join(path_to_images, 'Savings_1pup_ALL_NOI_DI.eps'), transparent=False,
-                           bbox_inches='tight')
+                #plt.savefig(os.path.join(path_to_images, 'Savings_1pup_ALL_NOI_DI.eps'), transparent=False,
+                #           bbox_inches='tight')
                 plt.show()
         if False: # impact of discount cost on savings for 1 pickup point and different agorithms
             df_temp = df_results[df_results.nrPup == 1].copy()

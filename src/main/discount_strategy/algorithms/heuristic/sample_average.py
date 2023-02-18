@@ -76,8 +76,6 @@ def samplingDeviated_PoissonBinomial(routeCosts, prob_dev_setMayVary_NORMED, set
 
 # evaluation of cost of a policy with enumeration of all possible scenario costs
 def one_policy_cost_estimation(instance, policy, solverType, **kwargs):
-
-
     n = instance.NR_CUST
     setMayVary = []
     for offset in range(n):
@@ -103,6 +101,7 @@ def one_policy_cost_estimation(instance, policy, solverType, **kwargs):
         if policy & (1 << (i - 1)):
             policy_exp_disc += exp_discount[i]*constants.PROB_PLACE_ORDER
     cost += policy_exp_disc
+    #print("policy_exp_disc", policy_exp_disc)
 
     for num_may_vary in  range(bin(policy).count("1") + 1) :
         for combination in itertools.combinations(setMayVary, num_may_vary):
@@ -115,6 +114,9 @@ def one_policy_cost_estimation(instance, policy, solverType, **kwargs):
             if scenario not in routeCosts:
                 routeCosts[scenario] = solver.tspCost(scenario)
             cost += scenarioProb * routeCosts[scenario]
+            #print(scenario, routeCosts[scenario])
+            #if routeCosts[scenario]<34:
+            #   print("here", bin(scenario))
 
     # for scenario in Y:
     #     # if scenario is possible given the policy
