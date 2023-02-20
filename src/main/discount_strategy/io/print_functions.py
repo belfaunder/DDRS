@@ -91,8 +91,11 @@ class Painter:
     def printConvergence(self, instance, time, lbPrint, ubPrint, bab_obj):
         fig = plt.figure()
         #plt.xscale('log')
+        lbPrint_new = [lbPrint[-1]]
+        for i in lbPrint[len(lbPrint)-2::-1]:
+            lbPrint_new.append(min(i, lbPrint_new[-1]))
         plt.style.use('seaborn-whitegrid')
-        plt.plot(time, lbPrint, '--', label=r'lower bound (not valid for policy)')
+        plt.plot(time, lbPrint_new[::-1], '--', label=r'lower bound (not valid for policy)')
         plt.plot(time, ubPrint, '-', label=r'best policy upper bound ($S_*^U$)')
         gap = []
         for i, lb in enumerate(lbPrint):

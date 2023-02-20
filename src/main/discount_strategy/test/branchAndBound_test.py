@@ -8,7 +8,7 @@ import pstats
 from src.main.discount_strategy.util import constants
 path_to_data = constants.PATH_TO_DATA
 from src.main.discount_strategy.util.bit_operations import bitCount
-#import pickle
+import pickle
 from src.main.discount_strategy.algorithms.exact.bab.BAB_exact import BABExact
 #from src.main.discount_strategy.algorithms.exact.enumeration.enumeration_scenarios_2_segm import ScenarioEnumerationSolver
 from src.main.discount_strategy.algorithms.heuristic.sample_average import sampleAverageApproximation_PoissonBinomial
@@ -33,25 +33,21 @@ if __name__ == "__main__":
     print(prefix, "Exact BAB")
     print(prefix,"solverType: ", solverType)
     print(prefix, "TIME_LIMIT:", constants.TIME_LIMIT)
-    if os.name != 'nt':
-        file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "data",
-                                     "i_VRPDO_2segm_manyPUP_managerial", str(sys.argv[-1])+".txt")
-    else:
-        file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_30",
-                                     "VRPDO_size_15_phome_0_ppup_0.0_incrate_0.24_nrpup3_2.txt")
+    #if os.name != 'nt':
+    ##    file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "data",
+    #                                 "i_VRPDO_2segm_manyPUP_managerial", str(sys.argv[-1])+".txt")
+    #else:
+    if True:
+        file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm",
+                                     "VRPDO_size_20_phome_0.2_ppup_0.0_incrate_0.06_2.txt")
         #file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
         #                             "VRPDO_size_10_phome_0.2_ppup_0.0_incrate_0.03_0.txt")
-
-
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()
     print(OCVRPInstance)
-    #print(bin(babPolicy), babPolicy)
-    #print((bin(6399)[2:].zfill(15), 6399))
-    #print((bin(1023)[2:].zfill(15), 1023))
-    #print((bin(7167)[2:].zfill(15), 7167))
 
-    # painter = Painter()
+
+    #painter = Painter()
     # painter.printVertexDisc(OCVRPInstance, babPolicy)
 
     bab = BABExact(instance=OCVRPInstance, solverType = solverType)
@@ -73,14 +69,18 @@ if __name__ == "__main__":
     # print(prefix, "pruned_by_bounds_nonleaf:", bab.pruned_bounds_nonleaf)
     # print(prefix, "pruned_by_bounds:", bab.nrNodes - bab.pruned_cliques_leaf - bab.pruned_cliques_nonleaf - bab.pruned_rs_leaf -\
     #       bab.pruned_rs_nonleaf-  bab.pruned_insertionCost_nonleaf - bab.pruned_insertionCost_leaf -  bab.pruned_bounds_nonleaf)
-    # mainDirStorage =  os.path.join(path_to_data,"output")
-    # convergence = os.path.join(mainDirStorage, 'convergence.txt')
-    # with open(convergence, 'wb') as file:
-    #     pickle.dump(time, file)
-    #     pickle.dump(lbPrint, file)
-    #     pickle.dump(ubPrint, file)
-    #painter.printConvergence(time, lbPrint, ubPrint, bab_obj)
+    mainDirStorage =  os.path.join(path_to_data,"output")
+    convergence = os.path.join(mainDirStorage, 'convergence.txt')
+    with open(convergence, 'wb') as file:
+        pickle.dump(time, file)
+        pickle.dump(lbPrint, file)
+        pickle.dump(ubPrint, file)
+    # with open(convergence, "rb") as file:
+    #     time = pickle.load(file)
+    #     lbPrint = pickle.load(file)
+    #     ubPrint = pickle.load(file)
     #
+    # painter.printConvergence(OCVRPInstance, time, lbPrint, ubPrint, ubPrint[-1])
     #
     # if 2**bitCount(babPolicy) < constants.SAMPLE_SIZE:
     #     estimation_bab = one_policy_cost_estimation(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)

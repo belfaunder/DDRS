@@ -50,8 +50,9 @@ class BABExact(BAB_super_class):
             # Select the next node to branch on. We assume that the priority queue
             # containing the open nodes maintains the nodes in sorted order
             nextNode = openNodes.pop()
-
-
+            lbPrint.append( self.bestNode.lbVal() )
+            ubPrint.append(self.bestNode.ubVal())
+            time.append(process_time()-start_time)
             #print("\nnextNode", nextNode.withDiscountID, bin(nextNode.withDiscountID), nextNode.layer,
             #      nextNode.exactValueProb, nextNode.exactValue, nextNode.lbRoute,
             #   nextNode.lbVal(), nextNode.ubVal())
@@ -70,9 +71,6 @@ class BABExact(BAB_super_class):
                 self.branch(nextNode, self.setCustomerToBranch(nextNode))
             if  openNodes.empty() and (not self.isLeaf(self.bestNode)):
                 self.openNodes.push(self.bestNode, self.bestNode.ubRoute)
-
-
-
 
         print(prefix+ "Time_running,s: ", (process_time()-start_time))
         print(prefix+ "Number_nodes: ", self.nrNodes)

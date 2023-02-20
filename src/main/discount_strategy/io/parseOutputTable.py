@@ -478,8 +478,8 @@ def parseBABHeuristic(file_path, folder, output_name):
         #    break
 
         for idx, line in enumerate(lines):
-            #try:
-            if True:
+            try:
+            #if True:
                 if 'Instance:' in line:
                     instance = (line.split(':')[1].replace('\n', '')).replace(' ', '').replace('.txt', '')
                     nrCust = int(lines[idx + 1].split(':')[1])
@@ -528,8 +528,8 @@ def parseBABHeuristic(file_path, folder, output_name):
                              num_tsps,
                              "", "", "", "", "", "", "",
                              "", "", "", eps, sample, time_limit])
-            else:
-            #except:
+            #else:
+            except:
                 #data.append([instance, nrCust, p_home, p_pup, discount])
                 print("bab problem with instance ", (line.split('/')[len(line.split('/')) - 1]), " line: ", idx)
     rowTitle = ['instance', 'nrCust', 'nrPup', 'p_home', 'p_pup', 'discount_rate', 'policy_bab_ID', 'obj_val_bab', '2sd_bab',
@@ -1233,7 +1233,8 @@ def sensitivity_disc_size_comparison_nodisc(folder, folder_data):
 #             # sns.lineplot(ax=axes[iter], data=df_temp, x='p_accept', y='rs_bab_comp,%', marker="o", markersize=8,
 #             #              linewidth=1,
 #             #              palette="deep", err_style="bars", ci=68, err_kws={'capsize': 3}, label='DI', legend=0)
-#             # sns.lineplot(ax=axes[iter], data=df_temp, x='p_accept', y='nodisc_bab, %',  marker="^", markersize=9, linewidth=1,
+#             # sns.lineplot(ax=axes[iter], data=df_temp, x='p_accept', y='nodisc_bab, %',  marker="^", markersize=9,
+#             linewidth=1,
 #             #             palette="deep", err_style="bars", ci=68, err_kws={'capsize': 3}, label = 'NOI', legend=0)
 #             # plt.legend(title=False,loc = 'upper right', bbox_to_anchor=(0.995, 0.995))
 #
@@ -2733,10 +2734,11 @@ def sensitivity_comparison_nodisc_rs(folder):
                 plt.show()
 
 def large_exp(folder):
-    parseBABHeuristic(os.path.join(folder, "02_18_bab_nodisc_rs_30.txt"), folder, "02_18_bab_nodisc_rs_30")
+    #parseBABHeuristic(os.path.join(folder, "02_18_bab_nodisc_rs_30.txt"), folder, "02_18_bab_nodisc_rs_30")
     #parseBABHeuristic(os.path.join(folder, "02_16_bab_nodisc_large.txt"), folder, "02_16_bab_nodisc_large")
     df = pd.read_csv(os.path.join(folder, "02_16_bab_nodisc_large.csv"))
-    df['cost_per_order'] = df.apply(lambda x:  min(x['obj_val_bab'], x['obj_val_rs'], x['obj_val_uniform'], x['obj_val_nodisc']) / x['nrCust'],
+    df['cost_per_order'] = df.apply(lambda x:  min(x['obj_val_bab'], x['obj_val_rs'], x['obj_val_uniform'],
+                                                   x['obj_val_nodisc']) / x['nrCust'],
                                        axis=1)
     df['cost_per_order_nodisc'] = df.apply(  lambda x:  x['obj_val_nodisc'] / x['nrCust'], axis=1)
     df['cost_per_order_all'] = df.apply(lambda x: x['obj_val_uniform'] / x['nrCust'], axis=1)
@@ -2744,38 +2746,79 @@ def large_exp(folder):
     df['objValPrint'] = df.apply(lambda x: min(x['obj_val_bab'], x['obj_val_rs'], x['obj_val_nodisc'],
                                                x['obj_val_uniform']), axis=1)
 
-    df['nrCustPrint'] = df['nrCust']+ df['nrPup']*0.3-1
-    df['nrCustNodisc'] = df['nrCust']  -1.2
-    df = df[df.discount_rate == 0.06].copy()
     sns.set()
     sns.set(font_scale=1.2)
     sns.set_context(rc={'font.sans-serif': 'Computer Modern Sans Serif'})
     sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
     sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
-    fig, axes = plt.subplots(1, 1, sharex=True)
-    sns.scatterplot(ax=axes, data=df, x='nrCustPrint', y='objValPrint', markers=True,
-                  linewidth=1, hue='nrPup', style='nrPup',  # discount_rate   nrPup
-                 palette="deep", legend = False)
-    sns.lineplot(ax=axes, data=df, x='nrCustPrint', y='objValPrint', markers=True,
-                 markersize=9, linewidth=1, hue='nrPup', style='nrPup',  # discount_rate   nrPup
-                 palette="deep", err_style="bars", errorbar=('pi', 100), err_kws={'capsize': 3})
-    #axes.set(yscale="log")
+    fig, axes = plt.subplots(1, 1, figsize=(8, 5))
+    if False: #impact of the problem size on the objective value hue number of pups
+        df['nrCustPrint'] = df['nrCust']+ df['nrPup']*0.3-1
+        df['nrCustNodisc'] = df['nrCust']  -1.2
+        df = df[df.discount_rate == 0.06].copy()
 
-    #sns.lineplot(ax=axes, data=df, x='nrCustNodisc', y='obj_val_nodisc', markers=True,
-    #           markersize=9, linewidth=1,   # discount_rate   nrPup
-    #            err_style="bars", errorbar=('pi', 100), err_kws={'capsize': 3}, label='0')
-    #sns.lineplot(ax=axes, data=df, x='nrCust', y='obj_val_uniform', markers=True,
-    #            markersize=9, linewidth=1,  # discount_rate   nrPup
-    #            err_style="bars", errorbar=('pi', 100), err_kws={'capsize': 3}, label='all')
+        sns.scatterplot(ax=axes, data=df, x='nrCustPrint', y='objValPrint', markers=True,
+                      linewidth=1, hue='nrPup', style='nrPup',  # discount_rate   nrPup
+                     palette="deep", legend = False)
+        sns.lineplot(ax=axes, data=df, x='nrCustPrint', y='objValPrint', markers=True,
+                     markersize=9, linewidth=1, hue='nrPup', style='nrPup',  # discount_rate   nrPup
+                     palette="deep", err_style="bars", errorbar=('pi', 100), err_kws={'capsize': 3})
+        #sns.lineplot(ax=axes, data=df, x='nrCustNodisc', y='obj_val_nodisc', markers=True,
+        #           markersize=9, linewidth=1,   # discount_rate   nrPup
+        #            err_style="bars", errorbar=('pi', 100), err_kws={'capsize': 3}, label='0')
+        #sns.lineplot(ax=axes, data=df, x='nrCust', y='obj_val_uniform', markers=True,
+        #            markersize=9, linewidth=1,  # discount_rate   nrPup
+        #            err_style="bars", errorbar=('pi', 100), err_kws={'capsize': 3}, label='all')
+        axes.set(xlabel='' + 'Problem size, n')
+        # # axes.set_xticks([0.2, 0.4, 0.6, 0.8, 1.0])
+        axes.set(ylabel='Expected fulfillment cost')
+        plt.legend(title='Number of pickup points', loc='lower right', bbox_to_anchor=(1.0, 0.0))
+        plt.savefig(os.path.join(path_to_images, 'Total_cost_delta_nr_customers_nr_pups.eps'), transparent=False,
+                    bbox_inches='tight')
+        plt.show()
+    if True:  # impact of the problem size on the savings of BAB in comparison to rs and nodsic
+        df['objValPrint'] = df.apply(lambda x: min(x['obj_val_bab'], x['obj_val_rs'], x['obj_val_nodisc'],
+                                                   x['obj_val_uniform']), axis=1)
+        df['gap_nodisc'] = 100*(df['obj_val_nodisc'] - df['objValPrint'])/df['objValPrint']
+        df['gap_rs'] = 100*(df['obj_val_rs'] - df['objValPrint']) / df['objValPrint']
+        df['gap_uniform'] = 200*(df['obj_val_uniform'] - df['objValPrint']) / df['objValPrint']
+        df_results = pd.DataFrame(columns=['p_accept','p_home', 'discount_rate', 'nrPup', 'nrCust', 'algo', 'savings'])
+        iter = 0
+        for index, row in df.iterrows():
+            for i in range(3):
+                df_results.at[iter + i, 'instance'] = row['instance']
+                df_results.at[iter + i, 'p_home'] = row['p_home']
+                #df_results.at[iter + i, 'p_accept'] = row['p_accept']
+                df_results.at[iter + i, 'discount_rate'] = row['discount_rate']
+                df_results.at[iter + i, 'nrPup'] = row['nrPup']
+                df_results.at[iter + i, 'nrCust'] = row['nrCust'] + i*0.7 - 0.7
+                if i == 0:
+                    df_results.at[iter + i, 'algo'] = 'NOI'
+                    df_results.at[iter + i, 'savings'] = max(row['gap_nodisc'], 0)
+                elif i == 1:
+                    df_results.at[iter + i, 'algo'] = 'DI'
+                    df_results.at[iter + i, 'savings'] = max(row['gap_rs'], 0)
+                elif i == 2:
+                    df_results.at[iter + i, 'algo'] = 'ALL'
+                    df_results.at[iter + i, 'savings'] = max(row['gap_uniform'], 0)
+            iter += 3
+        df_results = df_results[df_results['discount_rate'].isin([0.03, 0.06])].copy()
+        df_results = df_results[df_results.nrPup == 1].copy()
 
-    axes.set(xlabel='' + 'Problem size, n')
-    # # axes.set_xticks([0.2, 0.4, 0.6, 0.8, 1.0])
-    axes.set(ylabel='Expected fulfillment cost')
-    plt.legend(title='Number of pickup points', loc='lower right', bbox_to_anchor=(1.0, 0.0))
-    plt.savefig(os.path.join(path_to_images, 'Total_cost_delta_nr_customers_nr_pups.eps'), transparent=False,
-                bbox_inches='tight')
-    plt.show()
+        #sns.scatterplot(ax=axes, data=df_results, x='nrCust', y='savings', markers=True,
+        #                linewidth=1, hue='algo', style='algo',  # discount_rate   nrPup
+        #                palette="deep", legend=False)
+        sns.lineplot(ax=axes, data=df_results, x='nrCust', y='savings', markers=True,
+                     markersize=10, linewidth=1, hue='algo', style='algo',  # discount_rate   nrPup
+                     palette="deep", err_style="bars", errorbar=('pi', 100), err_kws={'capsize': 3})
 
+        axes.set(xlabel='' + 'Problem size, n')
+        # # axes.set_xticks([0.2, 0.4, 0.6, 0.8, 1.0])
+        axes.set(ylabel='Savings (%)')
+        plt.legend(title=False, loc='upper right', bbox_to_anchor=(1.0, 1.0))
+        plt.savefig(os.path.join(path_to_images, 'heuristic_improvement.eps'), transparent=False,
+                    bbox_inches='tight')
+        plt.show()
 
 
 if __name__ == "__main__":
@@ -2783,7 +2826,7 @@ if __name__ == "__main__":
     folder_data_disc = os.path.join(path_to_data, "data", "i_VRPDO_old")
     folder_data_prob = os.path.join(path_to_data, "data", "i_VRPDO_prob")
     folder_large = os.path.join(path_to_data, "output", "VRPDO_2segm_large")
-    #large_exp(folder_large)
+    large_exp(folder_large)
     #managerial_effect_delta(folder_large)
 
     # sensitivity_disc_size_comparison_nodisc(folder, folder_data_disc)
@@ -2800,7 +2843,7 @@ if __name__ == "__main__":
     #exp_profile()
     #managerial_effect_delta(folder)
     #managerial_effect_delta(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
-    large_exp(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
+    #large_exp(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
     #experiment_bab_solution_time_classes(folder_2segm_manyPUP)
     # parseBAB(os.path.join(folder, "bab_7types_nrCust.txt"), folder, "bab_7types_nrCust")
 
