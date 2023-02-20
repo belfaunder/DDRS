@@ -46,16 +46,13 @@ if __name__ == "__main__":
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()
     print(OCVRPInstance)
-    for cust in OCVRPInstance.customers:
-        print(cust.id, cust.shipping_fee)
-    babPolicy = 7167
     #print(bin(babPolicy), babPolicy)
     #print((bin(6399)[2:].zfill(15), 6399))
     #print((bin(1023)[2:].zfill(15), 1023))
     #print((bin(7167)[2:].zfill(15), 7167))
 
-    painter = Painter()
-    painter.printVertexDisc(OCVRPInstance, babPolicy)
+    # painter = Painter()
+    # painter.printVertexDisc(OCVRPInstance, babPolicy)
 
     bab = BABExact(instance=OCVRPInstance, solverType = solverType)
     babPolicy, time, lbPrint, ubPrint = bab.runBranchAndBound()

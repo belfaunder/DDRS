@@ -61,7 +61,7 @@ class TSPSolver:
     def tsp_base_model(self, distanceMatrix, nr_cust, nr_pup):
         m = grb.Model()
         m.setParam('OutputFlag', False)
-        # m.Params.Threads = 1
+        m.Params.Threads = 4
 
         set_visit = list(range(nr_cust + 1 + nr_pup))
 

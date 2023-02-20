@@ -478,8 +478,8 @@ def parseBABHeuristic(file_path, folder, output_name):
         #    break
 
         for idx, line in enumerate(lines):
-            try:
-            #if True:
+            #try:
+            if True:
                 if 'Instance:' in line:
                     instance = (line.split(':')[1].replace('\n', '')).replace(' ', '').replace('.txt', '')
                     nrCust = int(lines[idx + 1].split(':')[1])
@@ -528,8 +528,8 @@ def parseBABHeuristic(file_path, folder, output_name):
                              num_tsps,
                              "", "", "", "", "", "", "",
                              "", "", "", eps, sample, time_limit])
-            #else:
-            except:
+            else:
+            #except:
                 #data.append([instance, nrCust, p_home, p_pup, discount])
                 print("bab problem with instance ", (line.split('/')[len(line.split('/')) - 1]), " line: ", idx)
     rowTitle = ['instance', 'nrCust', 'nrPup', 'p_home', 'p_pup', 'discount_rate', 'policy_bab_ID', 'obj_val_bab', '2sd_bab',
@@ -2378,13 +2378,14 @@ def managerial_effect_delta(folder):
     #parseBAB(os.path.join(folder, "02_13_bab_exact_managerial_constDisc.txt"), folder, "02_13_bab_exact_managerial_constDisc")
     #parseBAB(os.path.join(folder, "02_13_bab_exact_managerial_DistDeptDiscount.txt"), folder, "02_13_bab_exact_managerial_DistDeptDiscount")
     #df = pd.read_csv(os.path.join(folder, "02_13_bab_exact_managerial.csv"))
-    df = pd.read_csv(os.path.join(folder, "02_15_bab_nodisc_rs_managerial.csv"))
-    #df  = pd.read_csv(os.path.join(folder, "02_16_bab_nodisc_large.csv"))
+    #df = pd.read_csv(os.path.join(folder, "02_15_bab_nodisc_rs_managerial.csv"))
+    df  = pd.read_csv(os.path.join(folder, "02_18_bab_nodisc_rs_15.csv"))
     df['p_accept'] = round(1 - df['p_home'] , 2)
     #df['p_accept'] = round(1 - df['p_home'] + (df['discount_rate']/3 - 0.02), 2)
     #df['p_accept'] = round(1 - df['p_home'] + (df['nrPup']*0.01 - 0.03), 2)
     df['num_offered_disc_bab'] = df.apply(lambda x: round(bitCount(x['policy_bab_ID'])), axis=1)
     folder_data = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_managerial")
+    #df['exp_discount_cost_bab'] = df.apply(
     #df['exp_discount_cost_bab'] = df.apply(
     #lambda x: calculate_exp_disc_cost(x['policy_bab_ID'], x['instance'], folder_data), axis=1)
     #df = df[df.p_home < 1].copy()
@@ -2575,9 +2576,10 @@ def managerial_effect_delta(folder):
         df = df[df.p_accept == 0.6].copy()
 
         df['objValPrint'] = df.apply(lambda x: min(x['obj_val_bab'], x['obj_val_rs'], x['obj_val_nodisc'],
-                                                   x['obj_val_uniform']), axis=1)
+                                                   x['obj_val_uniform'])/10, axis=1)
         df['discount_rate_print'] = df['discount_rate'] + (df['nrPup'] * 0.001 - 0.003)
         df['discount_rate_print_nodisc'] = df['discount_rate']  - 0.004
+        df['obj_val_nodisc'] = df['obj_val_nodisc']/10
 
         #df = df[df.nrPup == 3].copy()
         sns.lineplot(data=df, x='discount_rate_print_nodisc', y='obj_val_nodisc', marker='d', markersize=10,
@@ -2595,7 +2597,7 @@ def managerial_effect_delta(folder):
                    markersize=10, linewidth=1, hue = 'nrPup', style = 'nrPup',
                    palette="deep",    err_style=None )
 
-        axes.set_xticks([0.03, 0.06, 0.09, 0.12])
+        axes.set_xticks([0.03, 0.06, 0.09, 0.12, 0.15, 0.18, 0.21, 0.24])
         #axes.set_ylim(52, None)
         plt.legend(loc='lower right', bbox_to_anchor=(1.0, 0.0), title = 'Number of pickup points', ncol = 2)
         axes.set(xlabel='' + 'discount rate, '+r'$u$')
@@ -2613,11 +2615,12 @@ def sensitivity_comparison_nodisc_rs(folder):
 
     #df['p_accept'] = round(1 - df['p_home'] + (df['nrPup'] * 0.01 - 0.03), 2)
     df['p_accept'] = round(1 - df['p_home'], 2)
-    df_results = pd.DataFrame(columns=['p_accept', 'discount_rate','nrPup', 'algo','savings' ])
+    df_results = pd.DataFrame(columns=['p_accept', 'discount_rate','nrPup', 'algo','savings','p_home' ])
     iter = 0
     for index, row in df.iterrows():
         for i in range(3):
             df_results.at[iter+i, 'instance'] = row['instance']
+            df_results.at[iter + i, 'p_home'] = row['p_home']
             df_results.at[iter+i, 'p_accept'] = row['p_accept']  -0.02 + 0.02*i
             df_results.at[iter+i, 'discount_rate'] = row['discount_rate']
             df_results.at[iter + i, 'nrPup'] = row['nrPup']
@@ -2663,7 +2666,7 @@ def sensitivity_comparison_nodisc_rs(folder):
             plt.savefig(os.path.join(path_to_images, 'Savings_ALL_NOI_DI.eps'), transparent=False,
                       bbox_inches='tight')
             plt.show()
-        if True: # impact of delta on savings for 1 pickup point and different agorithms
+        if False: # impact of delta on savings for 1 pickup point and different agorithms
             df_temp = df_results[df_results.nrPup == 1].copy()
             df_temp = df_results[df_results.discount_rate == 0.06].copy()
             df_temp['discount_rate_print'] = df_temp['discount_rate'] + (df_temp['nrPup'] * 0.001 - 0.003)
@@ -2683,9 +2686,29 @@ def sensitivity_comparison_nodisc_rs(folder):
                 #axes.set(yscale="log")
                 #plt.legend(title='Number of pickup points', loc='lower left', bbox_to_anchor=(0.0, 0.0),
                 #           labels=['1', '3', '5'])
-                #plt.savefig(os.path.join(path_to_images, 'Savings_1pup_ALL_NOI_DI.eps'), transparent=False,
-                #           bbox_inches='tight')
+                plt.savefig(os.path.join(path_to_images, 'Savings_1pup_ALL_NOI_DI_15.eps'), transparent=False,
+                          bbox_inches='tight')
                 plt.show()
+        if False:
+            df_temp = df_results[df_results.nrPup == 1].copy()
+            for p_home in [0.4]:
+                fig, axes = plt.subplots(1, 1, sharex=True)
+                df1 = df_temp[df_temp.p_home == p_home].copy()
+                sns.lineplot(ax=axes, data=df1, x='discount_rate', y='savings', markers=True,
+                             markersize=11, linewidth=1, hue='algo', style='algo',  # algo   nrPup
+                             palette="deep", err_style="bars", errorbar=('pi', 100), err_kws={'capsize': 5})
+                #sns.scatterplot(ax=axes, data=df1, x='p_accept', y='savings', markers=True,
+                #                hue='algo', style='algo',  #    nrPup algo
+                #                palette="deep", legend=False)
+                axes.set(xlabel='Discount rate, ' + r'$u$')
+                axes.set(ylabel='Savings (%)')
+                plt.legend(title =False)
+                #axes.set(yscale="log")
+                #plt.legend(title='Number of pickup points', loc='lower left', bbox_to_anchor=(0.0, 0.0),
+                #           labels=['1', '3', '5'])
+                plt.savefig(os.path.join(path_to_images, 'Savings_disc_rate_1pup_ALL_NOI_DI_15.eps'), transparent=False,
+                          bbox_inches='tight')
+                plt.show() #Effect of discount rate on savings for nrPup=1
         if False: # impact of discount cost on savings for 1 pickup point and different agorithms
             df_temp = df_results[df_results.nrPup == 1].copy()
             df_temp = df_results[df_results.p_accept == 0.6].copy()
@@ -2710,6 +2733,7 @@ def sensitivity_comparison_nodisc_rs(folder):
                 plt.show()
 
 def large_exp(folder):
+    parseBABHeuristic(os.path.join(folder, "02_18_bab_nodisc_rs_30.txt"), folder, "02_18_bab_nodisc_rs_30")
     #parseBABHeuristic(os.path.join(folder, "02_16_bab_nodisc_large.txt"), folder, "02_16_bab_nodisc_large")
     df = pd.read_csv(os.path.join(folder, "02_16_bab_nodisc_large.csv"))
     df['cost_per_order'] = df.apply(lambda x:  min(x['obj_val_bab'], x['obj_val_rs'], x['obj_val_uniform'], x['obj_val_nodisc']) / x['nrCust'],
@@ -2763,7 +2787,7 @@ if __name__ == "__main__":
     #managerial_effect_delta(folder_large)
 
     # sensitivity_disc_size_comparison_nodisc(folder, folder_data_disc)
-    sensitivity_comparison_nodisc_rs(folder)
+    #sensitivity_comparison_nodisc_rs(folder)
     #print_convergence_gap()
 
     folder_2segm = os.path.join(path_to_data, "output", "VRPDO_discount_proportional_2segm")
@@ -2776,6 +2800,7 @@ if __name__ == "__main__":
     #exp_profile()
     #managerial_effect_delta(folder)
     #managerial_effect_delta(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
+    large_exp(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
     #experiment_bab_solution_time_classes(folder_2segm_manyPUP)
     # parseBAB(os.path.join(folder, "bab_7types_nrCust.txt"), folder, "bab_7types_nrCust")
 

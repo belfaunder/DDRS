@@ -26,9 +26,9 @@ def scenarioPossible_2segm(scenario, policy, num_defined,n):
     if (~policy & scenario):
         return False
     else:
-        for i in range(num_defined + 1, n + 1):
-            if scenario & (1 << (i - 1)):
-                return False
+        # for i in range(num_defined + 1, n + 1):
+        #     if scenario & (1 << (i - 1)):
+        #         return False
         return True
 
 

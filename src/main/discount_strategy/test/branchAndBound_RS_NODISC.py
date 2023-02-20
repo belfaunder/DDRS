@@ -34,13 +34,14 @@ if __name__ == "__main__":
                                      "i_VRPDO_2segm_manyPUP_30", str(sys.argv[-1]) + ".txt")
     else:
         file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_30",
-                                     "VRPDO_size_15_phome_0_ppup_0.0_incrate_0.24_nrpup3_2.txt")
+                                     "VRPDO_size_30_phome_0_ppup_0.0_incrate_0.03_nrpup3_0.txt")
         # file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
         #                             "VRPDO_size_10_phome_0.2_ppup_0.0_incrate_0.03_0.txt")
 
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()
     print(OCVRPInstance)
+    rsPolicyID, rsValue = ring_star_deterministic_no_TW(OCVRPInstance, OCVRPInstance.NR_CUST)
 
     bab = BABExact(instance=OCVRPInstance, solverType=solverType)
     babPolicy, time, lbPrint, ubPrint = bab.runBranchAndBound()
@@ -52,7 +53,7 @@ if __name__ == "__main__":
                                                                             policy=babPolicy, solverType=solverType)
     print(prefix+'Estimated_BAB_cost:', estimation_bab)
 
-    rsPolicyID, rsValue = ring_star_deterministic_no_TW(OCVRPInstance, OCVRPInstance.NR_CUST)
+
 
     if rsPolicyID == babPolicy:
         estimation_rs = estimation_bab
