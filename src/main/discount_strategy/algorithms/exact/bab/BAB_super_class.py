@@ -82,9 +82,6 @@ class BAB_super_class:
         # gurobi model for TSP is stored in TSP object and reused
         # thus to enable warm start
         self.TSPSolver = TSPSolver(instance=instance, solverType=solverType)
-        self.TSPSolver.tspCost(7167)
-        self.TSPSolver.tspCost(32767)
-        print()
 
         # add two scnenarios which function as a LB and UB
         scenario_0 = 0
@@ -137,7 +134,6 @@ class BAB_super_class:
         self.listNodes = []
         self.bestUb = ubRoute
         # in the worst case we can do nothing (do not offer any discount), which will cost route visiting all customers
-        #TODO: rs should be corrected for many PUPS
         rsPolicyID, rsValue = ring_star_deterministic_no_TW(instance, instance.NR_CUST)
         self.rs_policy = rsPolicyID
 
@@ -217,7 +213,7 @@ class BAB_super_class:
         exactValueLeft = parent.exactValue
 
         # thus to reduce the problem with multiplication of small numbers
-        if parent.exactValueProb > constants.EPS:
+        if parent.exactValueProb > 10*constants.EPS:
             lastEnteranceDictionary = self.root.lastEnteranceDictionary
             exactValProbRight = parent.exactValueProb / p_home[diff_customer]
             exactValueRight = parent.exactValue / p_home[diff_customer]
@@ -324,16 +320,16 @@ class BAB_super_class:
         #DOMINANCE_CHECK_REMOVED
         elif self.canFathomByTheoremCliques(node):
             node.fathomedState = True
-            if node.layer == self.instance.NR_CUST:
-                self.pruned_cliques_leaf +=1
-            else:
-                self.pruned_cliques_nonleaf += 1
+            #if node.layer == self.instance.NR_CUST:
+            #    self.pruned_cliques_leaf +=1
+            #else:
+            #    self.pruned_cliques_nonleaf += 1
         elif self.canFathomByTheoremUpperBound(node):
             node.fathomedState = True
-            if node.layer == self.instance.NR_CUST:
-                self.pruned_rs_leaf += 1
-            else:
-                self.pruned_rs_nonleaf += 1
+            #if node.layer == self.instance.NR_CUST:
+            #    self.pruned_rs_leaf += 1
+            #else:
+            #    self.pruned_rs_nonleaf += 1
         if layer in self.nodeLayers:
             self.nodeLayers[layer][1].nextNodeInLayer = node
             node.prevNodeInLayer = self.nodeLayers[layer][1]

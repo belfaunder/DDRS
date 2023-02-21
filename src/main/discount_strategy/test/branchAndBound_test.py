@@ -33,27 +33,22 @@ if __name__ == "__main__":
     print(prefix, "Exact BAB")
     print(prefix,"solverType: ", solverType)
     print(prefix, "TIME_LIMIT:", constants.TIME_LIMIT)
-    #if os.name != 'nt':
-    ##    file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "data",
-    #                                 "i_VRPDO_2segm_manyPUP_managerial", str(sys.argv[-1])+".txt")
-    #else:
-    if True:
-        file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm",
-                                     "VRPDO_size_20_phome_0.2_ppup_0.0_incrate_0.06_2.txt")
+    if os.name != 'nt':
+        file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "data",
+                                     "i_VRPDO_discount_proportional_2segm_manyPUP", str(sys.argv[-1])+".txt")
+    else:
+        file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
+                                     "VRPDO_size_10_phome_0.1_ppup_0.0_incrate_0.03_nrpup3_0.txt")
         #file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
         #                             "VRPDO_size_10_phome_0.2_ppup_0.0_incrate_0.03_0.txt")
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()
     print(OCVRPInstance)
-
-
     #painter = Painter()
-    # painter.printVertexDisc(OCVRPInstance, babPolicy)
-
+    #painter.printVertexDisc(OCVRPInstance, 0)
     bab = BABExact(instance=OCVRPInstance, solverType = solverType)
     babPolicy, time, lbPrint, ubPrint = bab.runBranchAndBound()
     #start_time = process_time()
-
     #rsPolicyID, rsValue = ring_star_deterministic_no_TW(OCVRPInstance, OCVRPInstance.NR_CUST)
     #EnumerationSolver = ScenarioEnumerationSolver(instance=OCVRPInstance)
     #EnumerationSolver.exactPolicyByEnumeration(True)
@@ -69,12 +64,12 @@ if __name__ == "__main__":
     # print(prefix, "pruned_by_bounds_nonleaf:", bab.pruned_bounds_nonleaf)
     # print(prefix, "pruned_by_bounds:", bab.nrNodes - bab.pruned_cliques_leaf - bab.pruned_cliques_nonleaf - bab.pruned_rs_leaf -\
     #       bab.pruned_rs_nonleaf-  bab.pruned_insertionCost_nonleaf - bab.pruned_insertionCost_leaf -  bab.pruned_bounds_nonleaf)
-    mainDirStorage =  os.path.join(path_to_data,"output")
-    convergence = os.path.join(mainDirStorage, 'convergence.txt')
-    with open(convergence, 'wb') as file:
-        pickle.dump(time, file)
-        pickle.dump(lbPrint, file)
-        pickle.dump(ubPrint, file)
+    # mainDirStorage =  os.path.join(path_to_data,"output")
+    # convergence = os.path.join(mainDirStorage, 'convergence.txt')
+    # with open(convergence, 'wb') as file:
+    #     pickle.dump(time, file)
+    #     pickle.dump(lbPrint, file)
+    #     pickle.dump(ubPrint, file)
     # with open(convergence, "rb") as file:
     #     time = pickle.load(file)
     #     lbPrint = pickle.load(file)
@@ -82,12 +77,12 @@ if __name__ == "__main__":
     #
     # painter.printConvergence(OCVRPInstance, time, lbPrint, ubPrint, ubPrint[-1])
     #
-    # if 2**bitCount(babPolicy) < constants.SAMPLE_SIZE:
-    #     estimation_bab = one_policy_cost_estimation(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)
-    # else:
-    #     estimation_bab = sampleAverageApproximation_PoissonBinomial_1sample(instance = OCVRPInstance,
-    #                                                                         policy = babPolicy, solverType = solverType)
-    # print(prefix, 'Estimated_BAB_cost:',estimation_bab )
+    if 2**bitCount(babPolicy) < constants.SAMPLE_SIZE:
+        estimation_bab = one_policy_cost_estimation(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)
+    else:
+        estimation_bab = sampleAverageApproximation_PoissonBinomial_1sample(instance = OCVRPInstance,
+                                                                            policy = babPolicy, solverType = solverType)
+    print(prefix, 'Estimated_BAB_cost:',estimation_bab )
 
     # EnumerationSolver = ScenarioEnumerationSolver(instance=OCVRPInstance, solverType=solverType)
     # EnumerationSolver.exactPolicyByEnumeration_withoutGurobi_2segm()

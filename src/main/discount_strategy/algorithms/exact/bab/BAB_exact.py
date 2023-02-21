@@ -50,9 +50,9 @@ class BABExact(BAB_super_class):
             # Select the next node to branch on. We assume that the priority queue
             # containing the open nodes maintains the nodes in sorted order
             nextNode = openNodes.pop()
-            lbPrint.append( self.bestNode.lbVal() )
-            ubPrint.append(self.bestNode.ubVal())
-            time.append(process_time()-start_time)
+            #lbPrint.append( self.bestNode.lbVal() )
+            #ubPrint.append(self.bestNode.ubVal())
+            #time.append(process_time()-start_time)
             #print("\nnextNode", nextNode.withDiscountID, bin(nextNode.withDiscountID), nextNode.layer,
             #      nextNode.exactValueProb, nextNode.exactValue, nextNode.lbRoute,
             #   nextNode.lbVal(), nextNode.ubVal())
@@ -141,8 +141,8 @@ class BABExact(BAB_super_class):
                     self.bestUb = min(self.bestUb, self.bestNode.ubVal())
             return False
         elif node.lbVal() > self.bestUb :
-            if node.layer < self.instance.NR_CUST:
-                self.pruned_bounds_nonleaf += 1
+            #if node.layer < self.instance.NR_CUST:
+            #    self.pruned_bounds_nonleaf += 1
             return True
         else:
             updateBoundsFromDictionary(self, node)
@@ -154,8 +154,8 @@ class BABExact(BAB_super_class):
             while cycle_iteration<10:
                 cycle_iteration+=1
                 if node.lbVal() > self.bestUb:
-                    if node.layer < self.instance.NR_CUST:
-                        self.pruned_bounds_nonleaf += 1
+                    #if node.layer < self.instance.NR_CUST:
+                    #    self.pruned_bounds_nonleaf += 1
                     return True
 
                 # fathom by bound (found new Best Node): if current precision is small, then fathom, else - branch on the best node

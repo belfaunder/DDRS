@@ -132,10 +132,11 @@ def one_policy_cost_estimation(instance, policy, solverType, **kwargs):
     else:
         return  [cost,cost,cost]
 
+array_0_1 = np.arange(start = 0, stop = 2)
 def set_random_combination(setMayVary, prob_dev_setMayVary):
     combination = []
     for index, i in enumerate(setMayVary):
-        if np.random.choice([1, 0], size=1, p= [prob_dev_setMayVary[index], 1-prob_dev_setMayVary[index]])==1:
+        if np.random.choice(array_0_1, size=1, p= [prob_dev_setMayVary[index], 1-prob_dev_setMayVary[index]])==1:
             combination.append(i)
     return combination
 

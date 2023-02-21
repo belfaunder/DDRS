@@ -363,18 +363,21 @@ def generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type ):
             dict[i]['y'] *= 10
     #instance_type = "VRPDODistDepAccept"
     instance_type = "VRPDO"
-    mainDirStorage = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_30")
-    nr_custs = [30]
+    mainDirStorage = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP")
+    #nr_custs = [30]
     #nr_custs = [10, 15, 20, 25, 30, 35, 40, 45, 50]
-    disc_rates = [  0.03, 0.06, 0.12, 0.24]
-    #disc_rates = [0.015, 0.24]
-    #nr_custs = [10, 20, 40]
-    dict_probabilities = {0.0:[0, 0.1, 0.25, 0.4, 0.55, 0.7, 0.85]}
+    nr_custs = [10, 11,12,13,14,15,16,17,18,19,20]
+    disc_rates = [  0.03, 0.06, 0.12]
+    #disc_rates = [0.015]
+    #nr_custs = [30]
+    #dict_probabilities = {0.0:[0, 0.1, 0.25, 0.4, 0.55, 0.7, 0.85]}
+    dict_probabilities = {0.0: [ 0.1,   0.4,   0.7 ]}
     #dict_probabilities = {0.0: [0.4]}
     #disc_rates = [0.005, 0.01,0.015, 0.02,0.025, 0.03,0.035, 0.04,0.045, 0.05, 0.06, 0.07, 0.08, 0.09]
     instanceList = os.path.join(mainDirStorage, 'list.txt')
 
-    for id_instance in [0, 1,2, 3, 4]:
+    for id_instance in range(10):
+        print(id_instance)
         shuffled_cust_list = os.path.join(mainDirZhou, 'shuffled_customers_' + str(id_instance) + '.txt')
         for nr_cust in nr_custs:
             #p_pup, p_home = 0,0
@@ -387,7 +390,7 @@ def generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type ):
                     if True:
                         if True:
                             for u in disc_rates:
-                                for nr_pup in [1,3,5]:
+                                for nr_pup in [3]:
                                     #p_pup, p_home = 0, 0
                                     with open(shuffled_cust_list, "rb") as file_shuffled:
                                         depots_id = pickle.load(file_shuffled)
@@ -459,33 +462,37 @@ def generate_3_segments_instance_zhou_saturation(instance_type ):
     mainDirZhou = os.path.join(path_to_data, "data", "zhou-et-al-2017")
     dict_depot, dict_pickup, dict_customer = adapt_zhou(instance_type)
     instance_type = "VRPDO"
-    mainDirStorage = os.path.join(path_to_data, "data", "i_VRPDO_saturation")
-    nr_custs = [10, 15, 20, 25, 30, 35, 40, 45, 50]
-    #nr_custs = [15]
+    mainDirStorage = os.path.join(path_to_data, "data", "i_VRPDO_saturation_manyPup")
+    #nr_custs = [10, 15, 20, 25, 30, 35, 40, 45, 50]
+    nr_custs = [15]
     dict_disc_prob = saturation()
     instanceList = os.path.join(mainDirStorage, 'list.txt')
 
-    for id_instance in [9]:
+    for id_instance in [1]:
         shuffled_cust_list = os.path.join(mainDirZhou, 'shuffled_customers_' + str(id_instance) + '.txt')
         for nr_cust in nr_custs:
             for u in dict_disc_prob:
-                p_pup =  round(dict_disc_prob[u][0],3)
+                p_pup =  0
                 p_home =  round(dict_disc_prob[u][1],3)
+                nr_pup = 3
                 with open(shuffled_cust_list, "rb") as file_shuffled:
                     depots_id = pickle.load(file_shuffled)
                     customers_id = pickle.load(file_shuffled)
-                    pup_id = set_pickup_point(dict_pickup, dict_customer, customers_id, 15)
+                    pup_ids = set_pickup_point_preselected(nr_pup, nr_cust, id_instance)
 
                     instanceName = instance_type+'_size_'+str(nr_cust) + '_phome_' + str(p_home) + '_ppup_' + str(p_pup) +'_incrate_'  + str(round(u,3)) +'_'+str(id_instance)+ '.txt'
                     instanceDir = os.path.join(mainDirStorage, instanceName)
                     with open(instanceList, 'a+', encoding='utf-8') as file:
                         file.write("{}\n".format(instanceName.split('.txt')[0]))
 
-                        TSP_cost_per_customer = temp_instance(dict_customer, nr_cust, customers_id, dict_pickup[pup_id], dict_depot[depots_id[0]])
+                        TSP_cost_per_customer = temp_instance(dict_customer, nr_cust, nr_pup, customers_id,
+                                                              [dict_pickup[pup_id] for pup_id in pup_ids],
+                                                              dict_depot[depots_id[0]])
 
                         with open(instanceDir, 'w+', encoding='utf-8') as file:
                             file.write("NAME: {}\n".format(instanceName))
-                            file.write("SIZE: {}\n\n".format(nr_cust))
+                            file.write("SIZE: {}\n".format(nr_cust))
+                            file.write("NUMBER_PUPs: {}\n\n".format(nr_pup))
 
                             file.write("LOCATION COORDINATES:\n\n")
 
@@ -493,12 +500,34 @@ def generate_3_segments_instance_zhou_saturation(instance_type ):
                             file.write("{} {} {}\n\n".format(0, dict_depot[depots_id[0]]["x"],dict_depot[depots_id[0]]["y"]))
 
                             file.write("PUP V. XCOORD. YCOORD.\n")
-                            file.write("{} {} {}\n\n".format(nr_cust + 1, (dict_pickup[pup_id]["x"]),(dict_pickup[pup_id]["y"])))
+                            iter = nr_cust
+                            for pup_id in pup_ids:
+                                iter += 1
+                                file.write("{} {} {}\n".format(iter, (dict_pickup[pup_id]["x"]),
+                                                               (dict_pickup[pup_id]["y"])))
+                            file.write("\n")
 
                             file.write("CUST V. XCOORD. YCOORD. PROB_ALWAYS_HOME PROB_ALWAYS_PUP SHIPPING_FEE\n")
-                            for i in range(1,nr_cust+1):
-                                customer_distance_to_pup = math.sqrt(( dict_pickup[pup_id]["x"]- dict_customer[customers_id[i-1]]["x"]) ** 2 +
-                                              ( dict_pickup[pup_id]["y"] - dict_customer[customers_id[i-1]]["y"]) ** 2)
+
+                            total_discount = 0
+                            for i in range(1, nr_cust + 1):
+                                distance_to_the_first_pup = int(math.sqrt(
+                                    (dict_pickup[pup_ids[0]]["x"] - dict_customer[customers_id[i - 1]]["x"]) ** 2 + \
+                                    (dict_pickup[pup_ids[0]]["y"] - dict_customer[customers_id[i - 1]][
+                                        "y"]) ** 2) + 0.5)
+                                total_discount += round(distance_to_the_first_pup * u * TSP_cost_per_customer, 2)
+
+                            for i in range(1, nr_cust + 1):
+                                distance_to_closest_pup = 10 ** 5
+                                for pup_id in pup_ids:
+                                    distance_temp = math.sqrt(
+                                        (dict_pickup[pup_id]["x"] - dict_customer[customers_id[i - 1]]["x"]) ** 2 + \
+                                        (dict_pickup[pup_id]["y"] - dict_customer[customers_id[i - 1]]["y"]) ** 2)
+                                    distance_to_closest_pup = min(distance_to_closest_pup, distance_temp)
+
+                                customer_distance_to_pup = math.sqrt(
+                                    (dict_pickup[pup_id]["x"] - dict_customer[customers_id[i - 1]]["x"]) ** 2 +
+                                    (dict_pickup[pup_id]["y"] - dict_customer[customers_id[i - 1]]["y"]) ** 2)
 
                                 file.write("{} {} {} {} {} {}\n".format(i,  (dict_customer[customers_id[i-1]]["x"]),
                                                                             (dict_customer[customers_id[i-1]]["y"]), p_home, p_pup,
@@ -699,20 +728,18 @@ def print_zhou():
     #ax.text(customer.xCoord + 0.35, customer.yCoord + 0.35, customer, fontsize=12)
     plt.show()
 
-
-
 def saturation():
     def rate_from_disc(discount):
-        return discount*0.05/average_discount
+        return discount*0.06/average_discount
     def prob_pup(beta, discount):
-        prob = (1-p_pup )*(1 - math.exp(-beta*discount))
+        prob = 1 - math.exp(-beta*discount)
         return prob
 
-    def set_beta(u_disc, p_delta):
-        return -math.log(1 - p_delta/(1-p_pup))/ u_disc
+    def set_beta(discount_rate, p_delta):
+        return -math.log(1 - p_delta )/ discount_rate
 
-    file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional",
-                                 "VRPDO_size_15_phome_0.3_ppup_0.2_incrate_0.05_9.txt")
+    file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
+                                 "VRPDO_size_15_phome_0.4_ppup_0.0_incrate_0.06_1.txt")
     instance = OCVRPParser.parse(file_instance)
     tspSolver = TSPSolver(instance=instance, solverType='Gurobi')
     nominalTSPCost = tspSolver.tspCost(0) / 15
@@ -723,29 +750,39 @@ def saturation():
     average_discount = sum(discount_value_av) / len(discount_value_av)
     print('average_discount value:', average_discount)
 
-
-    p_pup = 0.2
-    u_disc_0 = rate_from_disc(1.5)
+    p_pup = 0
+    u_disc_0 = rate_from_disc(0.5)
     p_delta_0 = 0.5
     beta = set_beta(u_disc_0, p_delta_0)
     print("beta: ", beta, beta*0.05/average_discount)
 
-    prob_accept = []
-    u_discs = [0, 0.02,  0.04, 0.06, 0.08, 0.1, 0.12, 0.14, 0.16]
 
-    #discounts_print = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 6]
-    discounts_print = [8.5,9]
+    discounts_print = [0.33, 0.66, 1,1.33, 1.66,  2,  2.33, 2.66, 3, 3.33, 3.66, 4, 4.33, 4.66, 5, 5.33, 5.66, 6]
     dict_probabilities = {}
     for disc in discounts_print:
-        dict_probabilities[rate_from_disc(disc)] = [p_pup, 1 - p_pup - prob_pup(beta, rate_from_disc(disc))]
+        dict_probabilities[rate_from_disc(disc)] = [p_pup, 1 - p_pup - prob_pup(beta, rate_from_disc(disc)),disc]
+        print(disc,dict_probabilities[rate_from_disc(disc)][1] )
     return dict_probabilities
 
+def generate_artificial(template_name, instance_base):
+    instance_template = os.path.join(path_to_data, "data", "solomon", template_name+".csv")
+    nr_custs = [15]
+    # elif instance_template == 'solomonC100':
+    #     # pupnode, depotnode = 2, 100  #the best alternative of nodes
+    #     pupnode, depotnode = 1, 52
+    #     # disc_sizes = [1, 4, 12]
+    #     # disc_sizes = [2,4,6]
+    #     disc_sizes = [2, 3, 4]
+    #     u_s = [0.2, 0.5, 0.1, 0.12, 0.18, 0.24, 0.4, 0.6, 0.8, 1, 2]  # discout parameters relative to the routing cost
+    #     # disc_sizes = [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
 
 if __name__ == "__main__":
-    #saturation()
     #print_zhou()
     #generate_examples_concorde(os.path.join((Path(os.path.abspath(__file__)).parents[1]), "data","data_for_pyconcorde", "berlin70.tsp"))
     mainDirTSPLIB = os.path.join((Path(os.path.abspath(__file__)).parents[1]), "data", "TSPLIB_all_instances")
+    instance_example =  os.path.join(path_to_data, "data", "i_VRPDO_saturation_manyPup",
+                                     "VRPDO_size_15_phome_0.4_ppup_0.0_incrate_0.06_nrpup5_0.txt")
+    #generate_artificial('C101', instance_example)
     #instance_types =['berlin52', 'solomonR100', 'solomonRC100', 'solomonC100']
     #instance_types = ['berlin52', 'solomonR100', 'solomonRC100', 'solomonC100']
     #instance_types = ['berlin52_clustered3']

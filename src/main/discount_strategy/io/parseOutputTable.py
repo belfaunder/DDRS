@@ -408,8 +408,8 @@ def parseBAB_RS_NODISC(file_path, folder, output_name):
     with open(file_path, 'r') as file:
         lines = file.readlines()
         for idx, line in enumerate(lines):
-            try:
-                # if True:
+            #try:
+            if True:
                 if 'Instance:' in line:
                     instance = (line.split(':')[1].replace('\n', '')).replace(' ', '').replace('.txt', '')
                     nrCust = int(lines[idx + 1].split(':')[1])
@@ -454,7 +454,8 @@ def parseBAB_RS_NODISC(file_path, folder, output_name):
                              time_tb, nodes,
                              num_tsps, optimal, "", "", "", "", "", "",  "", "", "", ""])
 
-            except:
+            #except:
+            else:
                 data.append([ nrCust, p_home,  discount_rate, "", "", "", "", "", "", "",
                              "", "", "", instance])
                 print("bab problem with instance ", (line.split('/')[len(line.split('/')) - 1]), " line: ", idx)
@@ -2168,7 +2169,7 @@ def experiment_bab_solution_time_classes(folder):
     plt.show()
 
 def average_discount(instance_name):
-    file_instance = os.path.join(path_to_data, "data", "i_VRPDO_saturation",
+    file_instance = os.path.join(path_to_data, "data", "i_VRPDO_saturation_manyPup",
                                  instance_name+".txt")
     instance = OCVRPParser.parse(file_instance)
 
@@ -2180,15 +2181,23 @@ def average_discount(instance_name):
 
 def experiment_saturation_choice_model():
     folder = os.path.join(path_to_data, "output", "VRPDO_saturation")
-    #parseBAB(os.path.join(folder, "bab_VRPDO_saturation2.txt"), folder, "bab_VRPDO_saturation2")
-    df_bab = pd.read_csv(os.path.join(folder, "bab_VRPDO_saturation2.csv"))
-    df_bab['p_accept'] = round(1 - df_bab['p_pup'] - df_bab['p_home'], 3)
-    df_bab = df_bab[['instance', 'p_accept','nrCust','p_home','discount', 'obj_val_bab','policy_bab_ID']]
+    #parseBAB(os.path.join(folder, "02_20_VRPDO_manypup_saturation.txt"), folder, "02_20_VRPDO_manypup_saturation")
+    df_bab = pd.read_csv(os.path.join(folder, "02_20_VRPDO_manypup_saturation.csv"))
+    df_bab['p_accept'] = round(1  - df_bab['p_home'], 3)
+    df_bab = df_bab[['instance', 'p_accept','nrCust','p_home','discount_rate', 'obj_val_bab','policy_bab_ID']]
 
     df_bab['discount_value'] =df_bab.apply(
         lambda x: average_discount(x['instance']), axis=1)
 
-    df_bab['num_offered_disc_bab'] = df_bab.apply(lambda x: round(bitCount(x['policy_bab_ID'])), axis=1)
+    #df_bab['num_offered_disc_bab'] = df_bab.apply(lambda x: round(bitCount(x['policy_bab_ID'])), axis=1)
+
+    df_bab = pd.read_excel(os.path.join(folder, "02_20_VRPDO_manypup_saturation.xlsx"))
+    df_bab['p_accept'] = round(1 - df_bab['p_home'], 3)
+    df_bab = df_bab[['instance', 'p_accept', 'nrCust', 'p_home', 'discount_rate', 'obj_val_bab',
+                     'policy_bab_ID','num_disc_bab']]
+
+    df_bab['discount_value'] = df_bab.apply(
+        lambda x: average_discount(x['instance']), axis=1)
     sns.set()
     sns.set(font_scale=1.2)
     rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
@@ -2196,31 +2205,31 @@ def experiment_saturation_choice_model():
     sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
 
 
-    # fig, axes = plt.subplots(1, 1, figsize=(6, 5))
-    # ax2 = axes.twinx()
-    #
-    # #sns.lineplot(ax=ax2, data=df_bab, x='discount_value', y='p_accept', linewidth=1, marker='o',
-    # #             markersize=10, color='black', err_style="bars", ci=None, err_kws={'capsize': 3}, label=r'$\Delta$',
-    # #             legend=False)
-    # #sns.lineplot(ax=axes, data=df_bab, x='discount_value', y='obj_val_bab', linewidth=1, marker='s',
-    # #             markersize=9, color='g', err_style="bars", ci=None, err_kws={'capsize': 3},
-    # #             label='Expected fulfillment cost', legend=False)
-    # sns.lineplot(ax=axes, data=df_bab, x='discount_value', y='num_offered_disc_bab', linewidth=1, marker='s',
-    #              markersize=9, color='g', err_style="bars", ci=None, err_kws={'capsize': 3}, label='Number offered incentives',  legend=False)
-    # lines, labels = axes.get_legend_handles_labels()
-    # lines2, labels2 = ax2.get_legend_handles_labels()
-    # axes.legend(lines + lines2, labels + labels2)
-    # ax2.set_ylim(-0.05, 0.9)
-    # ax2.set(ylabel=r'$\Delta$')
-    # axes.set(xlabel=r'd')
-    # axes.set(ylabel='Expected fulfillment cost')
-    # axes.yaxis.get_major_locator().set_params(integer=True)
-    # #plt.savefig(os.path.join(path_to_images, 'Saturation_choice_model.eps'), transparent=False,
-    # #            bbox_inches='tight')
-    # plt.show()
+    fig, axes = plt.subplots(1, 1, figsize=(6, 5))
+    ax2 = axes.twinx()
+
+    sns.lineplot(ax=ax2, data=df_bab, x='discount_value', y='p_accept', linewidth=1, marker='o',
+                markersize=10, color='black', err_style="bars", ci=None, err_kws={'capsize': 3}, label=r'$\Delta$',
+                legend=False)
+    sns.lineplot(ax=axes, data=df_bab, x='discount_value', y='obj_val_bab', linewidth=1, marker='s',
+                markersize=9, color='g', err_style="bars", ci=None, err_kws={'capsize': 3},
+                label='Expected fulfillment cost', legend=False)
+    #sns.lineplot(ax=axes, data=df_bab, x='discount_value', y='num_offered_disc_bab', linewidth=1, marker='s',
+    #             markersize=9, color='g', err_style="bars", ci=None, err_kws={'capsize': 3}, label='Number offered incentives',  legend=False)
+    lines, labels = axes.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    axes.legend(lines + lines2, labels + labels2)
+    ax2.set_ylim(-0.05, 1.1)
+    ax2.set(ylabel=r'$\Delta$')
+    axes.set(xlabel=r'd')
+    axes.set(ylabel='Expected fulfillment cost')
+    axes.yaxis.get_major_locator().set_params(integer=True)
+    plt.savefig(os.path.join(path_to_images, 'Saturation_choice_model_manypup.eps'), transparent=False,
+                bbox_inches='tight')
+    plt.show()
 
     fig, axes = plt.subplots(1, 1, figsize=(6, 5))
-    sns.lineplot(ax=axes, data=df_bab, x='discount_value', y='num_offered_disc_bab', linewidth=1, marker='s',
+    sns.lineplot(ax=axes, data=df_bab, x='discount_value', y='num_disc_bab', linewidth=1, marker='s',
                  markersize=9, color='g', err_style="bars", ci=None, err_kws={'capsize': 3},
                  label=None, legend=False)
     #axes.legend()
@@ -2374,13 +2383,14 @@ def plot_clustered_stacked(dfall, title, savename,  labels=None,  H="/", **kwarg
 
 
 def managerial_effect_delta(folder):
+    #parseBABHeuristic(os.path.join(folder, "02_18_bab_nodisc_rs_30.txt"), folder, "02_18_bab_nodisc_rs_30")
     #parseBAB(os.path.join(folder, "02_13_bab_exact_managerial.txt"), folder,
     #        "02_13_bab_exact_managerial")
     #parseBAB(os.path.join(folder, "02_13_bab_exact_managerial_constDisc.txt"), folder, "02_13_bab_exact_managerial_constDisc")
     #parseBAB(os.path.join(folder, "02_13_bab_exact_managerial_DistDeptDiscount.txt"), folder, "02_13_bab_exact_managerial_DistDeptDiscount")
     #df = pd.read_csv(os.path.join(folder, "02_13_bab_exact_managerial.csv"))
     #df = pd.read_csv(os.path.join(folder, "02_15_bab_nodisc_rs_managerial.csv"))
-    df  = pd.read_csv(os.path.join(folder, "02_18_bab_nodisc_rs_15.csv"))
+    df  = pd.read_csv(os.path.join(folder, "02_18_bab_nodisc_rs_30.csv"))
     df['p_accept'] = round(1 - df['p_home'] , 2)
     #df['p_accept'] = round(1 - df['p_home'] + (df['discount_rate']/3 - 0.02), 2)
     #df['p_accept'] = round(1 - df['p_home'] + (df['nrPup']*0.01 - 0.03), 2)
@@ -2393,6 +2403,8 @@ def managerial_effect_delta(folder):
     #df = df[df.nrPup == 1].copy()
     #df = df[df.instance_id == 1].copy()
     df = df[ df['discount_rate'].isin([0.015, 0.03, 0.06, 0.12, 0.24])].copy()
+
+    df = df[ df['discount_rate'].isin([ 0.06 ])].copy()
     #df = df[df.p_home==0.4].copy()
     #df = df[df.p_accept == 0.6].copy()
     # df['in_pup_bab'] = df.apply(
@@ -2441,9 +2453,13 @@ def managerial_effect_delta(folder):
         #             palette="deep", legend = False)
         # axes.set(ylabel='NUmber of offered incentives')
         plt.show()
-    if False: # effect of delta on the fulfillment cost
+    if True: # effect of delta on the fulfillment cost
         #df = df[df['discount_rate'].isin([0.06])].copy()
-        sns.lineplot(ax=axes, data=df, x='p_accept', y='obj_val_bab', markers=True,
+        df['obj_val_bab_print'] = df['obj_val_bab']/10
+        df['p_accept'] = df.apply(lambda x: 1 - x['p_home'] + 0.03 if x['nrPup']==5 else 1 - x['p_home']-0.03 if x['nrPup']==3 else 1 - x['p_home'], axis=1)
+
+        round(1 - df['p_home'] + (df['nrPup'] * 0.01 - 0.03), 2)
+        sns.lineplot(ax=axes, data=df, x='p_accept', y='obj_val_bab_print', markers=True,
                     markersize=9, linewidth=1,  hue = 'nrPup', style = 'nrPup',#discount_rate   nrPup
                     palette="deep", err_style="bars", errorbar=('pi', 100), err_kws={'capsize': 3}, legend = None )
         #sns.scatterplot(ax=axes, data=df, x='p_accept', y='obj_val_bab', markers=True,
@@ -2455,7 +2471,7 @@ def managerial_effect_delta(folder):
         axes.set(ylabel='Expected fulfillment cost')
         #plt.legend(title='Number of pickup points', loc='lower left', bbox_to_anchor=(0.0, 0.0),
         #          labels=['1', '3','5' ])
-        plt.savefig(os.path.join(path_to_images, 'Total_cost_delta_nr_pups.eps'), transparent=False,
+        plt.savefig(os.path.join(path_to_images, 'Total_cost_delta_nr_pups_30.eps'), transparent=False,
                            bbox_inches='tight')
         plt.show()
     if False: #effect of delta on the number of offered incentives
@@ -2571,8 +2587,8 @@ def managerial_effect_delta(folder):
                 df5 = df5.groupby(level='discount_rate').mean()
                 print()
                 plot_clustered_stacked([df1, df3, df5], "", "barchart_discount_rate_large" + ".eps", ['1', '3', '5'])
-    if True:
-        nr_customers = 15
+    if False: #Impact of incenitve rate on the expected fulfillment cost hue nrPup
+        nr_customers = 30
         df = df[df.nrCust == nr_customers].copy()
         df = df[df.p_accept == 0.6].copy()
 
@@ -2603,7 +2619,7 @@ def managerial_effect_delta(folder):
         plt.legend(loc='lower right', bbox_to_anchor=(1.0, 0.0), title = 'Number of pickup points', ncol = 2)
         axes.set(xlabel='' + 'discount rate, '+r'$u$')
         axes.set(ylabel='Expected fulfillment cost')
-        plt.savefig(os.path.join(path_to_images, 'Expected_fulfillment_cost_disc_rate_nrpup_hue_15.eps'), transparent=False,
+        plt.savefig(os.path.join(path_to_images, 'Expected_fulfillment_cost_disc_rate_nrpup_hue_30.eps'), transparent=False,
                    bbox_inches='tight')
         plt.show()
 
@@ -2735,7 +2751,7 @@ def sensitivity_comparison_nodisc_rs(folder):
 
 def large_exp(folder):
     #parseBABHeuristic(os.path.join(folder, "02_18_bab_nodisc_rs_30.txt"), folder, "02_18_bab_nodisc_rs_30")
-    #parseBABHeuristic(os.path.join(folder, "02_16_bab_nodisc_large.txt"), folder, "02_16_bab_nodisc_large")
+    #parseBAB_RS_NODISC(os.path.join(folder, "temp.txt"), folder, "temp")
     df = pd.read_csv(os.path.join(folder, "02_16_bab_nodisc_large.csv"))
     df['cost_per_order'] = df.apply(lambda x:  min(x['obj_val_bab'], x['obj_val_rs'], x['obj_val_uniform'],
                                                    x['obj_val_nodisc']) / x['nrCust'],
@@ -2776,7 +2792,7 @@ def large_exp(folder):
         plt.savefig(os.path.join(path_to_images, 'Total_cost_delta_nr_customers_nr_pups.eps'), transparent=False,
                     bbox_inches='tight')
         plt.show()
-    if True:  # impact of the problem size on the savings of BAB in comparison to rs and nodsic
+    if False:  # impact of the problem size on the savings of BAB in comparison to rs and nodsic
         df['objValPrint'] = df.apply(lambda x: min(x['obj_val_bab'], x['obj_val_rs'], x['obj_val_nodisc'],
                                                    x['obj_val_uniform']), axis=1)
         df['gap_nodisc'] = 100*(df['obj_val_nodisc'] - df['objValPrint'])/df['objValPrint']
@@ -2826,9 +2842,8 @@ if __name__ == "__main__":
     folder_data_disc = os.path.join(path_to_data, "data", "i_VRPDO_old")
     folder_data_prob = os.path.join(path_to_data, "data", "i_VRPDO_prob")
     folder_large = os.path.join(path_to_data, "output", "VRPDO_2segm_large")
-    large_exp(folder_large)
+    #large_exp(folder_large)
     #managerial_effect_delta(folder_large)
-
     # sensitivity_disc_size_comparison_nodisc(folder, folder_data_disc)
     #sensitivity_comparison_nodisc_rs(folder)
     #print_convergence_gap()
@@ -2842,7 +2857,7 @@ if __name__ == "__main__":
 
     #exp_profile()
     #managerial_effect_delta(folder)
-    #managerial_effect_delta(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
+    managerial_effect_delta(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
     #large_exp(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
     #experiment_bab_solution_time_classes(folder_2segm_manyPUP)
     # parseBAB(os.path.join(folder, "bab_7types_nrCust.txt"), folder, "bab_7types_nrCust")
