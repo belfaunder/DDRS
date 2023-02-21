@@ -234,9 +234,9 @@ def updateBoundsFromDictionary(Bab, node):
     if node.parent is not None:
         #DOMINANCE_CHECK_REMOVED
         if node is not Bab.bestNode:
-          status_not_changed = updateByInsertionCost(node, Bab)
+            status_not_changed = updateByInsertionCost(node, Bab)
         else:
-          status_not_changed = True
+            status_not_changed = True
 
         if status_not_changed:
             #setGivenDiscount = node.setGivenDiscount
@@ -309,6 +309,7 @@ def updateBoundsFromDictionary(Bab, node):
                                 node.lbRoute += scenarioProb * (scenarioCost - node.lbScenarios[id][0])
                                 break
                         node.ubRoute -= (Bab.instance.ubScenario - scenarioCost) * scenarioProb
+
             #lastEnteranceDictionary is the last element of Route Cost that was checked for this node
             node.lastEnteranceDictionary = next(reversed(Bab.instance.routeCost))
         #else:

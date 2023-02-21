@@ -136,7 +136,7 @@ array_0_1 = np.arange(start = 0, stop = 2)
 def set_random_combination(setMayVary, prob_dev_setMayVary):
     combination = []
     for index, i in enumerate(setMayVary):
-        if np.random.choice(array_0_1, size=1, p= [prob_dev_setMayVary[index], 1-prob_dev_setMayVary[index]])==1:
+        if np.random.choice(array_0_1, size=1, p= [prob_dev_setMayVary[index], 1-prob_dev_setMayVary[index]])==0:
             combination.append(i)
     return combination
 
@@ -164,7 +164,9 @@ def sampleAverageApproximation_PoissonBinomial_1sample_2segm(instance,setMayVary
     prob_dev_setMayVary = []
     total_sum_prob = 0
     for customer in setMayVary:
-        prob_dev_setMayVary.append(p_home[customer])
+        mask = (1 << (customer - 1))
+        if mask & policy:
+            prob_dev_setMayVary.append(p_home[customer])
     # for offset in range(1, n+1):
     #     mask = (1 << (offset - 1))
     #     if mask & policy:
@@ -374,11 +376,9 @@ def sampleAverageApproximation_PoissonBinomial(instance, policy):
         else:
             prob_dev_setMayVary.append(1-p_pup[offset])
             total_sum_prob += 1-p_pup[offset]
-    print(prob_dev_setMayVary)
     prob_dev_setMayVary_NORMED = []
     for i in  prob_dev_setMayVary:
         prob_dev_setMayVary_NORMED.append(i / total_sum_prob)
-    print(prob_dev_setMayVary_NORMED)
     # for  index, prob in enumerate(prob_dev_setMayVary):
     #    prob_dev_setMayVary[index] = prob/total_prob_vary
     #print(prob_dev_setMayVary_NORMED)

@@ -50,6 +50,7 @@ class BABExact(BAB_super_class):
             # Select the next node to branch on. We assume that the priority queue
             # containing the open nodes maintains the nodes in sorted order
             nextNode = openNodes.pop()
+
             #lbPrint.append( self.bestNode.lbVal() )
             #ubPrint.append(self.bestNode.ubVal())
             #time.append(process_time()-start_time)
@@ -71,6 +72,7 @@ class BABExact(BAB_super_class):
                 self.branch(nextNode, self.setCustomerToBranch(nextNode))
             if  openNodes.empty() and (not self.isLeaf(self.bestNode)):
                 self.openNodes.push(self.bestNode, self.bestNode.ubRoute)
+
 
         print(prefix+ "Time_running,s: ", (process_time()-start_time))
         print(prefix+ "Number_nodes: ", self.nrNodes)
@@ -127,7 +129,6 @@ class BABExact(BAB_super_class):
                 cost_should_be = 0
                 for id in node.lbScenarios:
                     cost_should_be+= node.lbScenarios[id][0]*node.lbScenarios[id][1]
-
             return False
         # in node is the current BestNode, then update the bounds, and return False (negative answer to canFathom)
         if self.bestNode == node:
