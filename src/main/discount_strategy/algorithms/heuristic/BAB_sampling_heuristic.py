@@ -47,8 +47,8 @@ class BABHeuristic(BAB_super_class):
             #print("best", self.bestNode.withDiscountID, self.bestNode.formPolicy(self.instance.NR_CUST), "lbVal", self.bestNode.lbVal(),"ubVal", self.bestNode.ubVal(), self.bestNode.exactValueProb,self.bestNode.lbRoute, self.bestNode.ubRoute)
             #print("current node", nextNode.withDiscountID, nextNode.formPolicy(self.instance.NR_CUST), "lbVal", nextNode.lbVal(),"ubVal", nextNode.ubVal())
             # print("tspdict:", len(self.instance.routeCost))
-            if nextNode.withDiscountID==339869411:
-                print("current node", nextNode.withDiscountID, nextNode.formPolicy(self.instance.NR_CUST), nextNode.exactValueProb, "lbVal", nextNode.lbVal(),"ubVal", nextNode.ubVal())
+            #if nextNode.withDiscountID==339869411:
+            #    print("current node", nextNode.withDiscountID, nextNode.formPolicy(self.instance.NR_CUST), nextNode.exactValueProb, "lbVal", nextNode.lbVal(),"ubVal", nextNode.ubVal())
 
             if self.bestNode.fathomedState:
                 self.bestNode = nextNode
@@ -60,7 +60,6 @@ class BABHeuristic(BAB_super_class):
             elif self.canFathomByTheoremCliques_Heuristic(nextNode):
                 nextNode.fathomed()
             elif self.canFathom(nextNode):
-                print("fathoed")
                 nextNode.fathomed()
             elif self.canBranch(nextNode):
                 self.branch(nextNode, self.setCustomerToBranch(nextNode))

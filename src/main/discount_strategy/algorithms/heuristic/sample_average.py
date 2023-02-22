@@ -151,10 +151,8 @@ def sampleAverageApproximation_PoissonBinomial_1sample_2segm(instance,setMayVary
         solver = TSPSolver(instance, solverType)
     if 'sample_size' in kwargs:
         sample_size = kwargs['sample_size']
-        print("sample_size is given", sample_size)
     else:
         sample_size = constants.SAMPLE_SIZE
-        print("sample_size is not given", sample_size)
 
     if 'routeCosts' in kwargs:
         routeCosts = kwargs['routeCosts']
