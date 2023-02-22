@@ -18,7 +18,7 @@ from src.main.discount_strategy.util import constants
 from src.main.discount_strategy.io import OCVRPParser
 path_to_data = constants.PATH_TO_DATA
 prefix="tag: "
-
+from src.main.discount_strategy.io.print_functions import Painter
 
 if __name__ == "__main__":
 
@@ -36,12 +36,11 @@ if __name__ == "__main__":
                                      "i_VRPDO_2segm_manyPUP_30", str(sys.argv[-1]) + ".txt")
     else:
         file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_30",
-                                     "VRPDO_size_30_phome_0_ppup_0.0_incrate_0.06_nrpup1_3.txt")
+                                     "VRPDO_size_30_phome_0_ppup_0.0_incrate_0.06_nrpup3_2.txt")
 
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()
     print(OCVRPInstance)
-
     start_time = process_time()
     babSampling = BABHeuristic(instance=OCVRPInstance, solverType =solverType)
     babPolicy=  babSampling.runBranchAndBound()

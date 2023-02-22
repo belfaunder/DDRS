@@ -151,8 +151,10 @@ def sampleAverageApproximation_PoissonBinomial_1sample_2segm(instance,setMayVary
         solver = TSPSolver(instance, solverType)
     if 'sample_size' in kwargs:
         sample_size = kwargs['sample_size']
+        print("sample_size is given", sample_size)
     else:
         sample_size = constants.SAMPLE_SIZE
+        print("sample_size is not given", sample_size)
 
     if 'routeCosts' in kwargs:
         routeCosts = kwargs['routeCosts']
@@ -219,6 +221,7 @@ def sampleAverageApproximation_PoissonBinomial_1sample(instance, policy, solverT
     else:
         solver = TSPSolver(instance, solverType)
     if 'sample_size' in kwargs:
+        print("sample_size in kwargs")
         sample_size = kwargs['sample_size']
     else:
         sample_size = constants.SAMPLE_SIZE
@@ -315,7 +318,7 @@ def importanceSampling_RS(Bab,  policy):
         sampleScenarioCost.append( Bab.instance.routeCost[scenario])
     sampleCost_mean, policy_cost_error = average_error(sampleScenarioCost, sample_size)
     policy_cost_average = policy_cost +sampleCost_mean
-    print("rs cost average",policy,  policy_cost_average)
+    #print("rs cost average",policy,  policy_cost_average)
     return  sampleScenarioID, sampleScenarioCost
 
 def importance_probability( scenario, policy, rsPolicy, n,p_home, p_pup):
@@ -343,11 +346,11 @@ def importanceSampling(instance, policy, rsPolicy, sampleScenarioID, sampleScena
 
     policy_cost_average = discount_cost +sampleCost_mean
 
-    print("with importance sampling", policy,policy_cost_average,  policy_cost_average -policy_cost_error,  policy_cost_average +policy_cost_error )
+    #print("with importance sampling", policy,policy_cost_average,  policy_cost_average -policy_cost_error,  policy_cost_average +policy_cost_error )
 
     normal_sampling = sampleAverageApproximation_PoissonBinomial_1sample(instance = instance, policy=policy, solverType='Gurobi',
                                                        sample_size=constants.HEURISTIC_SAMPLE_SIZE)
-    print(normal_sampling)
+    #print(normal_sampling)
 
     #rint()
     return policy_cost_average
@@ -421,7 +424,7 @@ def sampleAverageApproximation_PoissonBinomial(instance, policy):
                     #num_v+=1
                     #if v==5:
                     #    print(bin(scenario)[2:], solver.tspCost(scenario) )
-                print("exactly:", v, average_v/weight[v])
+                #print("exactly:", v, average_v/weight[v])
             else:
             #if True:
                 cumulative_sum = 0
@@ -432,7 +435,7 @@ def sampleAverageApproximation_PoissonBinomial(instance, policy):
                     sampleCost.append(sampleCostTemp)
                 #print(sampleCost)
                 average, error_mean = average_error(sampleCost, constants.NUMBER_OF_SAMPLES)
-                print("estimation:", v, average, " 3 sigma: ",error_mean,"\n")
+                #print("estimation:", v, average, " 3 sigma: ",error_mean,"\n")
 
                 policy_cost += average * weight[v]
                 policy_cost_error += error_mean * weight[v]
@@ -475,8 +478,7 @@ def sampleAverageApproximation_Binomial(instance, policy):
             weightToCalc += i
         else:
             weight.pop(index)
-    #for index, i in enumerate(weight):
-    #    print(index, i, weight[index])
+
     weightNotCalculated = 1-weightToCalc
 
     policy_cost = discount * len(setMayVary) * (1 - p_dev)
@@ -676,7 +678,7 @@ def sampling_comparison_scenarios_2_segments(y1, y2, sets, input_data, max_gap, 
 if __name__ == "__main__":
     setMayVary = list(range(1,15))
     prob_dev_setMayVary = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.1, 0.1, 0.5]
-    print(setMayVary)
+    #print(setMayVary)
     prob_dev_setMayVary_NORMED = [0.02631578947368421, 0.02631578947368421, 0.02631578947368421, 0.02631578947368421, 0.02631578947368421,
      0.02631578947368421, 0.13157894736842105, 0.13157894736842105, 0.13157894736842105, 0.13157894736842105,
      0.13157894736842105, 0.02631578947368421, 0.02631578947368421, 0.13157894736842105]

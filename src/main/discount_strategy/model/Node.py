@@ -81,7 +81,7 @@ class Node:
     def priority(self):
         #return (self.ubRoute+self.ubExpDiscount+self.lbRoute+self.lbExpDiscount)*self.priorityCoef/(1+self.layer)/(1+self.layer)
         #return (self.ubRoute + self.ubExpDiscount)*self.priorityCoef
-        return (self.lbRoute + self.lbExpDiscount)
+        return (self.ubRoute+self.ubExpDiscount + self.lbRoute + self.lbExpDiscount)*self.priorityCoef
 
 
     def __str__(self):

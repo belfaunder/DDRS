@@ -2857,8 +2857,8 @@ if __name__ == "__main__":
 
     #exp_profile()
     #managerial_effect_delta(folder)
-    managerial_effect_delta(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
-    #large_exp(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
+    #managerial_effect_delta(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
+    large_exp(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
     #experiment_bab_solution_time_classes(folder_2segm_manyPUP)
     # parseBAB(os.path.join(folder, "bab_7types_nrCust.txt"), folder, "bab_7types_nrCust")
 

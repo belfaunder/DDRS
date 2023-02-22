@@ -363,21 +363,20 @@ def generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type ):
             dict[i]['y'] *= 10
     #instance_type = "VRPDODistDepAccept"
     instance_type = "VRPDO"
-    mainDirStorage = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP")
-    #nr_custs = [30]
+    mainDirStorage = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_30")
+    nr_custs = [15]
     #nr_custs = [10, 15, 20, 25, 30, 35, 40, 45, 50]
-    nr_custs = [10, 11,12,13,14,15,16,17,18,19,20]
+    #nr_custs = [10, 11,12,13,14,15,16,17,18,19,20]
     disc_rates = [  0.03, 0.06, 0.12]
     #disc_rates = [0.015]
     #nr_custs = [30]
-    #dict_probabilities = {0.0:[0, 0.1, 0.25, 0.4, 0.55, 0.7, 0.85]}
-    dict_probabilities = {0.0: [ 0.1,   0.4,   0.7 ]}
+    dict_probabilities = {0.0:[0, 0.2, 0.4, 0.6, 0.8]}
+    #dict_probabilities = {0.0: [ 0.1,   0.4,   0.7 ]}
     #dict_probabilities = {0.0: [0.4]}
     #disc_rates = [0.005, 0.01,0.015, 0.02,0.025, 0.03,0.035, 0.04,0.045, 0.05, 0.06, 0.07, 0.08, 0.09]
     instanceList = os.path.join(mainDirStorage, 'list.txt')
 
-    for id_instance in range(10):
-        print(id_instance)
+    for id_instance in range(5):
         shuffled_cust_list = os.path.join(mainDirZhou, 'shuffled_customers_' + str(id_instance) + '.txt')
         for nr_cust in nr_custs:
             #p_pup, p_home = 0,0
@@ -390,7 +389,7 @@ def generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type ):
                     if True:
                         if True:
                             for u in disc_rates:
-                                for nr_pup in [3]:
+                                for nr_pup in [1,3,5]:
                                     #p_pup, p_home = 0, 0
                                     with open(shuffled_cust_list, "rb") as file_shuffled:
                                         depots_id = pickle.load(file_shuffled)
@@ -738,7 +737,7 @@ def saturation():
     def set_beta(discount_rate, p_delta):
         return -math.log(1 - p_delta )/ discount_rate
 
-    file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
+    file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP_old",
                                  "VRPDO_size_15_phome_0.4_ppup_0.0_incrate_0.06_1.txt")
     instance = OCVRPParser.parse(file_instance)
     tspSolver = TSPSolver(instance=instance, solverType='Gurobi')
@@ -777,6 +776,7 @@ def generate_artificial(template_name, instance_base):
     #     # disc_sizes = [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
 
 if __name__ == "__main__":
+    saturation()
     #print_zhou()
     #generate_examples_concorde(os.path.join((Path(os.path.abspath(__file__)).parents[1]), "data","data_for_pyconcorde", "berlin70.tsp"))
     mainDirTSPLIB = os.path.join((Path(os.path.abspath(__file__)).parents[1]), "data", "TSPLIB_all_instances")

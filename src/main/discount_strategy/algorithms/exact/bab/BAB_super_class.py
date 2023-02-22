@@ -282,6 +282,7 @@ class BAB_super_class:
     def setPriorityCoef(self, withDiscountID, layer):
         coincide1 = True
         coincide2 = True
+        coincide3 = True
 
         for offset in range(layer):
             #compare with RS
@@ -289,12 +290,20 @@ class BAB_super_class:
                 coincide1 = False
             if not coincide1:
                 break
+        for offset in range(layer):
+            #compare with RS
+            if ((1 << offset) & self.rs_policy) < ((1 << offset) & withDiscountID):
+                coincide3 = False
+            if not coincide3:
+                break
 
         # compare with NODISC
         if withDiscountID > 0:
             coincide2 = False
         if coincide1 or coincide2:
             return 0.5
+        elif coincide3:
+            return 0.8
         else:
             return 1
 

@@ -4,10 +4,7 @@ import os
 import gurobipy as grb
 from itertools import combinations
 from gurobipy import GRB
-path_to_util = os.path.join((Path(os.path.abspath(__file__)).parents[2]),"util")
-sys.path.insert(1, path_to_util)
-import constants
-
+from src.main.discount_strategy.util import constants
 
 # solve ring start for all customers form disctionar "nodes"
 # input: size of discount that customers get(all equal)
@@ -25,15 +22,10 @@ def subtourelim(model, where):
                                 if vals[i, j] > 0.5)
         # find the shortest cycle in the selected edge list
         tour = subtour(selected, model._set_visit)
-        #print(tour)
-        should_be_visited = n - sum(wvals[i] for i in model._set_N) + sum(visitvals[i] for i in range(n+1, n+1+model._NR_PUP))
-        inpuptemp = [] # + grb.quicksum(model._w_vars[i] for i in inpuptemp)/(n-len(tour) +1+model._NR_PUP)
-        for i in range(1, n + 1):
-            if i not in tour:
-                inpuptemp.append(i)
-        #print("inpuptemp", inpuptemp)
+        should_be_visited = n - sum(wvals[i] for i in model._set_N) + sum(visitvals[i] for i in range(n+1, n+1+model._NR_PUP)) + 1
+        #selected_visit = grb.tuplelist((i) for i in visitvals.keys() if visitvals[i] > 0.5)
+        #selected_disc = grb.tuplelist((i) for i in wvals.keys() if wvals[i] > 0.5)
         if len(tour) < should_be_visited:
-            #print(len(tour))
             # add subtour elimination constr. for every pair of cities in tour
 
             if (tour[0]==0 and tour[len(tour)-1]>=n+1) :
@@ -61,7 +53,7 @@ def subtour(edges, set_visit):
             unvisited.remove(current)
             neighbors = [j for i, j in edges.select(current, '*')
                          if j in unvisited]
-        if len(cycle) > len(thiscycle) and len(thiscycle) > 1 and thiscycle != [0, 6]:
+        if len(cycle) > len(thiscycle) and len(thiscycle) > 1 :
             cycle = thiscycle
     return cycle
 
@@ -90,14 +82,19 @@ def ring_star_deterministic_no_TW(instance, max_number_offered_discounts, **kwar
     # Create variables
     x_vars = m.addVars(distanceMatrix.keys(), obj=distanceMatrix, vtype=GRB.BINARY, name='e')
     for i, j in x_vars.keys():
-        if (i==0 and j>=n+1) or (i>=n+1 and j==0): #?
-            continue
-        else:
+        #if (i==0 and j>=n+1) or (i>=n+1 and j==0): #?
+        #    continue
+        #else:
+        if True:
             x_vars[j, i] = x_vars[i, j]  # edge in opposite direction
 
     w_vars = grb.tupledict()
     for i in set_N:
         w_vars[i] = m.addVar(obj=discount[i], vtype=GRB.BINARY, name='w[%d]'%(i))
+        # if babPolicy & (1 << i - 1):
+        #    m.addConstr(w_vars[i] == 1)
+        # else:
+        #    m.addConstr(w_vars[i] == 0)
 
     visit_vars = grb.tupledict()
 
@@ -131,9 +128,8 @@ def ring_star_deterministic_no_TW(instance, max_number_offered_discounts, **kwar
     m._w_vars = w_vars
     m._visit_vars = visit_vars
     m.Params.lazyConstraints = 1
-
     m.optimize(subtourelim)
-    m.write("upd.lp")
+
     vals = m.getAttr('x', w_vars)
     selected_disc = grb.tuplelist((i) for i in vals.keys() if vals[i] > 0.5)
     policy = [0]*(n)
@@ -142,22 +138,27 @@ def ring_star_deterministic_no_TW(instance, max_number_offered_discounts, **kwar
         policy[n-i] = 1
         policyID = policyID ^(1 << (i-1))
 
-    #print("policy", policy)
-    #vals = m.getAttr('x', x_vars)
-    #selected = grb.tuplelist((i, j) for i, j in vals.keys() if vals[i, j] > 0.5)
-    #print(selected)
-    #print([i for i in range(n+2) if i not in selected_disc])
-    #tour = subtour(selected,[i for i in range(n+2) if i not in selected_disc])
-    #print('Optimal tour: %s' % str(tour))
-
-    #m.printAttr('X')
-    #print(bin(policyID)[2:])
+    # vals = m.getAttr('x', x_vars)
+    # selected = grb.tuplelist((i, j) for i, j in vals.keys() if vals[i, j] > 0.5)
+    # total_routing = 0
+    # for tuple in selected:
+    #     total_routing += distanceMatrix[tuple]
+    # visit_vals = m.getAttr('x', visit_vars)
+    # selected_visit = grb.tuplelist((i) for i in visit_vals.keys() if visit_vals[i] > 0.5)
+    # print([i for i in range(n+instance.NR_PUP + 1) if i not in selected_disc])
+    # tour = subtour(selected, [i for i in range(n+instance.NR_PUP + 1) if i not in selected_disc])
+    # should_be_visited = n - sum(wvals[i] for i in m._set_N) + sum(
+    #     visitvals[i] for i in range(n + 1, n + 1 + m._NR_PUP)) + 1
+    # tour = subtour(selected, [i for i in range(n + instance.NR_PUP + 1) if i not in selected_disc])
+    # print(should_be_visited, len(tour))
+    # #m.printAttr('X')
     return policyID, m.objVal
 
 
 
 def ring_star_deterministic_no_TW_old(instance, max_number_offered_discounts, **kwargs):
     distanceMatrix = instance.distanceMatrix
+
     n = instance.NR_CUST
     if 'discount' in kwargs:
         discount = kwargs['discount']
@@ -187,6 +188,7 @@ def ring_star_deterministic_no_TW_old(instance, max_number_offered_discounts, **
     w_vars = grb.tupledict()
     for i in set_N:
         w_vars[i] = m.addVar(obj=discount[i], vtype=GRB.BINARY, name='w[%d]'%(i))
+
     #m.addConstr(w_vars[0] == 0)
     #m.addConstr(w_vars[n+1] == 0)
     m.addConstr(grb.quicksum(w_vars[i] for i in set_N) <= max_pup)
