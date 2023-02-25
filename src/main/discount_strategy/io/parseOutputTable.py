@@ -500,6 +500,7 @@ def parseBABHeuristic(file_path, folder, output_name):
                     sd_bab = float(lines[idx + 10].split('[')[1].split(',')[0]) - float(
                         lines[idx + 10].split('[')[1].split(',')[1])
                     policy_ID_bab = int(lines[idx + 8].split(':')[1])
+                    num_offered_disc_bab =  bitCount(policy_ID_bab)
                     try:
                         obj_val_rs = float(lines[idx + 12].split('[')[1].split(',')[2].split(']')[0])
                         # 2sd:
@@ -517,7 +518,7 @@ def parseBABHeuristic(file_path, folder, output_name):
                         gap_nodisc = (obj_val_nodisc - obj_val_bab) / obj_val_nodisc * 100
                         gap_uniform = (obj_val_uniform - obj_val_bab) / obj_val_uniform * 100
                         data.append(
-                            [instance, nrCust, nrPup, p_home, p_pup, discount, policy_ID_bab, obj_val_bab, sd_bab, time_bab,
+                            [instance, nrCust, nrPup, p_home, p_pup, discount, policy_ID_bab, num_offered_disc_bab, obj_val_bab, sd_bab, time_bab,
                              nodes,
                              num_tsps,
                              policy_ID_rs, obj_val_rs, sd_rs, gap_rs, obj_val_nodisc,  gap_nodisc,
@@ -533,7 +534,7 @@ def parseBABHeuristic(file_path, folder, output_name):
             except:
                 #data.append([instance, nrCust, p_home, p_pup, discount])
                 print("bab problem with instance ", (line.split('/')[len(line.split('/')) - 1]), " line: ", idx)
-    rowTitle = ['instance', 'nrCust', 'nrPup', 'p_home', 'p_pup', 'discount_rate', 'policy_bab_ID', 'obj_val_bab', '2sd_bab',
+    rowTitle = ['instance', 'nrCust', 'nrPup', 'p_home', 'p_pup', 'discount_rate', 'policy_bab_ID', 'num_disc_bab','obj_val_bab', '2sd_bab',
                 'time_bab', 'nodes',
                 'num_tsps', 'policy_ID_rs', 'obj_val_rs', '2sd_rs', 'gap_rs', 'obj_val_nodisc',
                 'gap_nodisc', 'obj_val_uniform', '2sd_uniform', 'gap_uniform', 'eps','sample','time_limit']
@@ -793,7 +794,6 @@ def sensitivity_disc_size_comparison_nodisc(folder, folder_data):
     plt.savefig(os.path.join(path_to_images, 'Fulfillment_incentive_cost_discount.eps'), transparent=False,
                 bbox_inches='tight')
     plt.show()
-
 
 
     fig, ax2 = plt.subplots(1, 1, figsize=(6, 5))
@@ -1348,7 +1348,7 @@ def print_convergence_gap():
         time = pickle.load(file)
         lbPrint = pickle.load(file)
         ubPrint = pickle.load(file)
-    fig = plt.figure()
+    fig, axes = plt.subplots(1, 1)
     sns.set()
     sns.set(font_scale=1.2)
     rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
@@ -1359,15 +1359,18 @@ def print_convergence_gap():
     # for i, lb in enumerate(lbPrint):
     #    gap.append((ubPrint[i] - lbPrint[i]) / ubPrint[i])
     # plt.plot(time, gap, '-', label='Gap')
-    bab_obj = 65.1999
-    plt.axhline(y=bab_obj, color='r', linestyle='--', label='optimal objective value')
+    bab_obj = 614.3618363291553/10
+    plt.axhline(y=bab_obj, color='r', linestyle='--', alpha=0.3, label='optimal objective value')
+    ubPrint_new = [i / 10 for i in ubPrint]
+    lbPrint_new = [i / 10 for i in lbPrint]
 
-    plt.plot(time, ubPrint, '-', label='best known upper bound ')
-    plt.plot(time, lbPrint, '-', label='best known lower bound ')
+    plt.plot(time, ubPrint_new, '-', label='best known upper bound ')
+    plt.plot(time, lbPrint_new, '-', label='best known lower bound ')
+    #axes.set(yscale="log")
 
     # plt.plot(time, ubPrint, '-',  label='best upper bound ' + r'$(\overline{z}^{*})$')
     # plt.plot(time, lbPrint, '-', label='best lower bound '+r'$(\underline{z}^{*})$')
-
+    #axes.set_ylim(40, 80)
     plt.xlabel("Running time (sec)")
     plt.ylabel("Expected fulfillment cost")
     plt.legend()
@@ -1718,13 +1721,37 @@ def experiment_variation_nrcust(folder):
     # Speed test on nr_cust_variation instances
     # parseBAB_RS_NODISC(os.path.join(folder, "bab_rs_nodisc_i_VRPDO_notfinished.txt"), folder, "i_VRPDO_time")
     #parseBAB_RS_NODISC(os.path.join(folder, "bab_VRPDO_discount_proportional_02_02.txt"), folder, "i_VRPDO_discount_proportional_02_02")
-    #parseBAB(os.path.join(folder, "02_16_bab_time_limit.txt"), folder, "02_16_bab_time_limit")
+    #parseBAB(os.path.join(folder, "02_23_bab_exact.txt"), folder, "02_23_bab_exact")
     #parseBAB(os.path.join(folder, "02_06_bab_exact_dominance_check.txt"), folder, "02_06_bab_exact_dominance_check")
     #parseEnumeration(os.path.join(folder, "02_13_enumeration.txt"), folder, "02_13_enumeration")
 
 
-    df_bab = pd.read_csv(os.path.join(folder, "02_08_bab_exact.csv"))
+    if True: #print table with bab_exact and enumeration running times
+        df = pd.read_csv(os.path.join(folder, "02_23_bab_exact.csv"))
+        df_enum =  pd.read_csv(os.path.join(folder, "02_13_enumeration.csv"))
+        # df = df[df.nrCust < 19].copy()
+        df_results = pd.DataFrame(index=list(range(10, 21)),
+                                  columns=['t_enum_av', 't_enum_min', 't_enum_max', 'sp1','t_bab_av', 't_bab_min', 't_bab_max'])
+        for nrCust in range(10, 21):
+            df_slice_bab = df[(df.nrCust == nrCust)].copy()
+            df_slice_enum = df_enum[(df_enum.nrCust_enum == nrCust)].copy()
+            if nrCust < 21:
+                df_results.at[nrCust, 't_enum_av'] = df_slice_enum['time_running_enum'].mean()
+                df_results.at[nrCust, 't_enum_min'] = df_slice_enum['time_running_enum'].min()
+                df_results.at[nrCust, 't_enum_max'] = df_slice_enum['time_running_enum'].max()
+
+                df_results.at[nrCust, 't_bab_av'] = df_slice_bab['time_bab'].mean()
+                df_results.at[nrCust, 't_bab_min'] = df_slice_bab['time_bab'].min()
+                df_results.at[nrCust, 't_bab_max'] = df_slice_bab['time_bab'].max()
+
+        df_results = df_results[
+            ['t_enum_av', 't_enum_min', 't_enum_max', 'sp1', 't_bab_av', 't_bab_min', 't_bab_max']].copy()
+        print(df_results.to_latex(float_format='{:0.1f}'.format, na_rep=''))
+        # print(df_results.to_latex(formatters=['{:0.2f}', None, None, '{:0.1f}','{:0.5f}','{:0.1f}'], na_rep='')
+        print("")
+
     if False:   # check dominance usage
+        df_bab = pd.read_csv(os.path.join(folder, "02_23_bab_time_limit.csv"))
         df_enum = pd.read_csv(os.path.join(folder, "02_13_enumeration.csv"))#                                                                                                                                                                                      3
         df_bab_dominance_check = pd.read_csv(os.path.join(folder, "02_06_bab_exact_dominance_check.csv"))
         df_bab_dominance_check = df_bab_dominance_check[['instance','nodes', 'time_bab']].copy()
@@ -1733,7 +1760,8 @@ def experiment_variation_nrcust(folder):
         df = df_bab.merge(df_enum, how='left', on='instance')
         df = df.merge(df_bab_dominance_check, how='left', on='instance') #how=left
         nr_cust_variation(df)
-    if True: #print table with timelimit
+    if False: #print table with timelimit
+        df_bab = pd.read_csv(os.path.join(folder, "02_23_bab_time_limit.csv"))
         df_time_limit = pd.read_csv(os.path.join(folder, "02_16_bab_time_limit.csv"))
         df_time_limit = df_time_limit[['instance', 'policy_bab_ID', 'obj_val_bab', '2sd_bab','optimal']].copy()
         df_time_limit.rename(columns={'policy_bab_ID': 'policy_h_ID', 'obj_val_bab': 'obj_val_h', '2sd_bab': '2sd_h',
@@ -2391,10 +2419,11 @@ def managerial_effect_delta(folder):
     #df = pd.read_csv(os.path.join(folder, "02_13_bab_exact_managerial.csv"))
     #df = pd.read_csv(os.path.join(folder, "02_15_bab_nodisc_rs_managerial.csv"))
     df  = pd.read_csv(os.path.join(folder, "02_18_bab_nodisc_rs_30.csv"))
-    df['p_accept'] = round(1 - df['p_home'] , 2)
+    df['p_accept'] = round(1 - df['p_home'], 2)
+    #df['p_accept'] = round(1 - df['p_home'] , 2)
     #df['p_accept'] = round(1 - df['p_home'] + (df['discount_rate']/3 - 0.02), 2)
     #df['p_accept'] = round(1 - df['p_home'] + (df['nrPup']*0.01 - 0.03), 2)
-    df['num_offered_disc_bab'] = df.apply(lambda x: round(bitCount(x['policy_bab_ID'])), axis=1)
+    #df['num_offered_disc_bab'] = df.apply(lambda x: round(bitCount(x['policy_bab_ID'])), axis=1)
     folder_data = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_managerial")
     #df['exp_discount_cost_bab'] = df.apply(
     #df['exp_discount_cost_bab'] = df.apply(
@@ -2402,9 +2431,8 @@ def managerial_effect_delta(folder):
     #df = df[df.p_home < 1].copy()
     #df = df[df.nrPup == 1].copy()
     #df = df[df.instance_id == 1].copy()
-    df = df[ df['discount_rate'].isin([0.015, 0.03, 0.06, 0.12, 0.24])].copy()
-
-    df = df[ df['discount_rate'].isin([ 0.06 ])].copy()
+    #f = df[ df['discount_rate'].isin([0.015, 0.03, 0.06, 0.12, 0.24])].copy()
+    #df = df[ df['discount_rate'].isin([ 0.06 ])].copy()
     #df = df[df.p_home==0.4].copy()
     #df = df[df.p_accept == 0.6].copy()
     # df['in_pup_bab'] = df.apply(
@@ -2453,18 +2481,19 @@ def managerial_effect_delta(folder):
         #             palette="deep", legend = False)
         # axes.set(ylabel='NUmber of offered incentives')
         plt.show()
-    if True: # effect of delta on the fulfillment cost
+    # effect of delta on the fulfillment cost
+    if False:
         #df = df[df['discount_rate'].isin([0.06])].copy()
+        df = df[df['nrPup'].isin([3])].copy()
         df['obj_val_bab_print'] = df['obj_val_bab']/10
-        df['p_accept'] = df.apply(lambda x: 1 - x['p_home'] + 0.03 if x['nrPup']==5 else 1 - x['p_home']-0.03 if x['nrPup']==3 else 1 - x['p_home'], axis=1)
-
-        round(1 - df['p_home'] + (df['nrPup'] * 0.01 - 0.03), 2)
+        df['p_accept'] = round(1 - df['p_home'], 2)
+        #df['p_accept'] = df.apply(lambda x: 1 - x['p_home'] + 0.03 if x['nrPup']==5 else 1 - x['p_home']-0.03 if x['nrPup']==3 else 1 - x['p_home'], axis=1)
+        #round(1 - df['p_home'] + (df['nrPup'] * 0.01 - 0.03), 2)
         sns.lineplot(ax=axes, data=df, x='p_accept', y='obj_val_bab_print', markers=True,
                     markersize=9, linewidth=1,  hue = 'nrPup', style = 'nrPup',#discount_rate   nrPup
                     palette="deep", err_style="bars", errorbar=('pi', 100), err_kws={'capsize': 3}, legend = None )
-        #sns.scatterplot(ax=axes, data=df, x='p_accept', y='obj_val_bab', markers=True,
-        #            hue='nrPup', style='nrPup',  # discount_rate   nrPup
-        #            palette="deep", legend = False)
+        #sns.scatterplot(ax=axes, data=df, x='p_accept', y='obj_val_bab', markers=True,#hue='nrPup', style='nrPup',  # discount_rate   nrPup
+        #           palette="deep", legend = False)
 
         axes.set(xlabel='' + r'$\Delta$')
         #axes.set_xticks([0.2, 0.4, 0.6, 0.8, 1.0])
@@ -2474,25 +2503,33 @@ def managerial_effect_delta(folder):
         plt.savefig(os.path.join(path_to_images, 'Total_cost_delta_nr_pups_30.eps'), transparent=False,
                            bbox_inches='tight')
         plt.show()
-    if False: #effect of delta on the number of offered incentives
+    # effect of delta on the number of offered incentives
+    if True:
+        df = df[df['discount_rate'].isin([0.06])].copy()
+        df = df[df['nrPup'].isin([3])].copy()
+        #df['p_accept'] = round(1 - df['p_home'] + (df['nrPup'] * 0.01 - 0.03), 2)
+        df['p_accept'] = round(1 - df['p_home'] , 2)
+        df['num_offered_disc_bab'] = df.apply(lambda x: round(bitCount(x['policy_bab_ID'])), axis=1)
+
         sns.lineplot(ax=axes, data=df, x='p_accept', y='num_offered_disc_bab',
                      linewidth=1, markersize=7, markers=True,  hue = 'nrPup', style = 'nrPup',
-                     palette="deep", err_style="bars", errorbar=('pi', 100), err_kws={'capsize': 3})
-        sns.scatterplot(ax=axes, data=df, x='p_accept', y='num_offered_disc_bab',
-                     markers=True,   hue='nrPup', style='nrPup', legend = False,
-                     palette="deep")
+                     palette="deep", err_style="bars", errorbar=('pi', 100), err_kws={'capsize': 3}, legend = None)
+        #sns.scatterplot(ax=axes, data=df, x='p_accept', y='num_offered_disc_bab',
+        #             markers=True,   legend = False, #hue='nrPup', style='nrPup',
+        #             palette="deep")
         axes.set(xlabel='' + r'$\Delta$')
         axes.set(ylabel='Number of offered incentives')
-        plt.legend(title='Number of pickup points', loc='upper left', bbox_to_anchor=(0.0, 1.0),
-                   labels=['1', '3', '5'])
-        plt.savefig(os.path.join(path_to_images, 'Num_offered_incentives_delta_nr_pups_const_disc.eps'), transparent=False,
+        #plt.legend(title='Number of pickup points', loc='upper left', bbox_to_anchor=(0.0, 1.0),
+        #           labels=['1', '3', '5'])
+        plt.savefig(os.path.join(path_to_images, 'Num_offered_incentives_delta_nr_pups_const_disc_30.eps'), transparent=False,
                     bbox_inches='tight')
         plt.show()
     if False: #effect of number of pickup points on the number of offered incentives
-        sns.lineplot(ax=axes, data=df, x='nrPup', y='num_offered_disc_bab', #  exp_discount_cost_bab
-                     linewidth=1, markersize=7, markers=True, marker='o', hue = 'p_accept', style = 'p_accept',
+
+        sns.lineplot(ax=axes, data=df, x='p_accept', y='num_offered_disc_bab', #  exp_discount_cost_bab
+                     linewidth=1, markersize=7, markers=True, marker='o', hue = 'nrPup', style = 'nrPup',
                      palette="deep", err_style="bars", errorbar=('pi', 100), err_kws={'capsize': 3})
-        axes.set(xlabel='' + 'Number of pickup point')
+        axes.set(xlabel='' + r'$\Delta$')
         axes.set(ylabel='Number of offered incentives')
         #axes.set(ylabel='Expected cost of incentives')
         # plt.legend(title=False, labels=[r'$\Delta = 0.2$', r'$\Delta = 0.4$', r'$\Delta = 0.6$', r'$\Delta = 0.8$', r'$\Delta = 1.0$'])
@@ -2525,10 +2562,11 @@ def managerial_effect_delta(folder):
                         df.at[index, 'num' + str(iter)] = num
 
         #if True:
-        for p_home in [0.55]:
-        #for discount_rate in [0.03, 0.06, 0.12]:
+        #for p_home in [0.55]:
+        for discount_rate in [0.06]:
             df_temp = df.copy()
-            df_temp = df[(df.p_home == p_home)].copy()
+            #df_temp = df[(df.p_home == p_home)].copy()
+            df_temp.set_index('p_accept', inplace=True, drop=True)
             df_temp.set_index('discount_rate', inplace=True, drop=True)
             df1 = df_temp[(df_temp.nrPup == 1)].copy()
             df1 = df1[['num1', 'num2', 'num3', 'num4', 'num5']].copy()
@@ -2543,6 +2581,7 @@ def managerial_effect_delta(folder):
             plot_clustered_stacked([df1, df3, df5], "", "VRPDO"+".eps", ['1', '3', '5'])
     if False:
         df = df[df.nrCust == 30].copy()
+        df['num_offered_disc_bab'] = df.apply(lambda x: round(bitCount(x['policy_bab_ID'])), axis=1)
         if True:
             df = df[["p_accept", "p_home", 'discount_rate', 'num_offered_disc_bab', 'nrPup', 'policy_bab_ID',
                      'instance']].copy()
@@ -2551,7 +2590,7 @@ def managerial_effect_delta(folder):
             df['num3'] = 0
             df['num4'] = 0
             df['num5'] = 0
-            folder_data = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_large")
+            folder_data = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_30")
             for index, row in df.iterrows():
                 policy = row['policy_bab_ID']
                 instance = row['instance']
@@ -2575,18 +2614,23 @@ def managerial_effect_delta(folder):
                 # for discount_rate in [0.03, 0.06, 0.12]:
                 df_temp = df.copy()
                 #df_temp = df[(df.p_home == p_home)].copy()
-                df_temp.set_index('discount_rate', inplace=True, drop=True)
+                df_temp.set_index('p_accept', inplace=True, drop=True)
+                #df_temp.set_index('discount_rate', inplace=True, drop=True)
                 df1 = df_temp[(df_temp.nrPup == 1)].copy()
                 df1 = df1[['num1', 'num2', 'num3', 'num4', 'num5']].copy()
-                df1 = df1.groupby(level='discount_rate').mean()
+                #df1 = df1.groupby(level='discount_rate').mean()
+                df1 = df1.groupby(level='p_accept').mean()
                 df3 = df_temp[(df_temp.nrPup == 3)].copy()
+
                 df3 = df3[['num1', 'num2', 'num3', 'num4', 'num5']].copy()
-                df3 = df3.groupby(level='discount_rate').mean()
+                #df3 = df3.groupby(level='discount_rate').mean()
+                df3 = df3.groupby(level='p_accept').mean()
                 df5 = df_temp[(df_temp.nrPup == 5)].copy()
                 df5 = df5[['num1', 'num2', 'num3', 'num4', 'num5']].copy()
-                df5 = df5.groupby(level='discount_rate').mean()
+                df5 = df5.groupby(level='p_accept').mean()
+                #df5 = df5.groupby(level='discount_rate').mean()
                 print()
-                plot_clustered_stacked([df1, df3, df5], "", "barchart_discount_rate_large" + ".eps", ['1', '3', '5'])
+                plot_clustered_stacked([df1, df3, df5], "", "barchart_p_accept_30" + ".eps", ['1', '3', '5'])
     if False: #Impact of incenitve rate on the expected fulfillment cost hue nrPup
         nr_customers = 30
         df = df[df.nrCust == nr_customers].copy()
@@ -2625,13 +2669,13 @@ def managerial_effect_delta(folder):
 
 def sensitivity_comparison_nodisc_rs(folder):
     #parseBAB_RS_NODISC(os.path.join(folder, "02_18_bab_nodisc_rs_15.txt"), folder, "02_18_bab_nodisc_rs_15")
-    df = pd.read_csv(os.path.join(folder, "02_18_bab_nodisc_rs_15.csv"))
-    df['instance_type'] =  df['instance'].apply(lambda x: str(x).split('_')[0])
+    df = pd.read_csv(os.path.join(folder, "02_18_bab_nodisc_rs_30.csv"))
+    #df['instance_type'] =  df['instance'].apply(lambda x: str(x).split('_')[0])
     #df = df[df.instance_type=='VRPDODistDepAccept2'].copy()
-    df = df[df.instance_type == 'VRPDO'].copy()
-
+    #df = df[df.instance_type == 'VRPDO'].copy()
     #df['p_accept'] = round(1 - df['p_home'] + (df['nrPup'] * 0.01 - 0.03), 2)
     df['p_accept'] = round(1 - df['p_home'], 2)
+    df = df[df.nrPup == 1].copy()
     df_results = pd.DataFrame(columns=['p_accept', 'discount_rate','nrPup', 'algo','savings','p_home' ])
     iter = 0
     for index, row in df.iterrows():
@@ -2683,9 +2727,10 @@ def sensitivity_comparison_nodisc_rs(folder):
             plt.savefig(os.path.join(path_to_images, 'Savings_ALL_NOI_DI.eps'), transparent=False,
                       bbox_inches='tight')
             plt.show()
-        if False: # impact of delta on savings for 1 pickup point and different agorithms
-            df_temp = df_results[df_results.nrPup == 1].copy()
-            df_temp = df_results[df_results.discount_rate == 0.06].copy()
+        # impact of delta on savings for 1 pickup point and different agorithms
+        if True:
+
+            df_temp = df_results[df_results.discount_rate == 0.06].copy() #try 0.12
             df_temp['discount_rate_print'] = df_temp['discount_rate'] + (df_temp['nrPup'] * 0.001 - 0.003)
             for p_accept in [0.6]:
                 fig, axes = plt.subplots(1, 1, sharex=True)
@@ -2703,7 +2748,7 @@ def sensitivity_comparison_nodisc_rs(folder):
                 #axes.set(yscale="log")
                 #plt.legend(title='Number of pickup points', loc='lower left', bbox_to_anchor=(0.0, 0.0),
                 #           labels=['1', '3', '5'])
-                plt.savefig(os.path.join(path_to_images, 'Savings_1pup_ALL_NOI_DI_15.eps'), transparent=False,
+                plt.savefig(os.path.join(path_to_images, 'Savings_1pup_ALL_NOI_DI_30.eps'), transparent=False,
                           bbox_inches='tight')
                 plt.show()
         if False:
@@ -2750,7 +2795,7 @@ def sensitivity_comparison_nodisc_rs(folder):
                 plt.show()
 
 def large_exp(folder):
-    #parseBABHeuristic(os.path.join(folder, "02_18_bab_nodisc_rs_30.txt"), folder, "02_18_bab_nodisc_rs_30")
+    #parseBABHeuristic(os.path.join(folder, "02_16_bab_nodisc_large.txt"), folder, "02_16_bab_nodisc_large")
     #parseBAB_RS_NODISC(os.path.join(folder, "temp.txt"), folder, "temp")
     df = pd.read_csv(os.path.join(folder, "02_16_bab_nodisc_large.csv"))
     df['cost_per_order'] = df.apply(lambda x:  min(x['obj_val_bab'], x['obj_val_rs'], x['obj_val_uniform'],
@@ -2768,6 +2813,7 @@ def large_exp(folder):
     sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
     sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
     fig, axes = plt.subplots(1, 1, figsize=(8, 5))
+        # impact of the problem size on the objective value hue number of pups
     if False: #impact of the problem size on the objective value hue number of pups
         df['nrCustPrint'] = df['nrCust']+ df['nrPup']*0.3-1
         df['nrCustNodisc'] = df['nrCust']  -1.2
@@ -2789,15 +2835,16 @@ def large_exp(folder):
         # # axes.set_xticks([0.2, 0.4, 0.6, 0.8, 1.0])
         axes.set(ylabel='Expected fulfillment cost')
         plt.legend(title='Number of pickup points', loc='lower right', bbox_to_anchor=(1.0, 0.0))
-        plt.savefig(os.path.join(path_to_images, 'Total_cost_delta_nr_customers_nr_pups.eps'), transparent=False,
-                    bbox_inches='tight')
+        #plt.savefig(os.path.join(path_to_images, 'Total_cost_delta_nr_customers_nr_pups.eps'), transparent=False,
+        #            bbox_inches='tight')
         plt.show()
-    if False:  # impact of the problem size on the savings of BAB in comparison to rs and nodsic
+    # impact of the problem size on the savings of BAB in comparison to rs and nodsic
+    if True:
         df['objValPrint'] = df.apply(lambda x: min(x['obj_val_bab'], x['obj_val_rs'], x['obj_val_nodisc'],
                                                    x['obj_val_uniform']), axis=1)
         df['gap_nodisc'] = 100*(df['obj_val_nodisc'] - df['objValPrint'])/df['objValPrint']
         df['gap_rs'] = 100*(df['obj_val_rs'] - df['objValPrint']) / df['objValPrint']
-        df['gap_uniform'] = 200*(df['obj_val_uniform'] - df['objValPrint']) / df['objValPrint']
+        df['gap_uniform'] = 100*(df['obj_val_uniform'] - df['objValPrint']) / df['objValPrint']
         df_results = pd.DataFrame(columns=['p_accept','p_home', 'discount_rate', 'nrPup', 'nrCust', 'algo', 'savings'])
         iter = 0
         for index, row in df.iterrows():
@@ -2819,7 +2866,7 @@ def large_exp(folder):
                     df_results.at[iter + i, 'savings'] = max(row['gap_uniform'], 0)
             iter += 3
         df_results = df_results[df_results['discount_rate'].isin([0.03, 0.06])].copy()
-        df_results = df_results[df_results.nrPup == 1].copy()
+        #df_results = df_results[df_results.nrPup ==3].copy()
 
         #sns.scatterplot(ax=axes, data=df_results, x='nrCust', y='savings', markers=True,
         #                linewidth=1, hue='algo', style='algo',  # discount_rate   nrPup
@@ -2845,8 +2892,8 @@ if __name__ == "__main__":
     #large_exp(folder_large)
     #managerial_effect_delta(folder_large)
     # sensitivity_disc_size_comparison_nodisc(folder, folder_data_disc)
-    #sensitivity_comparison_nodisc_rs(folder)
-    #print_convergence_gap()
+    #sensitivity_comparison_nodisc_rs(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
+    print_convergence_gap()
 
     folder_2segm = os.path.join(path_to_data, "output", "VRPDO_discount_proportional_2segm")
     folder_2segm_manyPUP = os.path.join(path_to_data, "output", "VRPDO_discount_proportional_2segm_manyPUP")
@@ -2857,8 +2904,10 @@ if __name__ == "__main__":
 
     #exp_profile()
     #managerial_effect_delta(folder)
+    # large_exp(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
+
     #managerial_effect_delta(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
-    large_exp(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
+
     #experiment_bab_solution_time_classes(folder_2segm_manyPUP)
     # parseBAB(os.path.join(folder, "bab_7types_nrCust.txt"), folder, "bab_7types_nrCust")
 

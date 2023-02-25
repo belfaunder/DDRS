@@ -232,11 +232,12 @@ def updateBoundsFromDictionary(Bab, node):
     n = Bab.instance.NR_CUST
     # calculate the worst UB on the insetion cost given the information about customers with discount
     if node.parent is not None:
-        #DOMINANCE_CHECK_REMOVED
-        if node is not Bab.bestNode:
-            status_not_changed = updateByInsertionCost(node, Bab)
-        else:
-            status_not_changed = True
+        #DOMINANCE_CHECK_TO_REMOVE
+        status_not_changed = True
+        #if node is not Bab.bestNode:
+        #    status_not_changed = updateByInsertionCost(node, Bab)
+        #else:
+        #    status_not_changed = True
 
         if status_not_changed:
             #setGivenDiscount = node.setGivenDiscount
@@ -279,7 +280,6 @@ def updateBoundsFromDictionary(Bab, node):
             #                 node.exactValueProb += scenarioProb
             #                 node.exactValue += scenarioCost * scenarioProb
             #
-            #                 #DOMINANCE_CHECK_REMOVED
             #                 #node.lbRoute += scenarioProb * (scenarioCost - Bab.instance.lbScenario)
             #                 for id in node.lbScenarios:
             #                     if not ~node.lbScenarios[id][2] & (2 ** (Bab.instance.NR_CUST) - 1) & scenario:
@@ -312,11 +312,13 @@ def updateBoundsFromDictionary(Bab, node):
 
             #lastEnteranceDictionary is the last element of Route Cost that was checked for this node
             node.lastEnteranceDictionary = next(reversed(Bab.instance.routeCost))
-        #else:
-            #if node.layer == Bab.instance.NR_CUST:
-            #    Bab.pruned_insertionCost_leaf += 1
-            #else:
-            #    Bab.pruned_insertionCost_nonleaf += 1
+
+        else:
+            # DOMINANCE_CHECK_TO_REMOVE
+            if node.layer == Bab.instance.NR_CUST:
+               Bab.pruned_insertionCost_leaf += 1
+            else:
+               Bab.pruned_insertionCost_nonleaf += 1
 
 def updateBoundsWithNewTSPs(Bab, node):
 

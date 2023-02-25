@@ -52,7 +52,7 @@ class BABExact(BAB_super_class):
             nextNode = openNodes.pop()
 
             #lbPrint.append( self.bestNode.lbVal() )
-            #ubPrint.append(self.bestNode.ubVal())
+            ##ubPrint.append(self.bestNode.ubVal())
             #time.append(process_time()-start_time)
             #print("\nnextNode", nextNode.withDiscountID, bin(nextNode.withDiscountID), nextNode.layer,
             #      nextNode.exactValueProb, nextNode.exactValue, nextNode.lbRoute,

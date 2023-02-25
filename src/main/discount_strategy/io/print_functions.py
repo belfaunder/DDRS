@@ -104,7 +104,7 @@ class Painter:
         #plt.plot(time, lbPrint, '-',alpha=0.5, label=r'lbCurrent')
         #plt.plot(time, ubPrint, '-', alpha=0.5, label=r'ubCurrent')
 
-        plt.axhline(y = bab_obj, color='r', linestyle='--', label = 'solution objective')
+        plt.axhline(y = bab_obj, color='r', linestyle='--', label = 'solution objective', alpha = 0.3)
         plt.title("A convergency of B&B for " + str(instance.NR_CUST) + " customers. Instance: " + instance.name[:-4] )
         plt.xlabel("time (s)")
         plt.ylabel("policy cost")

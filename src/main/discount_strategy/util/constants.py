@@ -2,13 +2,13 @@ from pathlib import Path
 import os
 # == == == == == = SAA PARAMS == == == == == == ==
 #SAMPLE_SIZE = 5000
-SAMPLE_SIZE = 200
+SAMPLE_SIZE = 500
 NUMBER_OF_SAMPLES = 10
 
 # == == == == == = VRP MODEL PARAMS == == == == == == ==
 # fleet size (=number of virtual PUPs)
 FLEET_SIZE = 1
-PUP_CAPACITY = 50
+PUP_CAPACITY =60
 VEHICLE_CAPACITY = 50
 PROB_PLACE_ORDER = 1
 #number of  segments of customers(from nonparametric rank approach)

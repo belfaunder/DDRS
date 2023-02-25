@@ -18,7 +18,6 @@ from src.main.discount_strategy.io.print_functions import Painter
 from src.main.discount_strategy.io import OCVRPParser
 from src.main.discount_strategy.io import print_functions
 from src.main.discount_strategy.algorithms.exact.ring_star_without_TW import ring_star_deterministic_no_TW
-
 from src.main.discount_strategy.algorithms.heuristic.sample_average import sampleAverageApproximation_PoissonBinomial_1sample_2segm
 prefix=constants.PREFIX
 def timer(start,end):
@@ -40,46 +39,42 @@ if __name__ == "__main__":
                                      "i_VRPDO_discount_proportional_2segm_manyPUP", str(sys.argv[-1])+".txt")
     else:
         file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
-                                     "VRPDO_size_15_phome_0.4_ppup_0.0_incrate_0.03_nrpup3_0.txt")
-        #file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
-        #                             "VRPDO_size_10_phome_0.2_ppup_0.0_incrate_0.03_0.txt")
+                                     "VRPDO_size_10_phome_0.1_ppup_0.0_incrate_0.03_nrpup3_1.txt")
+
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()
     print(OCVRPInstance)
     bab = BABExact(instance=OCVRPInstance, solverType = solverType)
     babPolicy, time, lbPrint, ubPrint = bab.runBranchAndBound()
-
-    # painter = Painter()
-    # painter.printVertexDisc(OCVRPInstance,babPolicy)
+    #print(bin(babPolicy), babPolicy)
+    #painter = Painter()
+    #painter.printVertexDisc(OCVRPInstance,babPolicy)
     #start_time = process_time()
     #rsPolicyID, rsValue = ring_star_deterministic_no_TW(OCVRPInstance, OCVRPInstance.NR_CUST)
     #EnumerationSolver = ScenarioEnumerationSolver(instance=OCVRPInstance)
     #EnumerationSolver.exactPolicyByEnumeration(True)
     #print(prefix, 'Time_enumeration ', process_time()-start_time)
-
-
-    # print(prefix,"pruned_by_cliques_nonleaf:", bab.pruned_cliques_nonleaf)
-    # print(prefix,"pruned_by_cliques_leaf:", bab.pruned_cliques_leaf)
-    # print(prefix,"pruned_by_rs_nonleaf:", bab.pruned_rs_nonleaf)
-    # print(prefix,"pruned_by_rs_leaf:", bab.pruned_rs_leaf)
-    # print(prefix, "pruned_by_insertionCost_nonleaf:", bab.pruned_insertionCost_nonleaf)
-    # print(prefix, "pruned_by_insertionCost_leaf:", bab.pruned_insertionCost_leaf)
-    # print(prefix, "pruned_by_bounds_nonleaf:", bab.pruned_bounds_nonleaf)
-    # print(prefix, "pruned_by_bounds:", bab.nrNodes - bab.pruned_cliques_leaf - bab.pruned_cliques_nonleaf - bab.pruned_rs_leaf -\
-    #       bab.pruned_rs_nonleaf-  bab.pruned_insertionCost_nonleaf - bab.pruned_insertionCost_leaf -  bab.pruned_bounds_nonleaf)
-    # mainDirStorage =  os.path.join(path_to_data,"output")
-    # convergence = os.path.join(mainDirStorage, 'convergence.txt')
-    # with open(convergence, 'wb') as file:
-    #     pickle.dump(time, file)
-    #     pickle.dump(lbPrint, file)
-    #     pickle.dump(ubPrint, file)
+    print(prefix,"pruned_by_cliques_nonleaf:", bab.pruned_cliques_nonleaf)
+    print(prefix,"pruned_by_cliques_leaf:", bab.pruned_cliques_leaf)
+    print(prefix,"pruned_by_rs_nonleaf:", bab.pruned_rs_nonleaf)
+    print(prefix,"pruned_by_rs_leaf:", bab.pruned_rs_leaf)
+    print(prefix, "pruned_by_insertionCost_nonleaf:", bab.pruned_insertionCost_nonleaf)
+    print(prefix, "pruned_by_insertionCost_leaf:", bab.pruned_insertionCost_leaf)
+    print(prefix, "pruned_by_bounds_nonleaf:", bab.pruned_bounds_nonleaf)
+    print(prefix, "pruned_by_bounds:", bab.nrNodes - bab.pruned_cliques_leaf - bab.pruned_cliques_nonleaf - bab.pruned_rs_leaf -\
+          bab.pruned_rs_nonleaf-  bab.pruned_insertionCost_nonleaf - bab.pruned_insertionCost_leaf -  bab.pruned_bounds_nonleaf)
+    #mainDirStorage =  os.path.join(path_to_data,"output")
+    #convergence = os.path.join(mainDirStorage, 'convergence.txt')
+    #with open(convergence, 'wb') as file:
+    #    pickle.dump(time, file)
+    #    pickle.dump(lbPrint, file)
+    #    pickle.dump(ubPrint, file)
     # with open(convergence, "rb") as file:
     #     time = pickle.load(file)
     #     lbPrint = pickle.load(file)
     #     ubPrint = pickle.load(file)
-    #
     # painter.printConvergence(OCVRPInstance, time, lbPrint, ubPrint, ubPrint[-1])
-    #
+
     if 2**bitCount(babPolicy) < constants.SAMPLE_SIZE:
         estimation_bab = one_policy_cost_estimation(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)
     else:
