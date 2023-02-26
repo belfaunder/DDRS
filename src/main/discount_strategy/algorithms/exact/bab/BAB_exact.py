@@ -97,8 +97,8 @@ class BABExact(BAB_super_class):
     def canFathom(self, node):
         def exploreNode():
 
-            #DOMINANCE_CHECK_REMOVED
-            #return False
+            #DOMINANCE_CHECK_TO_REMOVE
+            return False
             nonlocal node
             if node.setNotGivenDiscount:
 
