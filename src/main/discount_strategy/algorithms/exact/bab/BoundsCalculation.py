@@ -232,12 +232,12 @@ def updateBoundsFromDictionary(Bab, node):
     n = Bab.instance.NR_CUST
     # calculate the worst UB on the insetion cost given the information about customers with discount
     if node.parent is not None:
-        #DOMINANCE_CHECK_TO_REMOVE
-        status_not_changed = True
-        #if node is not Bab.bestNode:
-        #    status_not_changed = updateByInsertionCost(node, Bab)
-        #else:
-        #    status_not_changed = True
+        #DOMINANCE_CHECK_REMOVED
+        #status_not_changed = True
+        if node is not Bab.bestNode:
+            status_not_changed = updateByInsertionCost(node, Bab)
+        else:
+            status_not_changed = True
 
         if status_not_changed:
             #setGivenDiscount = node.setGivenDiscount

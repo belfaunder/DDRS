@@ -327,12 +327,12 @@ class BAB_super_class:
             node.fathomedState = True
 
         #DOMINANCE_CHECK_TO_REMOVE
-        elif self.canFathomByTheoremCliques(node):
-           node.fathomedState = True
-           if node.layer == self.instance.NR_CUST:
-              self.pruned_cliques_leaf +=1
-           else:
-              self.pruned_cliques_nonleaf += 1
+        #elif self.canFathomByTheoremCliques(node):
+        #   node.fathomedState = True
+        #   if node.layer == self.instance.NR_CUST:
+        #      self.pruned_cliques_leaf +=1
+        #   else:
+        #      self.pruned_cliques_nonleaf += 1
         #elif self.canFathomByTheoremUpperBound(node):
         #    node.fathomedState = True
         #    if node.layer == self.instance.NR_CUST:

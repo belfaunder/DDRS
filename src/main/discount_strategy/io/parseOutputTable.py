@@ -290,9 +290,9 @@ def parseProfile(file_path):
                     data.append(
                         [nrCust, nrPup, p_home,  discount, time_running, time_first_opt, nodes, num_tsps,
                           obj_val,  policy_ID, num_disc, instance,
-                         pruned_by_cliques_nonleaf*100/nodes, pruned_by_cliques_leaf*100/nodes, pruned_by_rs_nonleaf*100/nodes, pruned_by_rs_leaf*100/nodes,
-                         pruned_by_insertionCost_nonleaf*100/nodes, pruned_by_insertionCost_leaf*100/nodes, pruned_by_bounds_nonleaf*100/nodes,
-                         pruned_by_bounds_leaf*100/nodes, tsp_time*100/time_running, time_exact_bounds*100/time_running, time_lb_addition*100/time_running, time_branch*100/time_running ])
+                         pruned_by_cliques_nonleaf, pruned_by_cliques_leaf, pruned_by_rs_nonleaf, pruned_by_rs_leaf,
+                         pruned_by_insertionCost_nonleaf, pruned_by_insertionCost_leaf, pruned_by_bounds_nonleaf,
+                         pruned_by_bounds_leaf, tsp_time*100/time_running, time_exact_bounds*100/time_running, time_lb_addition*100/time_running, time_branch*100/time_running ])
             except:
                 #data.append([nrCust, nrPup, p_home,  discount, "", "", "", "", "", "", "",
                 #             "", "", "", instance])
@@ -1722,11 +1722,11 @@ def experiment_variation_nrcust(folder):
     # parseBAB_RS_NODISC(os.path.join(folder, "bab_rs_nodisc_i_VRPDO_notfinished.txt"), folder, "i_VRPDO_time")
     #parseBAB_RS_NODISC(os.path.join(folder, "bab_VRPDO_discount_proportional_02_02.txt"), folder, "i_VRPDO_discount_proportional_02_02")
     #parseBAB(os.path.join(folder, "02_23_bab_exact.txt"), folder, "02_23_bab_exact")
-    #parseBAB(os.path.join(folder, "02_06_bab_exact_dominance_check.txt"), folder, "02_06_bab_exact_dominance_check")
+
     #parseEnumeration(os.path.join(folder, "02_13_enumeration.txt"), folder, "02_13_enumeration")
 
 
-    if True: #print table with bab_exact and enumeration running times
+    if False: #print table with bab_exact and enumeration running times
         df = pd.read_csv(os.path.join(folder, "02_23_bab_exact.csv"))
         df_enum =  pd.read_csv(os.path.join(folder, "02_13_enumeration.csv"))
         # df = df[df.nrCust < 19].copy()
@@ -1749,17 +1749,58 @@ def experiment_variation_nrcust(folder):
         print(df_results.to_latex(float_format='{:0.1f}'.format, na_rep=''))
         # print(df_results.to_latex(formatters=['{:0.2f}', None, None, '{:0.1f}','{:0.5f}','{:0.1f}'], na_rep='')
         print("")
+    # check dominance usage
+    if True:
+        df_dom_lb = parseProfile(os.path.join(folder, "02_26_bab_dominance_check_lb.txt"))
+        #df_dom_cliques = parseProfile(os.path.join(folder, "02_26_bab_dominance_check_cliques.txt")
+        #df_dom_insertion = parseProfile(os.path.join(folder, "02_26_bab_dominance_check_insertion.txt"))
+        #df_dom_basic= parseProfile(os.path.join(folder, "02_26_bab_dominance_check_basic.txt"))
+        df_bab = pd.read_csv(os.path.join(folder, "02_23_bab_exact.csv"))
+        df_bab = df_bab[['instance','nrCust','nodes', 'time_bab']].copy()
+        #df_dom_basic = df_dom_basic[['instance', 'nodes',  'time_bab']].copy()
+        #df_dom_basic.rename(columns={'nodes': 'nodes_dombasic', 'time_bab': 'time_dombasic'}, inplace=True)
 
-    if False:   # check dominance usage
-        df_bab = pd.read_csv(os.path.join(folder, "02_23_bab_time_limit.csv"))
-        df_enum = pd.read_csv(os.path.join(folder, "02_13_enumeration.csv"))#                                                                                                                                                                                      3
-        df_bab_dominance_check = pd.read_csv(os.path.join(folder, "02_06_bab_exact_dominance_check.csv"))
-        df_bab_dominance_check = df_bab_dominance_check[['instance','nodes', 'time_bab']].copy()
-        df_bab_dominance_check.rename(columns={'nodes': 'nodes_domcheck', 'time_bab': 'time_bab_domcheck'}, inplace=True)
-        df_enum.drop(['nrCust_enum'], axis=1, inplace=True)
-        df = df_bab.merge(df_enum, how='left', on='instance')
-        df = df.merge(df_bab_dominance_check, how='left', on='instance') #how=left
-        nr_cust_variation(df)
+        # df_dom_cliques['pruned_domcliques'] = df_dom_cliques['pr_cliques_nonleaf'] + df_dom_cliques['pr_cliques_leaf']
+        # df_dom_cliques = df_dom_cliques[['instance', 'nodes', 'pruned_domcliques', 'time_bab']].copy()
+        # df_dom_cliques.rename(columns={'nodes': 'nodes_domclique', 'time_bab': 'time_domclique'}, inplace=True)
+
+        # df_dom_insertion['pruned_domins'] = df_dom_insertion['pr_ins_nonleaf'] + df_dom_insertion['pr_ins_leaf']
+        # df_dom_insertion = df_dom_insertion[['instance', 'nodes', 'pruned_domins', 'time_bab']].copy()
+        # df_dom_insertion.rename(columns={'nodes': 'nodes_domins', 'time_bab': 'time_domins'}, inplace=True)
+
+        df_dom_lb['pruned_domlb'] = df_dom_lb['pr_bounds_nonleaf'] + df_dom_lb['pr_bounds_leaf']
+        df_dom_lb = df_dom_lb[['instance', 'nodes', 'pruned_domlb', 'time_bab']].copy()
+        df_dom_lb.rename(columns={'nodes': 'nodes_domlb', 'time_bab': 'time_domlb'}, inplace=True)
+
+        df = df_bab.merge(df_dom_lb, how='left', on='instance')
+
+        df_results = pd.DataFrame(index=list(range(10, 21)),
+                              columns=['t_bab', 'n_bab','sp1','t_ins','n_ins','sp2',
+                                       't_cliques','n_cliques','sp3',
+                                       't_lb','n_lb','sp4',
+                                       't_casic','n_basic'])
+        for nrCust in range(10, 17):
+            df_slice = df[(df.nrCust == nrCust) ].copy()
+            if nrCust < 21:
+                print(nrCust)
+                df_results.at[nrCust, 't_bab'] = df_slice['time_bab'].mean()
+                df_results.at[nrCust, 'n_bab'] = df_slice['nodes'].min()
+
+                #df_results.at[nrCust, 't_ins'] = df_slice['time_domins'].mean()
+                #df_results.at[nrCust, 'n_ins'] = int(df_slice['nodes_domins'].mean() + 0.5)
+
+                #df_results.at[nrCust, 't_ins'] = df_slice['time_domins'].mean()
+                #df_results.at[nrCust, 'n_ins'] = int(df_slice['nodes_domins'].mean() + 0.5)
+
+                df_results.at[nrCust, 't_lb'] = df_slice['time_domlb'].mean()
+                df_results.at[nrCust, 'n_lb'] = int(df_slice['nodes_domlb'].mean() + 0.5)
+
+        #df_results = df_results[[ 'g_opt_3600','closed_3600','sp1','tto_best', 'tto_best_min', 'tto_best_max']].copy()  'n_bab_av', 'n_bab_min', 'n_bab_max'
+
+        print(df_results.to_latex(float_format='{:0.1f}'.format, na_rep=''))
+        #print(df_results.to_latex(formatters=['{:0.2f}', None, None, '{:0.1f}','{:0.5f}','{:0.1f}'], na_rep=''))
+
+        print("")
     if False: #print table with timelimit
         df_bab = pd.read_csv(os.path.join(folder, "02_23_bab_time_limit.csv"))
         df_time_limit = pd.read_csv(os.path.join(folder, "02_16_bab_time_limit.csv"))
@@ -2893,14 +2934,14 @@ if __name__ == "__main__":
     #managerial_effect_delta(folder_large)
     # sensitivity_disc_size_comparison_nodisc(folder, folder_data_disc)
     #sensitivity_comparison_nodisc_rs(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
-    print_convergence_gap()
+    #print_convergence_gap()
 
     folder_2segm = os.path.join(path_to_data, "output", "VRPDO_discount_proportional_2segm")
     folder_2segm_manyPUP = os.path.join(path_to_data, "output", "VRPDO_discount_proportional_2segm_manyPUP")
 
     #compare_enumeration_no_Gurobi(folder_2segm_manyPUP)
     #experiment_variation_nrcust_heuristic(folder)
-    #experiment_variation_nrcust(folder_2segm_manyPUP)
+    experiment_variation_nrcust(folder_2segm_manyPUP)
 
     #exp_profile()
     #managerial_effect_delta(folder)
