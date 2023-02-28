@@ -39,21 +39,23 @@ if __name__ == "__main__":
                                      "i_VRPDO_discount_proportional_2segm_manyPUP", str(sys.argv[-1])+".txt")
     else:
         file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
-                                     "VRPDO_size_10_phome_0.1_ppup_0.0_incrate_0.03_nrpup3_1.txt")
+                                     "VRPDO_size_10_phome_0.4_ppup_0.0_incrate_0.06_nrpup3_1.txt")
 
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()
     print(OCVRPInstance)
     bab = BABExact(instance=OCVRPInstance, solverType = solverType)
     babPolicy, time, lbPrint, ubPrint = bab.runBranchAndBound()
-    #print(bin(babPolicy), babPolicy)
-    #painter = Painter()
-    #painter.printVertexDisc(OCVRPInstance,babPolicy)
+    # babPolicy = 821393295
+    # print(bin(babPolicy), babPolicy)
+    # painter = Painter()
+    # painter.printVertexDisc(OCVRPInstance,babPolicy)
     #start_time = process_time()
     #rsPolicyID, rsValue = ring_star_deterministic_no_TW(OCVRPInstance, OCVRPInstance.NR_CUST)
     #EnumerationSolver = ScenarioEnumerationSolver(instance=OCVRPInstance)
     #EnumerationSolver.exactPolicyByEnumeration(True)
     #print(prefix, 'Time_enumeration ', process_time()-start_time)
+
     print(prefix,"pruned_by_cliques_nonleaf:", bab.pruned_cliques_nonleaf)
     print(prefix,"pruned_by_cliques_leaf:", bab.pruned_cliques_leaf)
     print(prefix,"pruned_by_rs_nonleaf:", bab.pruned_rs_nonleaf)
@@ -63,6 +65,7 @@ if __name__ == "__main__":
     print(prefix, "pruned_by_bounds_nonleaf:", bab.pruned_bounds_nonleaf)
     print(prefix, "pruned_by_bounds:", bab.nrNodes - bab.pruned_cliques_leaf - bab.pruned_cliques_nonleaf - bab.pruned_rs_leaf -\
           bab.pruned_rs_nonleaf-  bab.pruned_insertionCost_nonleaf - bab.pruned_insertionCost_leaf -  bab.pruned_bounds_nonleaf)
+
     #mainDirStorage =  os.path.join(path_to_data,"output")
     #convergence = os.path.join(mainDirStorage, 'convergence.txt')
     #with open(convergence, 'wb') as file:

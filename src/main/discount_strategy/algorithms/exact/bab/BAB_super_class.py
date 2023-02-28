@@ -91,9 +91,8 @@ class BAB_super_class:
         self.instance.ubScenario, self.instance.lbScenario = self.TSPSolver.tspCostUbScenario()
         lbScenarios, lbScenario = {}, self.instance.lbScenario
         # COVERED_BOUND
-        #DOMINANCE_CHECK_TO_REMOVE
-        #lbScenarios, lbScenario = self.set_lbScenarios()
-
+        #DOMINANCE_CHECK_REMOVED
+        lbScenarios, self.instance.lbScenario  = self.set_lbScenarios()
         ubRoute = self.instance.ubScenario
         lbRoute = self.instance.lbScenario
         tspDict = {instance.NR_CUST:[scenario_0]}
@@ -121,10 +120,10 @@ class BAB_super_class:
         # we already added scenario 0 to the exact cost of the root - this is done in set_probability_covered function
 
 
-        # DOMINANCE_CHECK_TO_REMOVE
-        root.lbRoute = sum(root.lbScenarios[id][1] * root.lbScenarios[id][0] for id in root.lbScenarios) + root.exactValue + (1-tspProbDict[scenario_0])*lbScenario
-        #root.lbScenarios[0][1] = 0
-        #root.lbRoute = sum(root.lbScenarios[id][1] * root.lbScenarios[id][0] for id in root.lbScenarios) + root.exactValue
+        # DOMINANCE_CHECK_REMOVED
+        #root.lbRoute = sum(root.lbScenarios[id][1] * root.lbScenarios[id][0] for id in root.lbScenarios) + root.exactValue + (1-tspProbDict[scenario_0])*lbScenario
+        root.lbScenarios[0][1] = 0
+        root.lbRoute = sum(root.lbScenarios[id][1] * root.lbScenarios[id][0] for id in root.lbScenarios) + root.exactValue
         self.nodeLayers = {}
         self.root = root
         self.nrNodes = 1
@@ -234,12 +233,12 @@ class BAB_super_class:
 
         lbScenariosRight = set_probability_covered(lbScenariosRight, noDiscountIDRight, tspProbDictRight, self.instance)
 
-        #DOMINANCE_CHECK_TO_REMOVE
-        lbRouteRight = sum(
-            lbScenariosRight[id][1] * lbScenariosRight[id][0] for id in lbScenariosRight) + exactValueRight + (1-exactValProbRight)*self.instance.lbScenario
-
+        #DOMINANCE_CHECK_REMOVED
         #lbRouteRight = sum(
-        #    lbScenariosRight[id][1] * lbScenariosRight[id][0] for id in lbScenariosRight) + exactValueRight
+        #    lbScenariosRight[id][1] * lbScenariosRight[id][0] for id in lbScenariosRight) + exactValueRight + (1-exactValProbRight)*self.instance.lbScenario
+
+        lbRouteRight = sum(
+            lbScenariosRight[id][1] * lbScenariosRight[id][0] for id in lbScenariosRight) + exactValueRight
 
         ubRouteRight = exactValueRight + (1-exactValProbRight) * self.instance.ubScenario
 

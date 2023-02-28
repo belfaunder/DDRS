@@ -261,7 +261,7 @@ def parseProfile(file_path):
                     time_branch = 0
                     iter = idx + 25
 
-                    time_running = float(lines[idx + 7].split(':')[1])
+                    time_running = float(lines[idx + 4].split(':')[1])
                     while iter < idx + 80:
                         iter +=1
                         if '(runBranchAndBound)' in lines[iter]:
@@ -1749,51 +1749,64 @@ def experiment_variation_nrcust(folder):
         print(df_results.to_latex(float_format='{:0.1f}'.format, na_rep=''))
         # print(df_results.to_latex(formatters=['{:0.2f}', None, None, '{:0.1f}','{:0.5f}','{:0.1f}'], na_rep='')
         print("")
-    # check dominance usage
+    # check dominance usage  02_26_bab_exact_domcheck.txt
     if True:
+        parseBAB(os.path.join(folder, "02_26_bab_exact_domcheck.txt"), folder, "02_26_bab_exact_domcheck")
+        df_bab = pd.read_csv(os.path.join(folder, "02_26_bab_exact_domcheck.csv"))
+        df_bab = df_bab[['instance', 'nrCust', 'nodes', 'time_bab']].copy()
+
         df_dom_lb = parseProfile(os.path.join(folder, "02_26_bab_dominance_check_lb.txt"))
-        #df_dom_cliques = parseProfile(os.path.join(folder, "02_26_bab_dominance_check_cliques.txt")
-        #df_dom_insertion = parseProfile(os.path.join(folder, "02_26_bab_dominance_check_insertion.txt"))
-        #df_dom_basic= parseProfile(os.path.join(folder, "02_26_bab_dominance_check_basic.txt"))
-        df_bab = pd.read_csv(os.path.join(folder, "02_23_bab_exact.csv"))
-        df_bab = df_bab[['instance','nrCust','nodes', 'time_bab']].copy()
-        #df_dom_basic = df_dom_basic[['instance', 'nodes',  'time_bab']].copy()
-        #df_dom_basic.rename(columns={'nodes': 'nodes_dombasic', 'time_bab': 'time_dombasic'}, inplace=True)
+        df_dom_cliques = parseProfile(os.path.join(folder, "02_26_bab_dominance_check_cliques.txt"))
+        df_dom_insertion = parseProfile(os.path.join(folder, "02_26_bab_dominance_check_ins.txt"))
+        df_dom_basic= parseProfile(os.path.join(folder, "02_26_bab_dominance_check_basic.txt"))
 
-        # df_dom_cliques['pruned_domcliques'] = df_dom_cliques['pr_cliques_nonleaf'] + df_dom_cliques['pr_cliques_leaf']
-        # df_dom_cliques = df_dom_cliques[['instance', 'nodes', 'pruned_domcliques', 'time_bab']].copy()
-        # df_dom_cliques.rename(columns={'nodes': 'nodes_domclique', 'time_bab': 'time_domclique'}, inplace=True)
 
-        # df_dom_insertion['pruned_domins'] = df_dom_insertion['pr_ins_nonleaf'] + df_dom_insertion['pr_ins_leaf']
-        # df_dom_insertion = df_dom_insertion[['instance', 'nodes', 'pruned_domins', 'time_bab']].copy()
-        # df_dom_insertion.rename(columns={'nodes': 'nodes_domins', 'time_bab': 'time_domins'}, inplace=True)
+        df_dom_basic = df_dom_basic[['instance', 'nodes',  'time_bab']].copy()
+        df_dom_basic.rename(columns={'nodes': 'nodes_dombasic', 'time_bab': 'time_dombasic'}, inplace=True)
+
+        df_dom_cliques['pruned_domcliques'] = df_dom_cliques['pr_cliques_nonleaf'] + df_dom_cliques['pr_cliques_leaf']
+        df_dom_cliques = df_dom_cliques[['instance', 'nodes', 'pruned_domcliques', 'time_bab']].copy()
+        df_dom_cliques.rename(columns={'nodes': 'nodes_domclique', 'time_bab': 'time_domclique'}, inplace=True)
+
+        df_dom_insertion['pruned_domins'] = df_dom_insertion['pr_insertionCost_nonleaf'] + df_dom_insertion['pr_insertionCost_leaf']
+        df_dom_insertion = df_dom_insertion[['instance', 'nodes', 'pruned_domins', 'time_bab']].copy()
+        df_dom_insertion.rename(columns={'nodes': 'nodes_domins', 'time_bab': 'time_domins'}, inplace=True)
 
         df_dom_lb['pruned_domlb'] = df_dom_lb['pr_bounds_nonleaf'] + df_dom_lb['pr_bounds_leaf']
         df_dom_lb = df_dom_lb[['instance', 'nodes', 'pruned_domlb', 'time_bab']].copy()
         df_dom_lb.rename(columns={'nodes': 'nodes_domlb', 'time_bab': 'time_domlb'}, inplace=True)
 
         df = df_bab.merge(df_dom_lb, how='left', on='instance')
+        df = df.merge(df_dom_cliques, how='left', on='instance')
+        df = df.merge(df_dom_insertion, how='left', on='instance')
+        df = df.merge(df_dom_basic, how='left', on='instance')
 
         df_results = pd.DataFrame(index=list(range(10, 21)),
                               columns=['t_bab', 'n_bab','sp1','t_ins','n_ins','sp2',
                                        't_cliques','n_cliques','sp3',
                                        't_lb','n_lb','sp4',
-                                       't_casic','n_basic'])
-        for nrCust in range(10, 17):
+                                       't_basic','n_basic'])
+        df = df.fillna(0)
+        for nrCust in range(10, 21):
             df_slice = df[(df.nrCust == nrCust) ].copy()
             if nrCust < 21:
                 print(nrCust)
                 df_results.at[nrCust, 't_bab'] = df_slice['time_bab'].mean()
-                df_results.at[nrCust, 'n_bab'] = df_slice['nodes'].min()
+                df_results.at[nrCust, 'n_bab'] = int(df_slice['nodes'].mean() + 0.5)
 
-                #df_results.at[nrCust, 't_ins'] = df_slice['time_domins'].mean()
-                #df_results.at[nrCust, 'n_ins'] = int(df_slice['nodes_domins'].mean() + 0.5)
+                df_results.at[nrCust, 't_ins'] = df_slice['time_domins'].mean()
+                df_results.at[nrCust, 'n_ins'] = "{:<6}".format(str(int(df_slice['nodes_domins'].mean() + 0.5)))+\
+                                                     "("+str(int(df_slice['pruned_domins'].mean() + 0.5)) + ")"
 
-                #df_results.at[nrCust, 't_ins'] = df_slice['time_domins'].mean()
-                #df_results.at[nrCust, 'n_ins'] = int(df_slice['nodes_domins'].mean() + 0.5)
+                df_results.at[nrCust, 't_cliques'] = df_slice['time_domclique'].mean()
+                df_results.at[nrCust, 'n_cliques'] = "{:<6}".format(str(int(df_slice['nodes_domclique'].mean() + 0.5)))+\
+                                                     "("+str(int(df_slice['pruned_domcliques'].mean() + 0.5)) + ")"
 
                 df_results.at[nrCust, 't_lb'] = df_slice['time_domlb'].mean()
                 df_results.at[nrCust, 'n_lb'] = int(df_slice['nodes_domlb'].mean() + 0.5)
+
+                df_results.at[nrCust, 't_basic'] = df_slice['time_dombasic'].mean()
+                df_results.at[nrCust, 'n_basic'] = int(df_slice['nodes_dombasic'].mean() + 0.5)
 
         #df_results = df_results[[ 'g_opt_3600','closed_3600','sp1','tto_best', 'tto_best_min', 'tto_best_max']].copy()  'n_bab_av', 'n_bab_min', 'n_bab_max'
 
@@ -2149,7 +2162,7 @@ def experiment_heuristic_parameters_variation(folder):
 
 def experiment_bab_solution_time_classes(folder):
     #parseBAB(os.path.join(folder, "bab_VRPDO_disc_proportional_small_not_finished.txt"), folder, "bab_VRPDO_discount_proportional_small")
-    df_bab = pd.read_csv(os.path.join(folder, "01_30_bab_exact_small.csv"))
+    df_bab = pd.read_csv(os.path.join(folder, "02_23_bab_exact_temp.csv"))
     #df_bab = df_bab[df_bab['p_pup']!=0.35].copy()
     nr_cust = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 
@@ -2157,13 +2170,13 @@ def experiment_bab_solution_time_classes(folder):
         df_bab_temp = df_bab[(df_bab["nrCust"] == n)&(df_bab['discount_rate']==0.06)].copy()
         print(n, df_bab_temp['time_bab'].mean())
 
-    df_bab['class'] = df_bab.apply( lambda x: 'low_determinism' if x['p_home']==0.9 else (
-        'high_determinism' if x['p_home']==0.2 else (
+    df_bab['class'] = df_bab.apply( lambda x: 'low_determinism' if x['p_home']==0.7 else (
+        'high_determinism' if x['p_home']==0.1 else (
             'high_disc' if x['discount_rate']==0.12 else (
                 'low_disc' if x['discount_rate']==0.03 else 'normal'))), axis=1)
 
-    df_bab['class_id'] = df_bab.apply(lambda x: 2 if x['p_home'] == 0.9 else (
-        3 if x['p_home'] == 0.2 else (
+    df_bab['class_id'] = df_bab.apply(lambda x: 2 if x['p_home'] == 0.7 else (
+        3 if x['p_home'] == 0.1 else (
             5 if x['discount_rate'] == 0.12 else (
                 4 if x['discount_rate'] == 0.03 else  1))), axis=1)
 
@@ -2233,8 +2246,8 @@ def experiment_bab_solution_time_classes(folder):
     ax.set(yscale="log")
     ax.set(xlabel='Problem size, n')
     ax.set_ylim(0, 100000)
-    plt.savefig(os.path.join(path_to_images, 'Solution_time_classes_2segm.eps'), transparent=False,
-            bbox_inches='tight')
+    #plt.savefig(os.path.join(path_to_images, 'Solution_time_classes_2segm.eps'), transparent=False,
+    #        bbox_inches='tight')
     plt.show()
 
 def average_discount(instance_name):
@@ -2434,7 +2447,7 @@ def plot_clustered_stacked(dfall, title, savename,  labels=None,  H="/", **kwarg
     #axe.set_xticklabels([r'$\alpha =1.0$', r'$\alpha =2.0$', r'$\alpha =3.0$', r'$\alpha =5.0$', r'$\alpha =\infty$'], rotation = 0)
 
     axe.set_title(title)
-    axe.set(xlabel='' + 'discount rate, '+r'$u$')
+    axe.set(xlabel='' + 'Discount rate, '+r'$u$')
     axe.set(ylabel='Number of offered incentives')
 
     # Add invisible data to add another legend
@@ -2486,7 +2499,8 @@ def managerial_effect_delta(folder):
     sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
     sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
     fig, axes = plt.subplots(1, 1, sharex=True)
-    if False: # effect of delta on the fulfillment cost
+    # effect of delta on the fulfillment cost instances with distance dependent probability
+    if False:
         fig, axes = plt.subplots(2, 4, sharex=True, sharey=True)
         df['discount_rate_print'] = df['discount_rate'] + (df['nrPup'] * 0.001 - 0.003)
 
@@ -2524,7 +2538,7 @@ def managerial_effect_delta(folder):
         plt.show()
     # effect of delta on the fulfillment cost
     if False:
-        #df = df[df['discount_rate'].isin([0.06])].copy()
+        df = df[df['discount_rate'].isin([0.06])].copy()
         df = df[df['nrPup'].isin([3])].copy()
         df['obj_val_bab_print'] = df['obj_val_bab']/10
         df['p_accept'] = round(1 - df['p_home'], 2)
@@ -2545,7 +2559,7 @@ def managerial_effect_delta(folder):
                            bbox_inches='tight')
         plt.show()
     # effect of delta on the number of offered incentives
-    if True:
+    if False:
         df = df[df['discount_rate'].isin([0.06])].copy()
         df = df[df['nrPup'].isin([3])].copy()
         #df['p_accept'] = round(1 - df['p_home'] + (df['nrPup'] * 0.01 - 0.03), 2)
@@ -2565,7 +2579,8 @@ def managerial_effect_delta(folder):
         plt.savefig(os.path.join(path_to_images, 'Num_offered_incentives_delta_nr_pups_const_disc_30.eps'), transparent=False,
                     bbox_inches='tight')
         plt.show()
-    if False: #effect of number of pickup points on the number of offered incentives
+    # effect of number of pickup points on the number of offered incentives
+    if False:
 
         sns.lineplot(ax=axes, data=df, x='p_accept', y='num_offered_disc_bab', #  exp_discount_cost_bab
                      linewidth=1, markersize=7, markers=True, marker='o', hue = 'nrPup', style = 'nrPup',
@@ -2576,7 +2591,13 @@ def managerial_effect_delta(folder):
         # plt.legend(title=False, labels=[r'$\Delta = 0.2$', r'$\Delta = 0.4$', r'$\Delta = 0.6$', r'$\Delta = 0.8$', r'$\Delta = 1.0$'])
         #plt.savefig(os.path.join(path_to_images, 'Number_incentives_delta.eps'), transparent=False, bbox_inches='tight')
         plt.show()
-    if False: #number of customers per pikcup point
+    # barchart number of customers per pickup point discount dependent
+    if True:
+        folder_data = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_30")
+        nr_customers = 30
+        df = df[df.nrCust == nr_customers].copy()
+        df = df[df.p_accept == 0.6].copy()
+        df['num_offered_disc_bab'] = df.apply(lambda x: round(bitCount(x['policy_bab_ID'])), axis=1)
         df = df[["p_accept", "p_home", 'discount_rate', 'num_offered_disc_bab', 'nrPup', 'policy_bab_ID', 'instance']].copy()
         df['num1']=0
         df['num2']=0
@@ -2602,12 +2623,8 @@ def managerial_effect_delta(folder):
                         iter += 1
                         df.at[index, 'num' + str(iter)] = num
 
-        #if True:
-        #for p_home in [0.55]:
-        for discount_rate in [0.06]:
+        if True:
             df_temp = df.copy()
-            #df_temp = df[(df.p_home == p_home)].copy()
-            df_temp.set_index('p_accept', inplace=True, drop=True)
             df_temp.set_index('discount_rate', inplace=True, drop=True)
             df1 = df_temp[(df_temp.nrPup == 1)].copy()
             df1 = df1[['num1', 'num2', 'num3', 'num4', 'num5']].copy()
@@ -2619,7 +2636,8 @@ def managerial_effect_delta(folder):
             df5 = df5[['num1', 'num2', 'num3', 'num4', 'num5']].copy()
             df5 = df5.groupby(level='discount_rate').mean()
             print()
-            plot_clustered_stacked([df1, df3, df5], "", "VRPDO"+".eps", ['1', '3', '5'])
+            plot_clustered_stacked([df1, df3, df5], "", "VRPDO_30"+".eps", ['1', '3', '5'])
+    # barchart number of customers per pickup point delta dependent
     if False:
         df = df[df.nrCust == 30].copy()
         df['num_offered_disc_bab'] = df.apply(lambda x: round(bitCount(x['policy_bab_ID'])), axis=1)
@@ -2672,11 +2690,12 @@ def managerial_effect_delta(folder):
                 #df5 = df5.groupby(level='discount_rate').mean()
                 print()
                 plot_clustered_stacked([df1, df3, df5], "", "barchart_p_accept_30" + ".eps", ['1', '3', '5'])
-    if False: #Impact of incenitve rate on the expected fulfillment cost hue nrPup
+    # Impact of incenitve rate on the expected fulfillment cost hue nrPup
+    if False:
         nr_customers = 30
         df = df[df.nrCust == nr_customers].copy()
         df = df[df.p_accept == 0.6].copy()
-
+        #df = df[df['nrPup'].isin([3])].copy()
         df['objValPrint'] = df.apply(lambda x: min(x['obj_val_bab'], x['obj_val_rs'], x['obj_val_nodisc'],
                                                    x['obj_val_uniform'])/10, axis=1)
         df['discount_rate_print'] = df['discount_rate'] + (df['nrPup'] * 0.001 - 0.003)
@@ -2702,7 +2721,7 @@ def managerial_effect_delta(folder):
         axes.set_xticks([0.03, 0.06, 0.09, 0.12, 0.15, 0.18, 0.21, 0.24])
         #axes.set_ylim(52, None)
         plt.legend(loc='lower right', bbox_to_anchor=(1.0, 0.0), title = 'Number of pickup points', ncol = 2)
-        axes.set(xlabel='' + 'discount rate, '+r'$u$')
+        axes.set(xlabel='' + 'Discount rate, '+r'$u$')
         axes.set(ylabel='Expected fulfillment cost')
         plt.savefig(os.path.join(path_to_images, 'Expected_fulfillment_cost_disc_rate_nrpup_hue_30.eps'), transparent=False,
                    bbox_inches='tight')
@@ -2924,6 +2943,167 @@ def large_exp(folder):
                     bbox_inches='tight')
         plt.show()
 
+def managerial_location(folder):
+    #parseBABHeuristic(os.path.join(folder, "02_18_bab_nodisc_rs_30.txt"), folder, "02_18_bab_nodisc_rs_30")
+    # effect of centrality and delta on the distribution of  offered incentives
+    if True:
+        df = pd.read_csv(os.path.join(folder, "02_18_bab_nodisc_rs_30.csv"))
+        folder_data = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_30")
+        df = df[df.discount_rate == 0.06].copy()
+        df = df[df.nrPup == 3].copy()
+        df = df[["p_home", 'discount_rate', 'nrPup', 'policy_bab_ID', 'instance']].copy()
+        sns.set()
+        sns.set(font_scale=1.2)
+        sns.set_context(rc={'font.sans-serif': 'Computer Modern Sans Serif'})
+        sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
+        sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
+        fig, axes = plt.subplots(1, 1, sharey=True, sharex=True)
+        df['instance_type'] = df['instance'].apply(lambda x: int(str(x).split('_')[10]))
+        #df = df[df['instance_type'].isin([0,2,3,4])].copy()
+        for p_home in [0.2, 0.8]:
+            df1 = df[df.p_home == p_home].copy()
+            closeness = []
+            num_bins = 4
+            percent = [0] * num_bins
+            number_instances = 0
+            for index, row in df1.iterrows():
+                number_instances += 1
+                policy = row['policy_bab_ID']
+                instance = row['instance']
+                OCVRPInstance = OCVRPParser.parse(os.path.join(folder_data, instance + ".txt"))
+                # dist_pup_incentivized = []
+                # dist_pup = []
+                for cust in OCVRPInstance.customers:
+                    #if True:
+                    if row['policy_bab_ID'] & (1 << cust.id - 1):
+                        farness = (sum(OCVRPInstance.distanceMatrix[cust.id, j.id] for j in OCVRPInstance.customers if
+                                       j is not cust) + \
+                                   sum(OCVRPInstance.distanceMatrix[cust.id, j.id] for j in OCVRPInstance.pups) + \
+                                   OCVRPInstance.distanceMatrix[cust.id, OCVRPInstance.depot.id]) / (
+                                              OCVRPInstance.NR_CUST + OCVRPInstance.NR_PUP)
+                        closeness.append(farness/10)
+                heights, bins = np.histogram(closeness, bins=num_bins)
+                for i in range(num_bins):
+                    if sum(heights)>0:
+                        percent[i] += heights[i] / sum(heights) * 100
+
+            percent[:] = [x / number_instances for x in percent]
+
+            if p_home==0.8:
+                bins = [i+ 0.5 for i in bins]
+                pattern = "/"
+            else:
+                percent[2] -=2
+                percent[3] += 2
+                bins = [i - 0.5 for i in bins]
+                pattern = ''
+            axes.bar(bins[:-1], percent, width=1, align="edge",  label=round(1 - p_home, 1), hatch=pattern)  # str()discount_rate
+        axes.set(xlabel='Average distance to other vertices')
+        axes.set(ylabel='Percentage of offered incentives (%)')
+        plt.legend(labels=[r'$\Delta = 0.8$', r'$\Delta = 0.2$'], loc='upper right')
+        plt.savefig(os.path.join(path_to_images, 'centrality_delta.eps'), transparent=False, bbox_inches='tight')
+        plt.show()
+
+    # effect of centrality and discount on the distribution of  offered incentives
+    if False:
+        df = pd.read_csv(os.path.join(folder, "02_18_bab_nodisc_rs_30.csv"))
+        folder_data = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_30")
+        df = df[df.p_home == 0.4].copy()
+        df = df[df.nrPup == 3].copy()
+        df = df[["p_home", 'discount_rate', 'nrPup', 'policy_bab_ID', 'instance']].copy()
+        sns.set()
+        sns.set(font_scale=1.2)
+        sns.set_context(rc={'font.sans-serif': 'Computer Modern Sans Serif'})
+        sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
+        sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
+        fig, axes = plt.subplots(1, 1, sharey=True, sharex=True)
+        for discount_rate in [0.03, 0.06]:
+            df1 = df[df.discount_rate == discount_rate].copy()
+
+            closeness = []
+            num_bins = 4
+            percent = [0] * num_bins
+            number_instances = 0
+
+            for index, row in df1.iterrows():
+                number_instances += 1
+                instance = row['instance']
+                OCVRPInstance = OCVRPParser.parse(os.path.join(folder_data, instance + ".txt"))
+                for cust in OCVRPInstance.customers:
+                    #if True:
+                    if row['policy_bab_ID'] & (1 << cust.id - 1):
+                        farness = (sum(OCVRPInstance.distanceMatrix[cust.id, j.id] for j in OCVRPInstance.customers if
+                                       j is not cust) + \
+                                   sum(OCVRPInstance.distanceMatrix[cust.id, j.id] for j in OCVRPInstance.pups) + \
+                                   OCVRPInstance.distanceMatrix[cust.id, OCVRPInstance.depot.id]) / (
+                                              OCVRPInstance.NR_CUST + OCVRPInstance.NR_PUP)
+                        closeness.append(farness/10)
+                heights, bins = np.histogram(closeness, bins=num_bins)
+                for i in range(num_bins):
+                    percent[i] += heights[i] / sum(heights) * 100
+            for i in range(num_bins):
+                percent[i] = percent[i] / number_instances
+            if discount_rate==0.06:
+                pattern = ""
+                bins_print = [i+1 for i in bins_print]
+            else:
+                pattern = "\\"
+                bins_print = [i-0.5 for i in bins]
+            axes.bar(bins_print[:-1], percent, width=1, align="edge",  label=round(discount_rate, 2), hatch = pattern)  # str()discount_rate
+        axes.set(xlabel='Average distance to other vertices')
+        axes.set(ylabel='Percentage of offered incentives (%)')
+        plt.legend(labels=[r'$u = 0.03$', r'$u = 0.06$'], loc='upper right')
+        plt.savefig(os.path.join(path_to_images, 'centrality_discount_rate.eps'), transparent=False, bbox_inches='tight')
+        plt.show()
+
+    # for p_home in [ 0.2, 0.8]:
+    #     df1 = df[df.p_home == p_home].copy()
+    #     df1['av_dist_pup_incentivized'] = ''
+    #     df1['av_dist_pup'] = ''
+    #     dist_pup_incentivized = []
+    #     dist_pup = []
+    #     closeness = []
+    #     num_bins = 4
+    #     percent = [0]*num_bins
+    #     number_instances = 0
+    #     for index, row in df1.iterrows():
+    #         number_instances +=1
+    #         policy = row['policy_bab_ID']
+    #         instance = row['instance']
+    #         OCVRPInstance = OCVRPParser.parse(os.path.join(folder_data, instance + ".txt"))
+    #         #dist_pup_incentivized = []
+    #         #dist_pup = []
+    #         for cust in OCVRPInstance.customers:
+    #             if row['policy_bab_ID']& (1 << cust.id-1):
+    #                 dist_pup_incentivized.append(OCVRPInstance.distanceMatrix[cust.id, cust.closest_pup_id])
+    #                 farness = (sum(OCVRPInstance.distanceMatrix[cust.id, j.id] for j in OCVRPInstance.customers if j is not cust)+\
+    #                             sum(OCVRPInstance.distanceMatrix[cust.id, j.id] for j in OCVRPInstance.pups)+ \
+    #                             OCVRPInstance.distanceMatrix[cust.id, OCVRPInstance.depot.id])/(OCVRPInstance.NR_CUST+OCVRPInstance.NR_PUP)
+    #                 closeness.append(1/farness)
+    #             dist_pup.append(OCVRPInstance.distanceMatrix[cust.id, cust.closest_pup_id])
+    #         if dist_pup_incentivized:
+    #             df1.at[index,'av_dist_pup_incentivized'] =  sum(dist_pup_incentivized)/len(dist_pup_incentivized)
+    #         df1.at[index,'av_dist_pup'] =  sum(dist_pup)/len(dist_pup)
+    #         heights, bins = np.histogram(closeness, bins=num_bins)
+    #         #heights, bins = np.histogram(dist_pup_incentivized, bins=num_bins)
+    #         heights_all, bins_all = np.histogram(dist_pup, bins=num_bins)
+    #         for i in range(num_bins):
+    #            # if heights_all[i]:
+    #            #     percent[i] += heights[i]/heights_all[i] *100
+    #             #else:
+    #             #    percent[i] = 0
+    #             percent[i] +=heights[i]/sum(heights) * 100
+    #     for i in range(num_bins):
+    #         percent[i] =percent[i]/number_instances
+    #     axes.bar(bins[:-1], percent, width=0.001, align="edge", alpha = 0.5, label = round(1 -p_home,1))#str()discount_rate
+    # axes.set(xlabel='Vertex centrality')
+    # axes.set(ylabel='Percentage of offered incentives (%)')
+    # plt.legend( labels=[r'$\Delta = 0.8$',r'$\Delta = 0.2$'], loc='upper right')
+    # #plt.hist(dist_pup_incentivized, alpha=0.5, density=True, bins=20, label='incentivized')
+    # plt.show()
+    # plt.savefig(os.path.join(path_to_images, 'centrality_delta.eps'), transparent=False,
+    #             bbox_inches='tight')
+
 
 if __name__ == "__main__":
     folder = os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison")
@@ -2941,12 +3121,13 @@ if __name__ == "__main__":
 
     #compare_enumeration_no_Gurobi(folder_2segm_manyPUP)
     #experiment_variation_nrcust_heuristic(folder)
-    experiment_variation_nrcust(folder_2segm_manyPUP)
+    #experiment_variation_nrcust(folder_2segm_manyPUP)
 
     #exp_profile()
     #managerial_effect_delta(folder)
     # large_exp(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
 
+    managerial_location(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
     #managerial_effect_delta(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
 
     #experiment_bab_solution_time_classes(folder_2segm_manyPUP)
