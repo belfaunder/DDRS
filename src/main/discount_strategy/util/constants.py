@@ -2,7 +2,7 @@ from pathlib import Path
 import os
 # == == == == == = SAA PARAMS == == == == == == ==
 #SAMPLE_SIZE = 5000
-SAMPLE_SIZE = 500
+SAMPLE_SIZE = 1000
 NUMBER_OF_SAMPLES = 10
 
 # == == == == == = VRP MODEL PARAMS == == == == == == ==

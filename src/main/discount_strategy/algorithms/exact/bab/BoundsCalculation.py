@@ -314,7 +314,6 @@ def updateBoundsFromDictionary(Bab, node):
             node.lastEnteranceDictionary = next(reversed(Bab.instance.routeCost))
 
         else:
-            # DOMINANCE_CHECK_REMOVED
             if node.layer == Bab.instance.NR_CUST:
                Bab.pruned_insertionCost_leaf += 1
             else:
@@ -407,13 +406,13 @@ def updateBoundsWithNewTSPs(Bab, node):
                     node.tspProbDict[scenario] = scenarioProb
                     node.exactValueProb += scenarioProb
                     node.exactValue += scenarioCost * scenarioProb
-                    #DOMINANCE_CHECK_TO_REMVE
-                    node.lbRoute += scenarioProb * (scenarioCost - Bab.instance.lbScenario)
-                    # for id in node.lbScenarios:
-                    #     if not ~node.lbScenarios[id][2]&(2**(Bab.instance.NR_CUST) - 1) & scenario:
-                    #         node.lbScenarios[id][1] -= node.tspProbDict[scenario]
-                    #         node.lbRoute += scenarioProb * (scenarioCost - node.lbScenarios[id][0])
-                    #         break
+                    #DOMINANCE_CHECK_REMOVED
+                    #node.lbRoute += scenarioProb * (scenarioCost - Bab.instance.lbScenario)
+                    for id in node.lbScenarios:
+                        if not ~node.lbScenarios[id][2]&(2**(Bab.instance.NR_CUST) - 1) & scenario:
+                            node.lbScenarios[id][1] -= node.tspProbDict[scenario]
+                            node.lbRoute += scenarioProb * (scenarioCost - node.lbScenarios[id][0])
+                            break
                     node.ubRoute -= scenarioProb * (Bab.instance.ubScenario - scenarioCost)
 
                 if False:
