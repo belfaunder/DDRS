@@ -2592,7 +2592,7 @@ def managerial_effect_delta(folder):
         #plt.savefig(os.path.join(path_to_images, 'Number_incentives_delta.eps'), transparent=False, bbox_inches='tight')
         plt.show()
     # barchart number of customers per pickup point discount dependent
-    if True:
+    if False:
         folder_data = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_30")
         nr_customers = 30
         df = df[df.nrCust == nr_customers].copy()
@@ -2695,20 +2695,21 @@ def managerial_effect_delta(folder):
         nr_customers = 30
         df = df[df.nrCust == nr_customers].copy()
         df = df[df.p_accept == 0.6].copy()
-        #df = df[df['nrPup'].isin([3])].copy()
+
+        df = df[df['nrPup'].isin([3])].copy()
         df['objValPrint'] = df.apply(lambda x: min(x['obj_val_bab'], x['obj_val_rs'], x['obj_val_nodisc'],
                                                    x['obj_val_uniform'])/10, axis=1)
         df['discount_rate_print'] = df['discount_rate'] + (df['nrPup'] * 0.001 - 0.003)
         df['discount_rate_print_nodisc'] = df['discount_rate']  - 0.004
         df['obj_val_nodisc'] = df['obj_val_nodisc']/10
+        df['num_offered_disc_bab'] = df.apply(lambda x: round(bitCount(x['policy_bab_ID'])), axis=1)
 
-        #df = df[df.nrPup == 3].copy()
+        df = df[df.nrPup == 3].copy()
         sns.lineplot(data=df, x='discount_rate_print_nodisc', y='obj_val_nodisc', marker='d', markersize=10,
                      err_style="bars", errorbar=('ci', 0), linestyle='-.', label='0', color='k')
         sns.lineplot(ax=axes, data=df, x='discount_rate_print_nodisc', y='obj_val_nodisc', markers=False,
                      linewidth=1, errorbar='sd', err_kws={'capsize': 3}, err_style="bars", legend=False, alpha=0.4,
                      color='k')
-
 
         sns.lineplot(ax=axes, data=df, x='discount_rate_print', y='objValPrint', markers=False,
                      linewidth=1, hue='nrPup', style='nrPup',
@@ -2718,12 +2719,74 @@ def managerial_effect_delta(folder):
                    markersize=10, linewidth=1, hue = 'nrPup', style = 'nrPup',
                    palette="deep",    err_style=None )
 
+        # ax2 = axes.twinx()
+        # sns.lineplot(ax=ax2, data=df, x='discount_rate_print_nodisc', y='num_offered_disc_bab', markers=False,
+        #              linewidth=1, hue='nrPup', style='nrPup',
+        #              palette="deep", errorbar='sd', err_kws={'capsize': 3}, err_style="bars",color='k', legend=False, alpha=0.4)
+        #
+        # sns.lineplot(ax=ax2, data=df, x='discount_rate_print_nodisc', y='num_offered_disc_bab',marker='d', markersize=10,
+        #               err_style="bars", errorbar=('ci', 0), linestyle='-.', label=None, color='k')
+        # ax2.lines[0].set_linestyle("--")
+        # ax2.lines[1].set_linestyle("--")
+        # lines, labels = axes.get_legend_handles_labels()
+        # lines2, labels2 = ax2.get_legend_handles_labels()
+        #ax2.legend(lines + lines2, labels + labels2)
+
         axes.set_xticks([0.03, 0.06, 0.09, 0.12, 0.15, 0.18, 0.21, 0.24])
-        #axes.set_ylim(52, None)
+        #ax2.set_ylim(0, 40)
         plt.legend(loc='lower right', bbox_to_anchor=(1.0, 0.0), title = 'Number of pickup points', ncol = 2)
         axes.set(xlabel='' + 'Discount rate, '+r'$u$')
         axes.set(ylabel='Expected fulfillment cost')
-        plt.savefig(os.path.join(path_to_images, 'Expected_fulfillment_cost_disc_rate_nrpup_hue_30.eps'), transparent=False,
+        #ax2.set(ylabel='Number of offered incentives')
+
+        plt.savefig(os.path.join(path_to_images, 'Expected_fulfillment_cost_disc_rate_30.eps'), transparent=False,
+                   bbox_inches='tight')
+        plt.show()
+    # Impact of incenitve rate on the number of offered icnetnives
+    if True:
+        nr_customers = 30
+        df = df[df.nrCust == nr_customers].copy()
+        df = df[df.p_accept == 0.6].copy()
+
+        df = df[df['nrPup'].isin([3])].copy()
+        df['objValPrint'] = df.apply(lambda x: min(x['obj_val_bab'], x['obj_val_rs'], x['obj_val_nodisc'],
+                                                   x['obj_val_uniform'])/10, axis=1)
+        df['discount_rate_print'] = df['discount_rate'] + (df['nrPup'] * 0.001 - 0.003)
+        df['discount_rate_print_nodisc'] = df['discount_rate']  - 0.004
+        df['obj_val_nodisc'] = df['obj_val_nodisc']/10
+        df['num_offered_disc_bab'] = df.apply(lambda x: round(bitCount(x['policy_bab_ID'])), axis=1)
+
+
+
+        sns.lineplot(ax=axes, data=df, x='discount_rate_print', y='num_offered_disc_bab', markers=False,
+                     linewidth=1, hue='nrPup', style='nrPup',
+                    palette="deep", errorbar='pi', err_kws={'capsize': 3}, err_style="bars", legend = False, alpha = 0.4 )
+
+        sns.lineplot(ax=axes, data=df, x='discount_rate_print', y='num_offered_disc_bab', markers=True,
+                   markersize=10, linewidth=1, hue = 'nrPup', style = 'nrPup',legend = False,
+                   palette="deep",    err_style=None )
+
+        # ax2 = axes.twinx()
+        # sns.lineplot(ax=ax2, data=df, x='discount_rate_print_nodisc', y='num_offered_disc_bab', markers=False,
+        #              linewidth=1, hue='nrPup', style='nrPup',
+        #              palette="deep", errorbar='sd', err_kws={'capsize': 3}, err_style="bars",color='k', legend=False, alpha=0.4)
+        #
+        # sns.lineplot(ax=ax2, data=df, x='discount_rate_print_nodisc', y='num_offered_disc_bab',marker='d', markersize=10,
+        #               err_style="bars", errorbar=('ci', 0), linestyle='-.', label=None, color='k')
+        # ax2.lines[0].set_linestyle("--")
+        # ax2.lines[1].set_linestyle("--")
+        # lines, labels = axes.get_legend_handles_labels()
+        # lines2, labels2 = ax2.get_legend_handles_labels()
+        #ax2.legend(lines + lines2, labels + labels2)
+
+        axes.set_xticks([0.03, 0.06, 0.09, 0.12, 0.15, 0.18, 0.21, 0.24])
+        #ax2.set_ylim(0, 40)
+        #plt.legend(loc='lower right', bbox_to_anchor=(1.0, 0.0), title = 'Number of pickup points', ncol = 2)
+        axes.set(xlabel='' + 'Discount rate, '+r'$u$')
+        axes.set(ylabel='Number of offered incentives')
+        #ax2.set(ylabel='Number of offered incentives')
+
+        plt.savefig(os.path.join(path_to_images, 'Number_offered_incentives_disc_rate_30.eps'), transparent=False,
                    bbox_inches='tight')
         plt.show()
 
@@ -2946,7 +3009,7 @@ def large_exp(folder):
 def managerial_location(folder):
     #parseBABHeuristic(os.path.join(folder, "02_18_bab_nodisc_rs_30.txt"), folder, "02_18_bab_nodisc_rs_30")
     # effect of centrality and delta on the distribution of  offered incentives
-    if True:
+    if False:
         df = pd.read_csv(os.path.join(folder, "02_18_bab_nodisc_rs_30.csv"))
         folder_data = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_30")
         df = df[df.discount_rate == 0.06].copy()
@@ -2960,47 +3023,50 @@ def managerial_location(folder):
         fig, axes = plt.subplots(1, 1, sharey=True, sharex=True)
         df['instance_type'] = df['instance'].apply(lambda x: int(str(x).split('_')[10]))
         #df = df[df['instance_type'].isin([0,2,3,4])].copy()
+
         for p_home in [0.2, 0.8]:
             df1 = df[df.p_home == p_home].copy()
             closeness = []
-            num_bins = 4
+            all = []
+            num_bins = 5
             percent = [0] * num_bins
+            percent_all = [0] * num_bins
             number_instances = 0
             for index, row in df1.iterrows():
                 number_instances += 1
-                policy = row['policy_bab_ID']
                 instance = row['instance']
                 OCVRPInstance = OCVRPParser.parse(os.path.join(folder_data, instance + ".txt"))
-                # dist_pup_incentivized = []
-                # dist_pup = []
                 for cust in OCVRPInstance.customers:
-                    #if True:
+                    farness = OCVRPInstance.distanceMatrix[cust.id, cust.closest_pup_id]
+                    # farness = (sum(OCVRPInstance.distanceMatrix[cust.id, j.id] for j in OCVRPInstance.customers if
+                    #                    j is not cust) + \
+                    #                sum(OCVRPInstance.distanceMatrix[cust.id, j.id] for j in OCVRPInstance.pups) + \
+                    #                OCVRPInstance.distanceMatrix[cust.id, OCVRPInstance.depot.id]) / (
+                    #                           OCVRPInstance.NR_CUST + OCVRPInstance.NR_PUP)
+                    all.append(farness / 10)
                     if row['policy_bab_ID'] & (1 << cust.id - 1):
-                        farness = (sum(OCVRPInstance.distanceMatrix[cust.id, j.id] for j in OCVRPInstance.customers if
-                                       j is not cust) + \
-                                   sum(OCVRPInstance.distanceMatrix[cust.id, j.id] for j in OCVRPInstance.pups) + \
-                                   OCVRPInstance.distanceMatrix[cust.id, OCVRPInstance.depot.id]) / (
-                                              OCVRPInstance.NR_CUST + OCVRPInstance.NR_PUP)
                         closeness.append(farness/10)
-                heights, bins = np.histogram(closeness, bins=num_bins)
-                for i in range(num_bins):
-                    if sum(heights)>0:
-                        percent[i] += heights[i] / sum(heights) * 100
+            heights, bins = np.histogram(closeness, bins=num_bins)
+            heights_all, bins = np.histogram(all, bins=num_bins)
 
-            percent[:] = [x / number_instances for x in percent]
+            percent = [i / number_instances for i in heights]
+            percent_all = [i / number_instances for i in heights_all]
 
             if p_home==0.8:
                 bins = [i+ 0.5 for i in bins]
                 pattern = "/"
+                label_all = None
             else:
-                percent[2] -=2
-                percent[3] += 2
+                label_all = 'all customers'
+                #percent[2] -=2
+                #percent[3] += 2
                 bins = [i - 0.5 for i in bins]
-                pattern = ''
-            axes.bar(bins[:-1], percent, width=1, align="edge",  label=round(1 - p_home, 1), hatch=pattern)  # str()discount_rate
-        axes.set(xlabel='Average distance to other vertices')
-        axes.set(ylabel='Percentage of offered incentives (%)')
-        plt.legend(labels=[r'$\Delta = 0.8$', r'$\Delta = 0.2$'], loc='upper right')
+                pattern = 'X'
+            axes.bar(bins[:-1], percent_all, width=1, align="edge",  label=label_all,color='lightgrey')  # str()discount_rate
+            axes.bar(bins[:-1], percent, width=1, align="edge",  label=r'$\Delta = $'+str(round(1-p_home,1)), hatch=pattern)  # str()discount_rate
+        axes.set(xlabel='Distance to the closest pickup point')
+        axes.set(ylabel='Number of offered incentives')
+        plt.legend( loc='upper right')
         plt.savefig(os.path.join(path_to_images, 'centrality_delta.eps'), transparent=False, bbox_inches='tight')
         plt.show()
 
@@ -3019,41 +3085,48 @@ def managerial_location(folder):
         fig, axes = plt.subplots(1, 1, sharey=True, sharex=True)
         for discount_rate in [0.03, 0.06]:
             df1 = df[df.discount_rate == discount_rate].copy()
-
-            closeness = []
-            num_bins = 4
-            percent = [0] * num_bins
+            num_bins = 5
             number_instances = 0
-
+            all = []
+            closeness = []
             for index, row in df1.iterrows():
+
                 number_instances += 1
                 instance = row['instance']
                 OCVRPInstance = OCVRPParser.parse(os.path.join(folder_data, instance + ".txt"))
                 for cust in OCVRPInstance.customers:
                     #if True:
+                    distance_to_closest = [OCVRPInstance.distanceMatrix[cust.id, j.id] for j in OCVRPInstance.customers if j is not cust]
+                    farness = OCVRPInstance.distanceMatrix[cust.id, cust.closest_pup_id]#+ \
+                               #OCVRPInstance.distanceMatrix[cust.id, OCVRPInstance.depot.id]) / 4
+                    # farness = (sum(OCVRPInstance.distanceMatrix[cust.id, j.id] for j in OCVRPInstance.customers if
+                    #                    j is not cust) + \
+                    #                sum(OCVRPInstance.distanceMatrix[cust.id, j.id] for j in OCVRPInstance.pups) + \
+                    #                OCVRPInstance.distanceMatrix[cust.id, OCVRPInstance.depot.id]) / (
+                    #                           OCVRPInstance.NR_CUST + OCVRPInstance.NR_PUP)
+                    all.append(farness / 10)
                     if row['policy_bab_ID'] & (1 << cust.id - 1):
-                        farness = (sum(OCVRPInstance.distanceMatrix[cust.id, j.id] for j in OCVRPInstance.customers if
-                                       j is not cust) + \
-                                   sum(OCVRPInstance.distanceMatrix[cust.id, j.id] for j in OCVRPInstance.pups) + \
-                                   OCVRPInstance.distanceMatrix[cust.id, OCVRPInstance.depot.id]) / (
-                                              OCVRPInstance.NR_CUST + OCVRPInstance.NR_PUP)
                         closeness.append(farness/10)
-                heights, bins = np.histogram(closeness, bins=num_bins)
-                for i in range(num_bins):
-                    percent[i] += heights[i] / sum(heights) * 100
-            for i in range(num_bins):
-                percent[i] = percent[i] / number_instances
+            heights, bins = np.histogram(closeness, bins=num_bins)
+            heights_all, bins_all = np.histogram(all, bins=num_bins)
+            percent = [ i/ number_instances for i in heights]
+            percent_all = [ i/ number_instances for i in heights_all]
+
             if discount_rate==0.06:
-                pattern = ""
+                pattern = "x"
                 bins_print = [i+1 for i in bins_print]
+                label_all = None
             else:
                 pattern = "\\"
                 bins_print = [i-0.5 for i in bins]
-            axes.bar(bins_print[:-1], percent, width=1, align="edge",  label=round(discount_rate, 2), hatch = pattern)  # str()discount_rate
-        axes.set(xlabel='Average distance to other vertices')
-        axes.set(ylabel='Percentage of offered incentives (%)')
-        plt.legend(labels=[r'$u = 0.03$', r'$u = 0.06$'], loc='upper right')
-        plt.savefig(os.path.join(path_to_images, 'centrality_discount_rate.eps'), transparent=False, bbox_inches='tight')
+                label_all = 'all customers'
+            axes.bar(bins_print[:-1], percent_all, width=1, align="edge", color = 'lightgrey', edgecolor=None, label =label_all)  # str()discount_rate
+            axes.bar(bins_print[:-1], percent, width=1, align="edge",  hatch = pattern, label =r'$u=$'+str(discount_rate) ) # str()discount_rate
+        axes.set(xlabel='Distance to the closest pickup point')
+        axes.set(ylabel='Number of offered incentives')
+        plt.legend( loc='upper right')
+        #plt.legend(labels=['all customers',r'$u = 0.03$', r'$u = 0.06$'], loc='upper right')
+        #plt.savefig(os.path.join(path_to_images, 'centrality_discount_rate.eps'), transparent=False, bbox_inches='tight')
         plt.show()
 
     # for p_home in [ 0.2, 0.8]:
@@ -3127,8 +3200,8 @@ if __name__ == "__main__":
     #managerial_effect_delta(folder)
     # large_exp(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
 
-    managerial_location(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
-    #managerial_effect_delta(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
+    #managerial_location(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
+    managerial_effect_delta(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
 
     #experiment_bab_solution_time_classes(folder_2segm_manyPUP)
     # parseBAB(os.path.join(folder, "bab_7types_nrCust.txt"), folder, "bab_7types_nrCust")

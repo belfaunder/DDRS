@@ -74,9 +74,6 @@ def ub_insertion_cost(instance, setNotGivenDiscount,setGivenDiscount, diff_custo
     ub = (insertion_cost  - instance.shipping_fee[diff_customer])* instance.p_pup_delta[diff_customer]
     return ub
 
-#CHANGESPROBABILITY
-#TODO: finish the lb for the case with multiple pups
-
 def lb_insertion_cost(instance, setGivenDiscount,setNotGivenDiscount, diff_customer):
 
     lb_insertion = instance.lbInsertion[diff_customer]
@@ -232,12 +229,12 @@ def updateBoundsFromDictionary(Bab, node):
     n = Bab.instance.NR_CUST
     # calculate the worst UB on the insetion cost given the information about customers with discount
     if node.parent is not None:
-        #DOMINANCE_CHECK_TO_REMOVE
-        status_not_changed = True
-        #if node is not Bab.bestNode:
-        #    status_not_changed = updateByInsertionCost(node, Bab)
-        #else:
-        #    status_not_changed = True
+        #DOMINANCE_CHECK_REMOVED
+        #status_not_changed = True
+        if node is not Bab.bestNode:
+           status_not_changed = updateByInsertionCost(node, Bab)
+        else:
+           status_not_changed = True
 
         if status_not_changed:
             #setGivenDiscount = node.setGivenDiscount
