@@ -328,16 +328,16 @@ class BAB_super_class:
         #DOMINANCE_CHECK_REMOVED
         elif self.canFathomByTheoremCliques(node):
           node.fathomedState = True
-          if node.layer == self.instance.NR_CUST:
-             self.pruned_cliques_leaf +=1
-          else:
-             self.pruned_cliques_nonleaf += 1
+          # if node.layer == self.instance.NR_CUST:
+          #    self.pruned_cliques_leaf +=1
+          # else:
+          #    self.pruned_cliques_nonleaf += 1
         elif self.canFathomByTheoremUpperBound(node):
            node.fathomedState = True
-           if node.layer == self.instance.NR_CUST:
-              self.pruned_rs_leaf += 1
-           else:
-              self.pruned_rs_nonleaf += 1
+           # if node.layer == self.instance.NR_CUST:
+           #    self.pruned_rs_leaf += 1
+           # else:
+           #    self.pruned_rs_nonleaf += 1
         if layer in self.nodeLayers:
             self.nodeLayers[layer][1].nextNodeInLayer = node
             node.prevNodeInLayer = self.nodeLayers[layer][1]

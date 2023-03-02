@@ -56,15 +56,15 @@ if __name__ == "__main__":
     #EnumerationSolver.exactPolicyByEnumeration(True)
     #print(prefix, 'Time_enumeration ', process_time()-start_time)
 
-    print(prefix,"pruned_by_cliques_nonleaf:", bab.pruned_cliques_nonleaf)
-    print(prefix,"pruned_by_cliques_leaf:", bab.pruned_cliques_leaf)
-    print(prefix,"pruned_by_rs_nonleaf:", bab.pruned_rs_nonleaf)
-    print(prefix,"pruned_by_rs_leaf:", bab.pruned_rs_leaf)
-    print(prefix, "pruned_by_insertionCost_nonleaf:", bab.pruned_insertionCost_nonleaf)
-    print(prefix, "pruned_by_insertionCost_leaf:", bab.pruned_insertionCost_leaf)
-    print(prefix, "pruned_by_bounds_nonleaf:", bab.pruned_bounds_nonleaf)
-    print(prefix, "pruned_by_bounds:", bab.nrNodes - bab.pruned_cliques_leaf - bab.pruned_cliques_nonleaf - bab.pruned_rs_leaf -\
-          bab.pruned_rs_nonleaf-  bab.pruned_insertionCost_nonleaf - bab.pruned_insertionCost_leaf -  bab.pruned_bounds_nonleaf)
+    # print(prefix,"pruned_by_cliques_nonleaf:", bab.pruned_cliques_nonleaf)
+    # print(prefix,"pruned_by_cliques_leaf:", bab.pruned_cliques_leaf)
+    # print(prefix,"pruned_by_rs_nonleaf:", bab.pruned_rs_nonleaf)
+    # print(prefix,"pruned_by_rs_leaf:", bab.pruned_rs_leaf)
+    # print(prefix, "pruned_by_insertionCost_nonleaf:", bab.pruned_insertionCost_nonleaf)
+    # print(prefix, "pruned_by_insertionCost_leaf:", bab.pruned_insertionCost_leaf)
+    # print(prefix, "pruned_by_bounds_nonleaf:", bab.pruned_bounds_nonleaf)
+    # print(prefix, "pruned_by_bounds:", bab.nrNodes - bab.pruned_cliques_leaf - bab.pruned_cliques_nonleaf - bab.pruned_rs_leaf -\
+    #       bab.pruned_rs_nonleaf-  bab.pruned_insertionCost_nonleaf - bab.pruned_insertionCost_leaf -  bab.pruned_bounds_nonleaf)
 
     #mainDirStorage =  os.path.join(path_to_data,"output")
     #convergence = os.path.join(mainDirStorage, 'convergence.txt')

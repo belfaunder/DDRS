@@ -231,8 +231,8 @@ def parseProfile(file_path):
     with open(file_path, 'r') as file:
         lines = file.readlines()
         for idx, line in enumerate(lines):
-            try:
-            #if True:
+            #try:
+            if True:
                 if 'Instance:' in line:
                     instance = (line.split(':')[1].replace('\n', '')).replace(' ', '').replace('.txt', '')
                     nrCust = int(lines[idx + 1].split(':')[1])
@@ -262,6 +262,7 @@ def parseProfile(file_path):
                     iter = idx + 25
 
                     time_running = float(lines[idx + 4].split(':')[1])
+                    '''
                     while iter < idx + 80:
                         iter +=1
                         if '(runBranchAndBound)' in lines[iter]:
@@ -284,7 +285,7 @@ def parseProfile(file_path):
                             time_lb_addition += float(' '.join(lines[iter].split()).split(' ')[3])
                         if '(branch)' in lines[iter]:
                             time_branch += float(' '.join(lines[iter].split()).split(' ')[3])
-
+                    '''
                     # data.append([eps, nrCust,p_home, p_pup, discount, time_running, time_first_opt, nodes, num_tsps, optimal,gap, obj_val, sd,
                     #               policy_ID, num_disc, instance])
                     data.append(
@@ -293,10 +294,10 @@ def parseProfile(file_path):
                          pruned_by_cliques_nonleaf, pruned_by_cliques_leaf, pruned_by_rs_nonleaf, pruned_by_rs_leaf,
                          pruned_by_insertionCost_nonleaf, pruned_by_insertionCost_leaf, pruned_by_bounds_nonleaf,
                          pruned_by_bounds_leaf, tsp_time*100/time_running, time_exact_bounds*100/time_running, time_lb_addition*100/time_running, time_branch*100/time_running ])
-            except:
-                #data.append([nrCust, nrPup, p_home,  discount, "", "", "", "", "", "", "",
-                #             "", "", "", instance])
-                print("bab problem with instance ", (line.split('/')[len(line.split('/')) - 1]), " line: ", idx)
+                #except:
+                    #data.append([nrCust, nrPup, p_home,  discount, "", "", "", "", "", "", "",
+                    #             "", "", "", instance])
+                    #print("bab problem with instance ", (line.split('/')[len(line.split('/')) - 1]), " line: ", idx)
     rowTitle = ['nrCust',"nrPup", 'p_home', 'discount_rate', 'time_bab', 'time_tb', 'nodes',
                 'num_tsps', 'obj_val_bab', 'policy_bab_ID', 'num_disc_bab', 'instance',
                 'pr_cliques_nonleaf', 'pr_cliques_leaf', 'pr_rs_nonleaf', 'pr_rs_leaf',
@@ -1722,7 +1723,6 @@ def experiment_variation_nrcust(folder):
     # parseBAB_RS_NODISC(os.path.join(folder, "bab_rs_nodisc_i_VRPDO_notfinished.txt"), folder, "i_VRPDO_time")
     #parseBAB_RS_NODISC(os.path.join(folder, "bab_VRPDO_discount_proportional_02_02.txt"), folder, "i_VRPDO_discount_proportional_02_02")
     #parseBAB(os.path.join(folder, "02_23_bab_exact.txt"), folder, "02_23_bab_exact")
-
     #parseEnumeration(os.path.join(folder, "02_13_enumeration.txt"), folder, "02_13_enumeration")
 
 
@@ -1751,7 +1751,7 @@ def experiment_variation_nrcust(folder):
         print("")
     # check dominance usage  02_26_bab_exact_domcheck.txt
     if True:
-        parseBAB(os.path.join(folder, "02_26_bab_exact_domcheck.txt"), folder, "02_26_bab_exact_domcheck")
+        #parseBAB(os.path.join(folder, "02_26_bab_exact_domcheck.txt"), folder, "02_26_bab_exact_domcheck")
         df_bab = pd.read_csv(os.path.join(folder, "02_26_bab_exact_domcheck.csv"))
         df_bab = df_bab[['instance', 'nrCust', 'nodes', 'time_bab']].copy()
 
@@ -1780,22 +1780,22 @@ def experiment_variation_nrcust(folder):
         df = df.merge(df_dom_cliques, how='left', on='instance')
         df = df.merge(df_dom_insertion, how='left', on='instance')
         df = df.merge(df_dom_basic, how='left', on='instance')
-
         df_results = pd.DataFrame(index=list(range(10, 21)),
                               columns=['t_bab', 'n_bab','sp1','t_ins','n_ins','sp2',
                                        't_cliques','n_cliques','sp3',
                                        't_lb','n_lb','sp4',
                                        't_basic','n_basic'])
-        df = df.fillna(0)
-        for nrCust in range(10, 21):
+        #df = df.fillna(0)
+        for nrCust in range(10, 20):
             df_slice = df[(df.nrCust == nrCust) ].copy()
-            if nrCust < 21:
+            if nrCust < 20:
                 print(nrCust)
                 df_results.at[nrCust, 't_bab'] = df_slice['time_bab'].mean()
                 df_results.at[nrCust, 'n_bab'] = int(df_slice['nodes'].mean() + 0.5)
 
                 df_results.at[nrCust, 't_ins'] = df_slice['time_domins'].mean()
                 df_results.at[nrCust, 'n_ins'] = "{:<6}".format(str(int(df_slice['nodes_domins'].mean() + 0.5)))+\
+                                                    "\phantom{"+"a"*(6-len(str(int(df_slice['nodes_domins'].mean() + 0.5)))) +"}"+\
                                                      "("+str(int(df_slice['pruned_domins'].mean() + 0.5)) + ")"
 
                 df_results.at[nrCust, 't_cliques'] = df_slice['time_domclique'].mean()
@@ -1804,9 +1804,9 @@ def experiment_variation_nrcust(folder):
 
                 df_results.at[nrCust, 't_lb'] = df_slice['time_domlb'].mean()
                 df_results.at[nrCust, 'n_lb'] = int(df_slice['nodes_domlb'].mean() + 0.5)
-
-                df_results.at[nrCust, 't_basic'] = df_slice['time_dombasic'].mean()
-                df_results.at[nrCust, 'n_basic'] = int(df_slice['nodes_dombasic'].mean() + 0.5)
+                if nrCust < 19:
+                    df_results.at[nrCust, 't_basic'] = df_slice['time_dombasic'].mean()
+                    df_results.at[nrCust, 'n_basic'] = int(df_slice['nodes_dombasic'].mean() + 0.5)
 
         #df_results = df_results[[ 'g_opt_3600','closed_3600','sp1','tto_best', 'tto_best_min', 'tto_best_max']].copy()  'n_bab_av', 'n_bab_min', 'n_bab_max'
 
@@ -3194,14 +3194,14 @@ if __name__ == "__main__":
 
     #compare_enumeration_no_Gurobi(folder_2segm_manyPUP)
     #experiment_variation_nrcust_heuristic(folder)
-    #experiment_variation_nrcust(folder_2segm_manyPUP)
+    experiment_variation_nrcust(folder_2segm_manyPUP)
 
     #exp_profile()
     #managerial_effect_delta(folder)
     # large_exp(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
 
     #managerial_location(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
-    managerial_effect_delta(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
+    #managerial_effect_delta(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
 
     #experiment_bab_solution_time_classes(folder_2segm_manyPUP)
     # parseBAB(os.path.join(folder, "bab_7types_nrCust.txt"), folder, "bab_7types_nrCust")
@@ -3215,8 +3215,6 @@ if __name__ == "__main__":
     #experiment_saturation_choice_model()
 
     #experiment_heuristic_parameters_variation(folder)
-
-
 
     # folder_eps = os.path.join(path_to_data, "output", "nr_cust_small", "eps")
     # folder_sample = os.path.join(path_to_data, "output", "nr_cust_small", "sample")
