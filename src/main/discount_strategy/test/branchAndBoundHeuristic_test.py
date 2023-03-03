@@ -33,10 +33,10 @@ if __name__ == "__main__":
 
     if os.name != 'nt':
         file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "data",
-                                     "i_VRPDO_2segm_manyPUP_30", str(sys.argv[-1]) + ".txt")
+                                     "i_VRPDO_2segm_manyPUP_large", str(sys.argv[-1]) + ".txt")
     else:
-        file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_30",
-                                     "VRPDO_size_30_phome_0_ppup_0.0_incrate_0.06_nrpup3_2.txt")
+        file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_large",
+                                     "VRPDO_size_10_phome_0.4_ppup_0.0_incrate_0.06_nrpup3_0.txt")
 
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()

@@ -46,8 +46,6 @@ if __name__ == "__main__":
     print(OCVRPInstance)
     bab = BABExact(instance=OCVRPInstance, solverType = solverType)
     babPolicy, time, lbPrint, ubPrint = bab.runBranchAndBound()
-    # babPolicy = 821393295
-    # print(bin(babPolicy), babPolicy)
     # painter = Painter()
     # painter.printVertexDisc(OCVRPInstance,babPolicy)
     #start_time = process_time()

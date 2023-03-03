@@ -29,7 +29,8 @@ class BABHeuristic(BAB_super_class):
 
 
     def runBranchAndBound(self):
-        self.upperBoundNumberDiscount = bitCount(self.rs_policy)
+        #self.upperBoundNumberDiscount = bitCount(self.rs_policy)
+        self.upperBoundNumberDiscount = self.instance.NR_CUST
         t  = process_time()
         openNodes = self.openNodes
         # Visit all nodes until no nodes are left to branch on ( or a time limit is reached)

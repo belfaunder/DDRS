@@ -1781,10 +1781,11 @@ def experiment_variation_nrcust(folder):
         df = df.merge(df_dom_insertion, how='left', on='instance')
         df = df.merge(df_dom_basic, how='left', on='instance')
         df_results = pd.DataFrame(index=list(range(10, 21)),
-                              columns=['t_bab', 'n_bab','sp1','t_ins','n_ins','sp2',
+                              columns=['t_bab', 'n_bab','sp1',
+                                        't_basic','n_basic', 'sp4',
+                                       't_ins','n_ins','sp2',
                                        't_cliques','n_cliques','sp3',
-                                       't_lb','n_lb','sp4',
-                                       't_basic','n_basic'])
+                                       't_lb','n_lb'])
         #df = df.fillna(0)
         for nrCust in range(10, 20):
             df_slice = df[(df.nrCust == nrCust) ].copy()
@@ -1794,12 +1795,11 @@ def experiment_variation_nrcust(folder):
                 df_results.at[nrCust, 'n_bab'] = int(df_slice['nodes'].mean() + 0.5)
 
                 df_results.at[nrCust, 't_ins'] = df_slice['time_domins'].mean()
-                df_results.at[nrCust, 'n_ins'] = "{:<6}".format(str(int(df_slice['nodes_domins'].mean() + 0.5)))+\
-                                                    "\phantom{"+"a"*(6-len(str(int(df_slice['nodes_domins'].mean() + 0.5)))) +"}"+\
+                df_results.at[nrCust, 'n_ins'] = "{:<7}".format(str(int(df_slice['nodes_domins'].mean() + 0.5)))+\
                                                      "("+str(int(df_slice['pruned_domins'].mean() + 0.5)) + ")"
 
                 df_results.at[nrCust, 't_cliques'] = df_slice['time_domclique'].mean()
-                df_results.at[nrCust, 'n_cliques'] = "{:<6}".format(str(int(df_slice['nodes_domclique'].mean() + 0.5)))+\
+                df_results.at[nrCust, 'n_cliques'] = "{:<7}".format(str(int(df_slice['nodes_domclique'].mean() + 0.5)))+\
                                                      "("+str(int(df_slice['pruned_domcliques'].mean() + 0.5)) + ")"
 
                 df_results.at[nrCust, 't_lb'] = df_slice['time_domlb'].mean()
@@ -1810,7 +1810,7 @@ def experiment_variation_nrcust(folder):
 
         #df_results = df_results[[ 'g_opt_3600','closed_3600','sp1','tto_best', 'tto_best_min', 'tto_best_max']].copy()  'n_bab_av', 'n_bab_min', 'n_bab_max'
 
-        print(df_results.to_latex(float_format='{:0.1f}'.format, na_rep=''))
+        print(df_results.to_latex(float_format='{:0.0f}'.format, na_rep=''))
         #print(df_results.to_latex(formatters=['{:0.2f}', None, None, '{:0.1f}','{:0.5f}','{:0.1f}'], na_rep=''))
 
         print("")
@@ -2162,9 +2162,8 @@ def experiment_heuristic_parameters_variation(folder):
 
 def experiment_bab_solution_time_classes(folder):
     #parseBAB(os.path.join(folder, "bab_VRPDO_disc_proportional_small_not_finished.txt"), folder, "bab_VRPDO_discount_proportional_small")
-    df_bab = pd.read_csv(os.path.join(folder, "02_23_bab_exact_temp.csv"))
-    #df_bab = df_bab[df_bab['p_pup']!=0.35].copy()
-    nr_cust = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+    df_bab = pd.read_csv(os.path.join(folder, "02_23_bab_exact.csv"))
+    nr_cust = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 
     for n in nr_cust:
         df_bab_temp = df_bab[(df_bab["nrCust"] == n)&(df_bab['discount_rate']==0.06)].copy()
@@ -2206,7 +2205,7 @@ def experiment_bab_solution_time_classes(folder):
     #plt.figure(0)
     fig, ax = plt.subplots(1, 1, figsize=(8, 5))
     #ax, fig = plt.gca(), plt.gcf()
-    x = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+    x = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 
     class_name = ['C1 base case', 'C2 low incentive effectiveness' ,'C3 high incentive effectiveness', 'C4 low incentive value', 'C5 high incentive value']
     change_x = [-0.15, -0.3, 0, 0.15, 0.3]
@@ -2246,8 +2245,8 @@ def experiment_bab_solution_time_classes(folder):
     ax.set(yscale="log")
     ax.set(xlabel='Problem size, n')
     ax.set_ylim(0, 100000)
-    #plt.savefig(os.path.join(path_to_images, 'Solution_time_classes_2segm.eps'), transparent=False,
-    #        bbox_inches='tight')
+    plt.savefig(os.path.join(path_to_images, 'Solution_time_classes_2segm.eps'), transparent=False,
+           bbox_inches='tight')
     plt.show()
 
 def average_discount(instance_name):
@@ -2447,7 +2446,7 @@ def plot_clustered_stacked(dfall, title, savename,  labels=None,  H="/", **kwarg
     #axe.set_xticklabels([r'$\alpha =1.0$', r'$\alpha =2.0$', r'$\alpha =3.0$', r'$\alpha =5.0$', r'$\alpha =\infty$'], rotation = 0)
 
     axe.set_title(title)
-    axe.set(xlabel='' + 'Discount rate, '+r'$u$')
+    axe.set(xlabel='' + r'$u$')
     axe.set(ylabel='Number of offered incentives')
 
     # Add invisible data to add another legend
@@ -2592,7 +2591,7 @@ def managerial_effect_delta(folder):
         #plt.savefig(os.path.join(path_to_images, 'Number_incentives_delta.eps'), transparent=False, bbox_inches='tight')
         plt.show()
     # barchart number of customers per pickup point discount dependent
-    if False:
+    if True:
         folder_data = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_30")
         nr_customers = 30
         df = df[df.nrCust == nr_customers].copy()
@@ -2735,7 +2734,7 @@ def managerial_effect_delta(folder):
         axes.set_xticks([0.03, 0.06, 0.09, 0.12, 0.15, 0.18, 0.21, 0.24])
         #ax2.set_ylim(0, 40)
         plt.legend(loc='lower right', bbox_to_anchor=(1.0, 0.0), title = 'Number of pickup points', ncol = 2)
-        axes.set(xlabel='' + 'Discount rate, '+r'$u$')
+        axes.set(xlabel='' +  r'$u$')
         axes.set(ylabel='Expected fulfillment cost')
         #ax2.set(ylabel='Number of offered incentives')
 
@@ -2743,7 +2742,7 @@ def managerial_effect_delta(folder):
                    bbox_inches='tight')
         plt.show()
     # Impact of incenitve rate on the number of offered icnetnives
-    if True:
+    if False:
         nr_customers = 30
         df = df[df.nrCust == nr_customers].copy()
         df = df[df.p_accept == 0.6].copy()
@@ -2782,7 +2781,7 @@ def managerial_effect_delta(folder):
         axes.set_xticks([0.03, 0.06, 0.09, 0.12, 0.15, 0.18, 0.21, 0.24])
         #ax2.set_ylim(0, 40)
         #plt.legend(loc='lower right', bbox_to_anchor=(1.0, 0.0), title = 'Number of pickup points', ncol = 2)
-        axes.set(xlabel='' + 'Discount rate, '+r'$u$')
+        axes.set(xlabel='' +  r'$u$')
         axes.set(ylabel='Number of offered incentives')
         #ax2.set(ylabel='Number of offered incentives')
 
@@ -2979,8 +2978,11 @@ def large_exp(folder):
                 df_results.at[iter + i, 'nrPup'] = row['nrPup']
                 df_results.at[iter + i, 'nrCust'] = row['nrCust'] + i*0.7 - 0.7
                 if i == 0:
-                    df_results.at[iter + i, 'algo'] = 'NOI'
-                    df_results.at[iter + i, 'savings'] = max(row['gap_nodisc'], 0)
+                    if   row['nrPup'] ==1:
+                        pass
+                    else:
+                        df_results.at[iter + i, 'algo'] = 'NOI'
+                        df_results.at[iter + i, 'savings'] = max(row['gap_nodisc'], 0)
                 elif i == 1:
                     df_results.at[iter + i, 'algo'] = 'DI'
                     df_results.at[iter + i, 'savings'] = max(row['gap_rs'], 0)
@@ -2988,8 +2990,9 @@ def large_exp(folder):
                     df_results.at[iter + i, 'algo'] = 'ALL'
                     df_results.at[iter + i, 'savings'] = max(row['gap_uniform'], 0)
             iter += 3
-        df_results = df_results[df_results['discount_rate'].isin([0.03, 0.06])].copy()
-        #df_results = df_results[df_results.nrPup ==3].copy()
+        df_results = df_results[df_results['discount_rate'].isin([0.06])].copy()
+        df_results = df_results[df_results['nrPup'].isin([1,3])].copy()
+
 
         #sns.scatterplot(ax=axes, data=df_results, x='nrCust', y='savings', markers=True,
         #                linewidth=1, hue='algo', style='algo',  # discount_rate   nrPup
@@ -3183,7 +3186,7 @@ if __name__ == "__main__":
     folder_data_disc = os.path.join(path_to_data, "data", "i_VRPDO_old")
     folder_data_prob = os.path.join(path_to_data, "data", "i_VRPDO_prob")
     folder_large = os.path.join(path_to_data, "output", "VRPDO_2segm_large")
-    #large_exp(folder_large)
+    large_exp(folder_large)
     #managerial_effect_delta(folder_large)
     # sensitivity_disc_size_comparison_nodisc(folder, folder_data_disc)
     #sensitivity_comparison_nodisc_rs(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
@@ -3194,7 +3197,7 @@ if __name__ == "__main__":
 
     #compare_enumeration_no_Gurobi(folder_2segm_manyPUP)
     #experiment_variation_nrcust_heuristic(folder)
-    experiment_variation_nrcust(folder_2segm_manyPUP)
+    #experiment_variation_nrcust(folder_2segm_manyPUP)
 
     #exp_profile()
     #managerial_effect_delta(folder)
