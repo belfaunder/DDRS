@@ -141,7 +141,7 @@ def set_random_combination(setMayVary, prob_dev_setMayVary):
     return combination
 
 # evaluation of cost of a poliy by samplling. 1sample states that we do not sample for different gammas( number of visited people)
-def sampleAverageApproximation_PoissonBinomial_1sample_2segm(instance,setMayVary, policy, solverType, **kwargs):
+def sampleAverageApproximation_PoissonBinomial_1sample_2segm(instance, policy, solverType, **kwargs):
     n = instance.NR_CUST
     p_home = instance.p_home
     exp_discount = np.multiply(instance.shipping_fee, instance.p_pup_delta)
@@ -154,6 +154,10 @@ def sampleAverageApproximation_PoissonBinomial_1sample_2segm(instance,setMayVary
     else:
         sample_size = constants.SAMPLE_SIZE
 
+    if 'setMayVary' in kwargs:
+        setMayVary = kwargs['setMayVary']
+    else:
+        setMayVary = [cust.id for cust in instance.customers if policy &(1<< int(cust.id-1))]
     if 'routeCosts' in kwargs:
         routeCosts = kwargs['routeCosts']
     else:

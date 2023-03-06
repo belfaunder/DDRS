@@ -12,13 +12,12 @@ import pickle
 from src.main.discount_strategy.algorithms.exact.bab.BAB_exact import BABExact
 #from src.main.discount_strategy.algorithms.exact.enumeration.enumeration_scenarios_2_segm import ScenarioEnumerationSolver
 from src.main.discount_strategy.algorithms.heuristic.sample_average import sampleAverageApproximation_PoissonBinomial
-from src.main.discount_strategy.algorithms.heuristic.sample_average import sampleAverageApproximation_PoissonBinomial_1sample
+from src.main.discount_strategy.algorithms.heuristic.sample_average import sampleAverageApproximation_PoissonBinomial_1sample_2segm
 from src.main.discount_strategy.algorithms.heuristic.sample_average import one_policy_cost_estimation
 from src.main.discount_strategy.io.print_functions import Painter
 from src.main.discount_strategy.io import OCVRPParser
 from src.main.discount_strategy.io import print_functions
 from src.main.discount_strategy.algorithms.exact.ring_star_without_TW import ring_star_deterministic_no_TW
-from src.main.discount_strategy.algorithms.heuristic.sample_average import sampleAverageApproximation_PoissonBinomial_1sample_2segm
 prefix=constants.PREFIX
 def timer(start,end):
     hours, rem = divmod(end-start, 3600)
@@ -79,7 +78,7 @@ if __name__ == "__main__":
     if 2**bitCount(babPolicy) < constants.SAMPLE_SIZE:
         estimation_bab = one_policy_cost_estimation(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)
     else:
-        estimation_bab = sampleAverageApproximation_PoissonBinomial_1sample(instance = OCVRPInstance,
+        estimation_bab = sampleAverageApproximation_PoissonBinomial_1sample_2segm(instance = OCVRPInstance,
                                                                             policy = babPolicy, solverType = solverType)
     print(prefix, 'Estimated_BAB_cost:',estimation_bab )
 

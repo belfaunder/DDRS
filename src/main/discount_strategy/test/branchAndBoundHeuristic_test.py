@@ -8,9 +8,9 @@ def timer(start,end):
     minutes, seconds = divmod(rem, 60)
     return("{:0>2}:{:0>2}:{:05.2f})".format(int(hours),int(minutes),seconds))
 from src.main.discount_strategy.util.bit_operations import bitCount
-from src.main.discount_strategy.algorithms.heuristic.BAB_sampling_heuristic import BABHeuristic
+from src.main.discount_strategy.algorithms.heuristic.remote_customers import BABHeuristic
 from src.main.discount_strategy.algorithms.heuristic.sample_average import sampleAverageApproximation_PoissonBinomial
-from src.main.discount_strategy.algorithms.heuristic.sample_average import sampleAverageApproximation_PoissonBinomial_1sample
+from src.main.discount_strategy.algorithms.heuristic.sample_average import sampleAverageApproximation_PoissonBinomial_1sample_2segm
 from src.main.discount_strategy.algorithms.heuristic.sample_average import one_policy_cost_estimation
 from src.main.discount_strategy.algorithms.exact.ring_star_without_TW import ring_star_deterministic_no_TW
 from src.main.discount_strategy.algorithms.exact.bab.BAB_exact import BABExact
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     if 2 ** bitCount(babPolicy) < constants.SAMPLE_SIZE:
         estimation_bab = one_policy_cost_estimation(instance=OCVRPInstance, policy=babPolicy, solverType=solverType)
     else:
-        estimation_bab = sampleAverageApproximation_PoissonBinomial_1sample(instance=OCVRPInstance,
+        estimation_bab = sampleAverageApproximation_PoissonBinomial_1sample_2segm(instance=OCVRPInstance,
                                                                             policy=babPolicy, solverType=solverType)
 
     print(prefix, 'Estimated_BAB_cost:',estimation_bab )
@@ -61,7 +61,7 @@ if __name__ == "__main__":
         if 2 ** bitCount(rsPolicyID) < constants.SAMPLE_SIZE:
             estimation_rs = one_policy_cost_estimation(instance=OCVRPInstance, policy=rsPolicyID, solverType=solverType)
         else:
-            estimation_rs = sampleAverageApproximation_PoissonBinomial_1sample(instance=OCVRPInstance,
+            estimation_rs = sampleAverageApproximation_PoissonBinomial_1sample_2segm(instance=OCVRPInstance,
                                                                                policy=rsPolicyID, solverType=solverType)
 
     if babPolicy == 0:
@@ -76,7 +76,7 @@ if __name__ == "__main__":
             estimation_uni = one_policy_cost_estimation(instance=OCVRPInstance, policy=2 ** OCVRPInstance.NR_CUST - 1,
                                                         solverType=solverType)
         else:
-            estimation_uni = sampleAverageApproximation_PoissonBinomial_1sample(instance=OCVRPInstance,
+            estimation_uni = sampleAverageApproximation_PoissonBinomial_1sample_2segm(instance=OCVRPInstance,
                                                                                 policy=2 ** OCVRPInstance.NR_CUST - 1,
                                                                                 solverType=solverType)
     print(prefix + 'RS_policy:', rsPolicyID)

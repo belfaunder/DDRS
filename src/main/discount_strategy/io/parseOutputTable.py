@@ -1722,11 +1722,10 @@ def experiment_variation_nrcust(folder):
     # Speed test on nr_cust_variation instances
     # parseBAB_RS_NODISC(os.path.join(folder, "bab_rs_nodisc_i_VRPDO_notfinished.txt"), folder, "i_VRPDO_time")
     #parseBAB_RS_NODISC(os.path.join(folder, "bab_VRPDO_discount_proportional_02_02.txt"), folder, "i_VRPDO_discount_proportional_02_02")
-    #parseBAB(os.path.join(folder, "02_23_bab_exact.txt"), folder, "02_23_bab_exact")
+    parseBAB(os.path.join(folder, "02_23_bab_exact.txt"), folder, "02_23_bab_exact")
     #parseEnumeration(os.path.join(folder, "02_13_enumeration.txt"), folder, "02_13_enumeration")
 
-
-    if False: #print table with bab_exact and enumeration running times
+    if True: #print table with bab_exact and enumeration running times
         df = pd.read_csv(os.path.join(folder, "02_23_bab_exact.csv"))
         df_enum =  pd.read_csv(os.path.join(folder, "02_13_enumeration.csv"))
         # df = df[df.nrCust < 19].copy()
@@ -1750,7 +1749,7 @@ def experiment_variation_nrcust(folder):
         # print(df_results.to_latex(formatters=['{:0.2f}', None, None, '{:0.1f}','{:0.5f}','{:0.1f}'], na_rep='')
         print("")
     # check dominance usage  02_26_bab_exact_domcheck.txt
-    if True:
+    if False:
         #parseBAB(os.path.join(folder, "02_26_bab_exact_domcheck.txt"), folder, "02_26_bab_exact_domcheck")
         df_bab = pd.read_csv(os.path.join(folder, "02_26_bab_exact_domcheck.csv"))
         df_bab = df_bab[['instance', 'nrCust', 'nodes', 'time_bab']].copy()
@@ -2067,96 +2066,75 @@ def experiment_varying_discount(folder):
 
 def experiment_heuristic_parameters_variation(folder):
     # Parse BAB results for concorde and Gurobi
-    #parseBAB(os.path.join(folder, "h_rs_VRPDO_discount_proportional.txt"), folder, "h_rs_VRPDO_disc_proportional")
-    df_rs = pd.read_csv(os.path.join(folder, "h_rs_VRPDO_disc_proportional.csv"))
+    #parseBAB(os.path.join(folder, "h_rs.txt"), folder, "h_rs")
+    df_rs = pd.read_csv(os.path.join(folder, "h_rs.csv"))
 
-    #parseBAB(os.path.join(folder, "bab_VRPDO_discount_proportional_3600.txt"), folder, "bab_VRPDO_discount_proportional_3600")
-    df_bab = pd.read_csv(os.path.join(folder, "bab_3600_VRPDO_disc_proportional_02_02_006.csv"))
+    #parseBAB(os.path.join(folder, "bab_time_limit.txt"), folder, "bab_time_limit")
+    df_bab = pd.read_csv(os.path.join(folder, "bab_time_limit.csv"))
 
-    #parseBABHeuristic(os.path.join(folder, "h_VRPDO_disc_proportional_02_02.txt"), folder, "h_VRPDO_disc_proportional_02_02")
-    df_h = pd.read_csv(os.path.join(folder, "h_VRPDO_disc_proportional_02_02.csv"))
+    #parseBABHeuristic(os.path.join(folder, "h_s20.txt"), folder, "h_s20")
+    df_h20 = pd.read_csv(os.path.join(folder, "h_s20.csv"))
 
-    nr_cust = [10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 25, 30, 35, 40, 45, 50]
-    #nr_cust = [10, 15, 18, 20, 25, 30, 35, 40, 45,50]
+    #parseBABHeuristic(os.path.join(folder, "h_s100.txt"), folder, "h_s100")
+    df_h100 = pd.read_csv(os.path.join(folder, "h_s100.csv"))
+
+    #parseBABHeuristic(os.path.join(folder, "h_s200.txt"), folder, "h_s200")
+    df_h200 = pd.read_csv(os.path.join(folder, "h_s200.csv"))
+
+    nr_cust = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 30, 35, 40, 45, 50]
+    nr_cust = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 30]
     df_results = pd.DataFrame(index=nr_cust,
                         columns=['exactt','exactn',"s1",'s500t','s500node', 's500gap','s2', 's200t',  's200node', 's200gap',
                         's3', 's100t', 's100node', 's100gap', 's4','s50t', 's50node','s50gap', 's5', 's20t', 's20node',
-                        's20gap','s6','rst','rsn','rsg'])
+                        's20gap','s6','s0t', 's0node', 's0gap']) #s0t is ring star heuristic without sampling
 
-    df_bab = df_bab[(df_bab['discount_rate'] == 0.06) ].copy()
-    df_h = df_h[(df_h['discount_rate'] == 0.06)].copy()
-    df_bab = df_bab[['instance', 'policy_bab_ID', 'obj_val_bab', '2sd_bab', 'time_bab','nodes', 'nrCust']]
+    #df_h = df_h[(df_h['discount_rate'] == 0.06)].copy()
+    df_bab = df_bab[['instance', 'policy_bab_ID', 'obj_val_bab', 'time_bab','nodes', 'nrCust']]
     df_rs = df_rs[['instance', 'policy_bab_ID', 'obj_val_bab', 'time_bab','nodes','nrCust']]
     df_rs['time_bab'] = df_rs.apply(lambda x: 3600 if x['time_bab'] >3600 else x['time_bab'], axis=1)
-
-    df_bab_small = pd.read_csv(os.path.join(folder, "bab_VRPDO_disc_proportional_small_02_02_006.csv"))
-    df_bab_small = df_bab_small[['instance', 'time_bab']].copy()
-    df_bab_small.rename(columns={'time_bab': 'time_bab_small'}, inplace=True)
-    df_bab = df_bab.merge(df_bab_small, how='outer', on='instance')
-    df_bab['time_bab'] = df_bab.apply(lambda x: x['time_bab_small'] if x['nrCust'] < 19 else x['time_bab'], axis=1)
     df_bab['time_bab'] = df_bab.apply(lambda x: 3600 if x['time_bab'] >3600 else x['time_bab'], axis=1)
+    #df_bab = df_bab.dropna(subset=['time_bab'])
 
-    df_bab = df_bab.dropna(subset=['time_bab'])
+    df_bab.rename(columns={'policy_bab_ID': 'policy_bab_ID_exact', 'obj_val_bab': 'obj_val_bab_exact',
+                 'time_bab': 'time_bab_exact',  'nodes':'nodes_exact', 'nrCust':'nrCust_exact'}, inplace=True)
+    #df_rs = df_rs.merge(df_bab, on='instance')
 
-    df_bab.rename(
-        columns={'policy_bab_ID': 'policy_bab_ID_exact', 'obj_val_bab': 'obj_val_bab_exact', '2sd_bab': '2sd_bab_exact',
-                 'time_bab': 'time_bab_exact', 'nrCust': 'nrCust_exact', 'nodes':'nodes_exact'}, inplace=True)
+    for n in nr_cust:
+        df_slice = df_bab[df_bab["nrCust_exact"] == n].copy()
+        # df_temp_sample = df_h[df_h["nrCust"] == n].copy()
+        # df_temp_rs = df_rs[df_rs["nrCust"] == n].copy()
+        df_results.at[n, 'exactt'] = round(df_slice['time_bab_exact'].mean(), 1)
+        df_results.at[n, 'exactn'] = round(df_slice['nodes_exact'].mean())
 
-    df_h = df_h[['instance', 'nrCust', 'time_bab', 'nodes', 'obj_val_bab', '2sd_bab', 'policy_bab_ID','eps', 'sample','time_limit']]
-    df_h['time_bab'] = df_h.apply(lambda x: 3600 if x['time_bab']>3600 else x['time_bab'], axis=1)
-    df_h = df_h.merge(df_bab, on='instance')
-    df_rs = df_rs.merge(df_bab, on='instance')
+        # df_results.at[n, 'rst'] = round(df_temp_rs['time_bab'].mean(), 1)
+        # df_results.at[n, 'rsn'] = round(df_temp_rs['nodes'].mean())
+        # df_results.at[n, 'rsg'] = round(df_temp_rs['gap_av'].mean(), 2)
 
-    for df in [df_h,df_rs]:
+    for df in [df_h20, df_h200, df_rs]:
+        if df is df_rs:
+            sample = "0"
+        else:
+            sample = str(round(df.iloc[5]['sample']))
+        print("sample", sample)
+
+        df = df[['instance','nrCust', 'time_bab', 'nodes', 'obj_val_bab', 'policy_bab_ID']]
+        df['time_bab'] = df.apply(lambda x: 3600 if x['time_bab'] > 3600 else x['time_bab'], axis=1)
+        df = df.merge(df_bab, on='instance')
         # df['gap_ub'] = (df['obj_val_bab'] + df['2sd_bab'] - (
         #         df_h['obj_val_bab_exact'] - df['2sd_bab_exact'])) / df_h[
         #                      'obj_val_bab'] * 100
         df['gap_av'] = (df['obj_val_bab'] - df['obj_val_bab_exact']) / df['obj_val_bab'] * 100
         df.loc[df['policy_bab_ID'] == df['policy_bab_ID_exact'], 'gap_av'] = 0
-        #df.loc[df['policy_bab_ID'] == df['policy_bab_ID_exact'], 'gap_ub'] = 0
-        df.drop(['obj_val_bab_exact', 'policy_bab_ID_exact', '2sd_bab_exact'], axis=1, inplace=True)
 
-    for n in nr_cust:
-        df_bab_temp = df_bab[df_bab["nrCust_exact"] == n].copy()
-        df_temp_sample = df_h[df_h["nrCust"] == n].copy()
-        df_temp_rs = df_rs[df_rs["nrCust"] == n].copy()
-        df_results.at[n, 'exactt'] = round(df_bab_temp['time_bab_exact'].mean(), 1)
-        df_results.at[n, 'exactn'] = round(df_bab_temp['nodes_exact'].mean())
-
-        df_temp_s500 = df_temp_sample[(df_temp_sample['sample'] == 500) & (df_temp_sample['eps'] == 0)].copy()
-        df_temp_s200 = df_temp_sample[(df_temp_sample['sample'] == 200) & (df_temp_sample['eps'] == 0)].copy()
-        df_temp_s100 = df_temp_sample[(df_temp_sample['sample'] == 100) & (df_temp_sample['eps'] == 0)].copy()
-        df_temp_s50 = df_temp_sample[(df_temp_sample['sample'] == 50) & (df_temp_sample['eps'] == 0)].copy()
-        df_temp_s20 = df_temp_sample[(df_temp_sample['sample'] == 20) & (df_temp_sample['eps'] == 0)].copy()
-
-        df_results.at[n, 'rst'] = round(df_temp_rs['time_bab'].mean(), 1)
-        df_results.at[n, 'rsn'] = round(df_temp_rs['nodes'].mean())
-        df_results.at[n, 'rsg'] = round(df_temp_rs['gap_av'].mean(), 2)
-
-        df_results.at[n, 's500t'] = round(df_temp_s500['time_bab'].mean(), 1)
-        df_results.at[n, 's500node'] = round(df_temp_s500['nodes'].mean())
-        df_results.at[n, 's500gap'] = round(df_temp_s500['gap_av'].mean(), 2)
-
-        df_results.at[n, 's200t'] = round(df_temp_s200['time_bab'].mean(), 1)
-        df_results.at[n, 's200node'] = round(df_temp_s200['nodes'].mean())
-        df_results.at[n, 's200gap'] = round(df_temp_s200['gap_av'].mean(), 2)
-
-        df_results.at[n, 's100t'] = round(df_temp_s100['time_bab'].mean(), 1)
-        df_results.at[n, 's100node'] = round(df_temp_s100['nodes'].mean())
-        df_results.at[n, 's100gap'] = round(df_temp_s100['gap_av'].mean(), 2)
-
-        df_results.at[n, 's50t'] = round(df_temp_s50['time_bab'].mean(), 1)
-        df_results.at[n, 's50node'] = round(df_temp_s50['nodes'].mean())
-        df_results.at[n, 's50gap'] = round(df_temp_s50['gap_av'].mean(), 2)
-
-        df_results.at[n, 's20t'] = round(df_temp_s20['time_bab'].mean(), 1)
-        df_results.at[n, 's20node'] = round(df_temp_s20['nodes'].mean())
-        df_results.at[n, 's20gap'] = round(df_temp_s20['gap_av'].mean(), 2)
-
+        for n in nr_cust:
+            df_slice = df[df["nrCust"] == n].copy()
+            df_results.at[n, 's'+sample+"t"] = round(df_slice['time_bab'].mean(), 1)
+            df_results.at[n, 's'+sample+"node"] = round(df_slice['nodes'].mean())
+            df_results.at[n, 's'+sample+"gap"] = round(df_slice['gap_av'].mean(), 2)
 
     #print(df_results.to_latex(float_format='{:0.1f}'.format, na_rep=''))
     df_results = df_results[['exactt',  'exactn', "s1",  's200t', 's200node','s200gap', 's3',
-                              's100t', 's100node','s100gap','s4',  's20t', 's20node','s20gap','s2', 'rst', 'rsn', 'rsg']].copy()
+                              's100t', 's100node','s100gap','s4',  's20t', 's20node','s20gap','s2', 's0t', 's0node','s0gap']].copy()
     print(df_results.to_latex(float_format='{:0.1f}'.format, na_rep=''))
 
 
@@ -3186,7 +3164,8 @@ if __name__ == "__main__":
     folder_data_disc = os.path.join(path_to_data, "data", "i_VRPDO_old")
     folder_data_prob = os.path.join(path_to_data, "data", "i_VRPDO_prob")
     folder_large = os.path.join(path_to_data, "output", "VRPDO_2segm_large")
-    large_exp(folder_large)
+    experiment_heuristic_parameters_variation(folder_large)
+    #large_exp(folder_large)
     #managerial_effect_delta(folder_large)
     # sensitivity_disc_size_comparison_nodisc(folder, folder_data_disc)
     #sensitivity_comparison_nodisc_rs(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
@@ -3198,6 +3177,7 @@ if __name__ == "__main__":
     #compare_enumeration_no_Gurobi(folder_2segm_manyPUP)
     #experiment_variation_nrcust_heuristic(folder)
     #experiment_variation_nrcust(folder_2segm_manyPUP)
+
 
     #exp_profile()
     #managerial_effect_delta(folder)
@@ -3217,7 +3197,7 @@ if __name__ == "__main__":
     #experiment_varying_discount(folder)
     #experiment_saturation_choice_model()
 
-    #experiment_heuristic_parameters_variation(folder)
+
 
     # folder_eps = os.path.join(path_to_data, "output", "nr_cust_small", "eps")
     # folder_sample = os.path.join(path_to_data, "output", "nr_cust_small", "sample")

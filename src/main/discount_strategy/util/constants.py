@@ -23,12 +23,10 @@ MIPGAP = 1*10e-2
 LIMIT_CORES = 20
 TIME_LIMIT = 60000
 # == == == == == == HEURISTICS == == == == == == == == ==
-ITERATION_LS = 100
 HEURISTIC_TIME_LIMIT = 3600
 HEURISTIC_SAMPLE_SIZE = 20
-IMPORTANCE_SAMPLE_SIZE = 1000
 NEIGHBOURHOOD_HEURISTIC = 1
-HEURISTIC_SAMPLE_SIZE_RS = HEURISTIC_SAMPLE_SIZE
+REMOTE_HEURISTIC_SAMPLE = 500
 # == == == == == == Branch and Bound == == == == == == == == ==
 
 #for epsilon-optimality of nodes(we prune the nodes that are epsilon-close to the current best node)
