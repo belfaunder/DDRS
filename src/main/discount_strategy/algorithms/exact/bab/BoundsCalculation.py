@@ -25,7 +25,6 @@ def set_probability_covered(lbScenarios,noDiscountID, tspProbDict, instance):
                     if not noDiscountID & (1 << cust_id - 1):
                         lbScenarios[id][1] *= instance.p_home[cust_id]
 
-
     for id in lbScenarios:
         visited_pups = [i for i in range(instance.NR_PUP) if id & (1 << i)]
         for number_visited_pups in range(bin(id).count("1")):
@@ -37,14 +36,12 @@ def set_probability_covered(lbScenarios,noDiscountID, tspProbDict, instance):
             if (1 << pup.number) & id:
                 id_less_pups_visited = id & ~(1 << pup.number)
                 lbScenarios[id][0] = min(lbScenarios[id][0], lbScenarios[id_less_pups_visited][0])
-    # TODO: carefully remove the probability from the lbScenarios wherever you add a new TSP
     # remove any scenario from lbCoveredProb if this scenario was included in calculation of exactValue(prob)
     for scenario in tspProbDict:
         for id in lbScenarios:
             if not ~lbScenarios[id][2] & (2**(instance.NR_CUST) - 1) & scenario:
                 lbScenarios[id][1] -=  tspProbDict[scenario]
                 break
-
     return lbScenarios
 
 #CHANGESPROBABILITY

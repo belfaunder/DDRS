@@ -8,7 +8,7 @@ def timer(start,end):
     minutes, seconds = divmod(rem, 60)
     return("{:0>2}:{:0>2}:{:05.2f})".format(int(hours),int(minutes),seconds))
 from src.main.discount_strategy.util.bit_operations import bitCount
-from src.main.discount_strategy.algorithms.heuristic.remote_customers import BABHeuristic
+from src.main.discount_strategy.algorithms.heuristic.BAB_sampling_heuristic import BABHeuristic
 from src.main.discount_strategy.algorithms.heuristic.sample_average import sampleAverageApproximation_PoissonBinomial
 from src.main.discount_strategy.algorithms.heuristic.sample_average import sampleAverageApproximation_PoissonBinomial_1sample_2segm
 from src.main.discount_strategy.algorithms.heuristic.sample_average import one_policy_cost_estimation

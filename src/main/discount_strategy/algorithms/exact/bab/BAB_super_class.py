@@ -136,8 +136,8 @@ class BAB_super_class:
         rsPolicyID, rsValue = ring_star_deterministic_no_TW(instance, instance.NR_CUST)
         self.rs_policy = rsPolicyID
 
-        self.upperBoundNumberDiscount = self.instance.NR_CUST
-
+        #self.upperBoundNumberDiscount = self.instance.NR_CUST
+        self.upperBoundNumberDiscount = bitCount(rsPolicyID)
 
     def set_lbScenarios(self):
         lbScenarios = OrderedDict()            #self.instance.NR_PUP
