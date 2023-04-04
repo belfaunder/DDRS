@@ -24,7 +24,7 @@ LIMIT_CORES = 20
 TIME_LIMIT = 3600
 # == == == == == == HEURISTICS == == == == == == == == ==
 HEURISTIC_TIME_LIMIT = 3600
-HEURISTIC_SAMPLE_SIZE = 20
+HEURISTIC_SAMPLE_SIZE = 200
 NEIGHBOURHOOD_HEURISTIC = 1
 REMOTE_HEURISTIC_SAMPLE = 500
 # == == == == == == Branch and Bound == == == == == == == == ==

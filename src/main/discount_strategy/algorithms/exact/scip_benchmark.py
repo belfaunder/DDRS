@@ -1,25 +1,28 @@
-# import os
-# import sys
-# from pathlib import Path
-# import copy
-# import math
-# from itertools import combinations
-# from src.main.discount_strategy.algorithms.exact.bab.BoundsCalculation import updateBoundsFromDictionary
-# from src.main.discount_strategy.algorithms.exact.bab.BAB_super_class import BAB_super_class
-# from src.main.discount_strategy.algorithms.exact.bab.BoundsCalculation import updateBoundsWithNewTSPs
-# import numpy as np
-# from time import process_time
-# from src.main.discount_strategy.util import constants
-# from src.main.discount_strategy.util import probability
-# from src.main.discount_strategy.util.bit_operations import bitCount
-#
-# from src.main.discount_strategy.io import OCVRPParser
-# path_to_data = constants.PATH_TO_DATA
-# prefix=constants.PREFIX
-#
-# import gurobipy as grb
-# import numpy as np
-#
+import os
+import sys
+from pathlib import Path
+import copy
+import math
+from itertools import combinations
+from src.main.discount_strategy.algorithms.exact.bab.BoundsCalculation import updateBoundsFromDictionary
+from src.main.discount_strategy.algorithms.exact.bab.BAB_super_class import BAB_super_class
+from src.main.discount_strategy.algorithms.exact.bab.BoundsCalculation import updateBoundsWithNewTSPs
+import numpy as np
+from time import process_time
+from src.main.discount_strategy.util import constants
+from src.main.discount_strategy.util import probability
+from src.main.discount_strategy.util.bit_operations import bitCount
+
+from src.main.discount_strategy.io import OCVRPParser
+path_to_data = constants.PATH_TO_DATA
+prefix=constants.PREFIX
+
+import gurobipy as grb
+import numpy as np
+
+from pyscipopt import Model
+
+
 # def solve_gurobi_DDRS(instance):
 #     m = grb.Model()
 #     #m.setParam('OutputFlag', False)
@@ -49,7 +52,16 @@
 #                                         name="constraint_inflow2_{0}".format(i))
 #     pass
 #
-# if __name__ == '__main__':
+if __name__ == '__main__':
+    model = Model("Example")  # model name is optional
+    x = model.addVar("x")
+    y = model.addVar("y", vtype="INTEGER")
+    model.setObjective(x + y)
+    model.addCons(2 * x - y * y >= 0)
+    model.optimize()
+    sol = model.getBestSol()
+    print("x: {}".format(sol[x]))
+    print("y: {}".format(sol[y]))
 #     if os.name != 'nt':
 #         file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "data",
 #                                      "i_VRPDO_discount_proportional_2segm_manyPUP", str(sys.argv[-1]) + ".txt")

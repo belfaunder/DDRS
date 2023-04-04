@@ -36,17 +36,24 @@ if __name__ == "__main__":
     if os.name != 'nt':
         file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "data",
                                      "i_VRPDO_2segm_manyPUP_large", str(sys.argv[-1])+".txt")
-    else:
-        file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
-                                     "VRPDO_size_10_phome_0.4_ppup_0.0_incrate_0.06_nrpup3_4.txt")
 
-    OCVRPInstance = OCVRPParser.parse(file_instance)
+    else:
+        #file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
+        #                             "VRPDO_size_10_phome_0.4_ppup_0.0_incrate_0.06_nrpup3_4.txt")
+
+        folder_data = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_30")
+        OCVRPInstance = OCVRPParser.parse(os.path.join(folder_data, "VRPDO_size_30_phome_0.4_ppup_0.0_incrate_0.06_nrpup5_1" + ".txt"))
+
+    #OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()
     print(OCVRPInstance)
-    bab = BABExact(instance=OCVRPInstance, solverType = solverType)
-    babPolicy, time, lbPrint, ubPrint = bab.runBranchAndBound()
-    # painter = Painter()
-    # painter.printVertexDisc(OCVRPInstance,babPolicy)
+    #bab = BABExact(instance=OCVRPInstance, solverType = solverType)
+    #babPolicy, time, lbPrint, ubPrint = bab.runBranchAndBound()
+    babPolicy = 0
+    painter = Painter()
+    painter.printVertexDisc(OCVRPInstance,babPolicy)
+    for pup in OCVRPInstance.pups:
+        print(pup.id, pup.closest_cust_id)
     #start_time = process_time()
     #rsPolicyID, rsValue = ring_star_deterministic_no_TW(OCVRPInstance, OCVRPInstance.NR_CUST)
     #EnumerationSolver = ScenarioEnumerationSolver(instance=OCVRPInstance)

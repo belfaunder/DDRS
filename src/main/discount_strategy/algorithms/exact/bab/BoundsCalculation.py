@@ -7,8 +7,6 @@ from src.main.discount_strategy.algorithms.heuristic.sample_average import sampl
 from src.main.discount_strategy.algorithms.heuristic.sample_average import sampleAverageApproximation_PoissonBinomial_1sample_2segm
 from src.main.discount_strategy.algorithms.heuristic.sample_average import importanceSampling
 
-
-
 def set_probability_covered(lbScenarios,noDiscountID, tspProbDict, instance):
     # DOMINANCE_CHECK_REMOVED
     #return {}
