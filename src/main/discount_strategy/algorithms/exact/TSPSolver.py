@@ -48,7 +48,6 @@ def subtour(edges, set_visit):
             cycle = thiscycle
     return cycle
 
-
 class TSPSolver:
     def __init__(self, instance, solverType):
         self.instance = instance
