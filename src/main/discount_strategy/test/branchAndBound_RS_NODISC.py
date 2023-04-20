@@ -33,10 +33,7 @@ if __name__ == "__main__":
         file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "data",
                                      "i_VRPDO_2segm_manyPUP_30", str(sys.argv[-1]) + ".txt")
     else:
-        file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
-                                     "VRPDO_size_18_phome_0.1_ppup_0.0_incrate_0.03_nrpup3_8.txt")
-        # file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
-        #                             "VRPDO_size_10_phome_0.2_ppup_0.0_incrate_0.03_0.txt")
+        file_instance = os.path.join(path_to_data, "data", "solomon","artificial", "solomonC101_discount_0.3.txt")
 
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()
@@ -44,9 +41,7 @@ if __name__ == "__main__":
     rsPolicyID, rsValue = ring_star_deterministic_no_TW(OCVRPInstance, OCVRPInstance.NR_CUST)
 
     bab = BABExact(instance=OCVRPInstance, solverType=solverType)
-    babPolicy  =0
-    #babPolicy, time, lbPrint, ubPrint = bab.runBranchAndBound()
-
+    babPolicy, time, lbPrint, ubPrint = bab.runBranchAndBound()
     if 2 ** bitCount(babPolicy) < constants.SAMPLE_SIZE:
         estimation_bab = one_policy_cost_estimation(instance=OCVRPInstance, policy=babPolicy, solverType=solverType)
     else:

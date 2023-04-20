@@ -29,7 +29,6 @@ if __name__ == "__main__":
 #def test():
     #solverType = 'Concorde'
     solverType = 'Gurobi'
-
     print(prefix, "Exact BAB")
     print(prefix,"solverType: ", solverType)
     print(prefix, "TIME_LIMIT:", constants.TIME_LIMIT)
@@ -41,19 +40,23 @@ if __name__ == "__main__":
         #file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
         #                             "VRPDO_size_10_phome_0.4_ppup_0.0_incrate_0.06_nrpup3_4.txt")
 
-        folder_data = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_30")
-        OCVRPInstance = OCVRPParser.parse(os.path.join(folder_data, "VRPDO_size_30_phome_0.4_ppup_0.0_incrate_0.06_nrpup5_1" + ".txt"))
+        file_instance = os.path.join(path_to_data, "data", "solomon","artificial", "solomonC101_discount_0.3.txt")
 
-    #OCVRPInstance = OCVRPParser.parse(file_instance)
+    OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()
     print(OCVRPInstance)
-    #bab = BABExact(instance=OCVRPInstance, solverType = solverType)
+
+    bab = BABExact(instance=OCVRPInstance, solverType = solverType)
+    #rsPolicyID, rsValue = ring_star_deterministic_no_TW(OCVRPInstance, OCVRPInstance.NR_CUST)
+    #babPolicy = rsPolicyID
+    babPolicy = 25865
     #babPolicy, time, lbPrint, ubPrint = bab.runBranchAndBound()
-    babPolicy = 0
     painter = Painter()
-    painter.printVertexDisc(OCVRPInstance,babPolicy)
-    for pup in OCVRPInstance.pups:
-        print(pup.id, pup.closest_cust_id)
+    OCVRPInstance_clustered = OCVRPParser.parse(file_instance)
+    OCVRPInstance_random = OCVRPParser.parse(os.path.join(path_to_data, "data", "solomon","artificial", "solomonR101_discount_0.3.txt"))
+    painter.printVertexDiscTemp(OCVRPInstance_clustered,21504, OCVRPInstance_random, 25865)
+    # for pup in OCVRPInstance.pups:
+    #     print(pup.id, pup.closest_cust_id)
     #start_time = process_time()
     #rsPolicyID, rsValue = ring_star_deterministic_no_TW(OCVRPInstance, OCVRPInstance.NR_CUST)
     #EnumerationSolver = ScenarioEnumerationSolver(instance=OCVRPInstance)
@@ -81,7 +84,6 @@ if __name__ == "__main__":
     #     lbPrint = pickle.load(file)
     #     ubPrint = pickle.load(file)
     # painter.printConvergence(OCVRPInstance, time, lbPrint, ubPrint, ubPrint[-1])
-
     if 2**bitCount(babPolicy) < constants.SAMPLE_SIZE:
         estimation_bab = one_policy_cost_estimation(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)
     else:

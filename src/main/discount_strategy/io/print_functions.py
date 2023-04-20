@@ -43,25 +43,41 @@ class Painter:
 
 
         for customer in instance.customers:
-            if (1<<(customer.id-1))&policy:
+            #dict_name_clustered = {15:1, 11:2, 13:3, 7:4, 8:5, 9:6, 10:7}
+            dict_name_random = {11: 1, 9: 2, 1: 3, 14: 4, 15: 5, 4: 6}
+            if customer.id < 20:
 
-                wd = ax.scatter(customer.xCoord, customer.yCoord, marker='o', s=45, color='red', label='customer with incentive')
-                ax.text(customer.xCoord - 0.4, customer.yCoord - 1, customer, fontsize=10)
-            else:
-                nd = ax.scatter(customer.xCoord, customer.yCoord, marker='o', s=35, color='white', edgecolors='black', label = "customer")
-                ax.text(customer.xCoord - 0.4, customer.yCoord - 1, customer, fontsize=10)
+                if (1<<(customer.id-1))&policy:
+
+                    wd = ax.scatter(customer.xCoord, customer.yCoord, marker='o', s=60, color='black', label='customer with incentive')
+
+                    ax.text(customer.xCoord + 1, customer.yCoord +0.6, dict_name_random[customer.id], fontsize=12)
+                else:
+                    nd = ax.scatter(customer.xCoord, customer.yCoord, marker='o', s=60, color='white', edgecolors='black', label = "customer")
+                    #ax.text(customer.xCoord + 0.24, customer.yCoord + 0.5, customer, fontsize=8)
+                    #if customer.id in [7,8,10]:
+                    #   ax.text(customer.xCoord  + 1, customer.yCoord +0.6, dict_name[customer.id], fontsize=12)
+                    #if customer.id in [9]:
+                    #    ax.text(customer.xCoord -0.7, customer.yCoord +0.8, dict_name[customer.id], fontsize=12)
+                    #else:
+                    #   ax.text(customer.xCoord + 0.24, customer.yCoord + 0.5, customer, fontsize=14)
 
 
-        d = ax.scatter(instance.depot.xCoord, instance.depot.yCoord, marker='s', s=80, color='blue')
-        #ax.text(instance.depot.xCoord + 0.35,instance.depot.yCoord + 0.35, instance.depot, fontsize=12)
+
+        d = ax.scatter(instance.depot.xCoord, instance.depot.yCoord, marker='s', s=90, color='blue')
+        #ax.text(instance.depot.xCoord -3,instance.depot.yCoord -5, "depot", fontsize=14)
 
         for pup in instance.pups:
-            p = ax.scatter(pup.xCoord, pup.yCoord, marker='^', s=60, color="blue")
-            ax.text(pup.xCoord + 0.35, pup.yCoord + 0.35, pup, fontsize=12)
+            p = ax.scatter(pup.xCoord, pup.yCoord, marker='^', s=100, color="blue")
+            #ax.text(pup.xCoord +6, pup.yCoord - 1, "pickup point", fontsize=14)
+        ax.set_xlim(None, 59)
+        ax.set_ylim(None, 69)
         #ax.text(instance.pup.xCoord - 1.35, instance.pup.yCoord - 0.55, instance.pup, fontsize=12)
-
-
-        # if policy ==0:
+        # ax.legend((nd,wd,  d, p),     ('No discount','With discount', 'Depot', 'Pickup point'),
+        #                               scatterpoints=1,
+        #                               ncol=1,
+        #                               fontsize=12, bbox_to_anchor=(1,0), loc="lower right")
+        # # if policy ==0:
         #     plt.legend((nd, d, p),
         #                    ('No Discount', 'Depot', 'PUP'),
         #                    scatterpoints=1,
@@ -83,8 +99,103 @@ class Painter:
         #                ncol=2,
         #                fontsize=11)
 
-        plt.savefig(os.path.join(path_to_images, 'map.eps'), transparent=False,
-                    bbox_inches='tight')
+        plt.savefig(os.path.join(path_to_images, 'map_example_random.eps'), transparent=False,
+                   bbox_inches='tight')
+
+        plt.show()
+    def printVertexDiscTemp(self, instance_clustered, policy_clustered, instance_random, policy_random):
+
+        fig, axes = plt.subplots(1, 2, sharey=True, width_ratios=[1, 2],  figsize=(10, 5))
+        #axes[0].set_aspect(1.0)
+        #axes[1].set_aspect(1.0)
+        # str(round(instance.FLAT_RATE_SHIPPING_FEE,2))"\n" + \
+        #ax.set_title("Instance: " + str(instance.name)+ "\n" + \
+        #    "Number of customers: " + str(instance.NR_CUST) +\
+        #             "    Discount cost: " + r"$0.3\cdot d^{max}$" )
+
+
+        for customer in instance_random.customers:
+            #dict_name_clustered = {15:1, 11:2, 13:3, 7:4, 8:5, 9:6, 10:7}
+            dict_name_random = {11: 1, 9: 2, 1: 3, 14: 4, 15: 5, 4: 6}
+            if customer.id < 20:
+
+                if (1<<(customer.id-1))&policy_random:
+
+                    wd = axes[0].scatter(customer.xCoord, customer.yCoord, marker='o', s=60, color='black', label='customer with incentive')
+
+                    axes[0].text(customer.xCoord + 1, customer.yCoord +0.6, dict_name_random[customer.id], fontsize=14)
+                else:
+                    nd = axes[0].scatter(customer.xCoord, customer.yCoord, marker='o', s=60, color='white', edgecolors='black', label = "customer")
+                    #ax.text(customer.xCoord + 0.24, customer.yCoord + 0.5, customer, fontsize=8)
+                    #if customer.id in [7,8,10]:
+                    #   ax.text(customer.xCoord  + 1, customer.yCoord +0.6, dict_name[customer.id], fontsize=12)
+                    #if customer.id in [9]:
+                    #    ax.text(customer.xCoord -0.7, customer.yCoord +0.8, dict_name[customer.id], fontsize=12)
+                    #else:
+                    #   ax.text(customer.xCoord + 0.24, customer.yCoord + 0.5, customer, fontsize=14)
+        axes[0].scatter(instance_random.depot.xCoord, instance_random.depot.yCoord, marker='s', s=90,
+                          color='blue')
+        # ax.text(instance.depot.xCoord -3,instance.depot.yCoord -5, "depot", fontsize=14)
+
+        for pup in instance_random.pups:
+            p = axes[0].scatter(pup.xCoord, pup.yCoord, marker='^', s=100, color="blue")
+        for customer in instance_clustered.customers:
+            dict_name_clustered = {15:1, 11:2, 13:3, 7:4, 8:5, 9:6, 10:7}
+            if customer.id < 20:
+
+                if (1<<(customer.id-1))&policy_clustered:
+
+                    wd = axes[1].scatter(customer.xCoord, customer.yCoord, marker='o', s=60, color='black', label='customer with incentive')
+
+                    axes[1].text(customer.xCoord + 1, customer.yCoord +0.6, dict_name_clustered[customer.id], fontsize=14)
+                else:
+                    nd = axes[1].scatter(customer.xCoord, customer.yCoord, marker='o', s=60, color='white', edgecolors='black', label = "customer")
+                    #ax.text(customer.xCoord + 0.24, customer.yCoord + 0.5, customer, fontsize=8)
+                    if customer.id in [7,8,10]:
+                       axes[1].text(customer.xCoord  + 1, customer.yCoord +0.6, dict_name_clustered[customer.id], fontsize=14)
+                    if customer.id in [9]:
+                        axes[1].text(customer.xCoord -0.7, customer.yCoord +0.8, dict_name_clustered[customer.id], fontsize=14)
+                    #else:
+                    #   ax.text(customer.xCoord + 0.24, customer.yCoord + 0.5, customer, fontsize=14)
+
+
+        d = axes[1].scatter(instance_clustered.depot.xCoord, instance_clustered.depot.yCoord, marker='s', s=90, color='blue')
+        #ax.text(instance.depot.xCoord -3,instance.depot.yCoord -5, "depot", fontsize=14)
+
+        for pup in instance_clustered.pups:
+            p = axes[1].scatter(pup.xCoord, pup.yCoord, marker='^', s=100, color="blue")
+            #ax.text(pup.xCoord +6, pup.yCoord - 1, "pickup point", fontsize=14)
+        axes[0].set_xlim(None, 59)
+        axes[0].set_ylim(None, 69)
+        #ax.text(instance.pup.xCoord - 1.35, instance.pup.yCoord - 0.55, instance.pup, fontsize=12)
+        axes[1].legend((nd,wd,  d, p),     ('No discount','With discount', 'Depot', 'Pickup point'),
+                                      scatterpoints=1,
+                                      ncol=1,
+                                      fontsize=14, bbox_to_anchor=(1,0), loc="lower right")
+        # # if policy ==0:
+        #     plt.legend((nd, d, p),
+        #                    ('No Discount', 'Depot', 'PUP'),
+        #                    scatterpoints=1,
+        #                    loc='lower left',
+        #                    ncol=2,
+        #                    fontsize=8)
+        # elif policy == 2**instance.NR_CUST -1:
+        #     plt.legend((wd, d, p),
+        #                ('With Discount',  'Depot', 'PUP'),
+        #                scatterpoints=1,
+        #                loc='lower left',
+        #                ncol=2,
+        #                fontsize=8)
+        # else:
+        #     plt.legend((wd, nd, d, p),
+        #                ('Offered incentive', 'No incentive', 'Depot', 'Pickup point'),
+        #                scatterpoints=1,
+        #                bbox_to_anchor=(-0.01,1), loc="lower left",
+        #                ncol=2,
+        #                fontsize=11)
+
+        plt.savefig(os.path.join(path_to_images, 'map_example_random_clustered.eps'), transparent=False,
+                   bbox_inches='tight')
 
         plt.show()
 

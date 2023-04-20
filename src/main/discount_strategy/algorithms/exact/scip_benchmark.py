@@ -125,19 +125,19 @@ def solve_gurobi_DDRS(instance):
                                          for j in range(0, instance.NR_CUST + instance.NR_PUP + 2) if j>i)
 
     #subtour elimination contraint (no callback)
-    # for omega in range(2 ** instance.NR_CUST):
-    #     set_visit = [0, instance.NR_CUST + instance.NR_PUP + 1]
-    #     for customer in instance.customers:
-    #         if omega & (1 << (customer.id - 1)):
-    #             if customer.closest_pup_id not in set_visit:
-    #                 set_visit.append(customer.closest_pup_id)
-    #         else:
-    #             set_visit.append(customer.id)
-    #
-    #     #print("set_visit", set_visit, bin(omega))
-    #     for cycle in powerset(set_visit):
-    #         if len(cycle) >1 and  len(cycle) < len(set_visit):
-    #             m.addCons(quicksum(x_vars[omega, i, j] for i in cycle for j in cycle if j > i) <= len(cycle) - 1)
+    for omega in range(2 ** instance.NR_CUST):
+        set_visit = [0, instance.NR_CUST + instance.NR_PUP + 1]
+        for customer in instance.customers:
+            if omega & (1 << (customer.id - 1)):
+                if customer.closest_pup_id not in set_visit:
+                    set_visit.append(customer.closest_pup_id)
+            else:
+                set_visit.append(customer.id)
+
+        #print("set_visit", set_visit, bin(omega))
+        for cycle in powerset(set_visit):
+            if len(cycle) >1 and  len(cycle) < len(set_visit):
+                m.addCons(quicksum(x_vars[omega, i, j] for i in cycle for j in cycle if j > i) <= len(cycle) - 1)
 
     m.addCons(objective_var>= objective,name="constraint_inflow0}")
     m.setObjective( objective_var, "minimize")
@@ -156,26 +156,26 @@ def solve_gurobi_DDRS(instance):
             else:
                 set_visit[omega].append(customer.id)
     #for omega in range(2 ** instance.NR_CUST):
-    if True:
-        while True:
-            m.optimize()
-
-            edges = []
-            for omega in range(2 ** instance.NR_CUST):
-                for i in range(0, instance.NR_CUST + instance.NR_PUP + 2):
-                    for j in range(0, instance.NR_CUST + instance.NR_PUP + 2):
-                        if j > i:
-                            if m.getVal(x_vars[omega, i, j]) > EPS:
-                                edges.append([omega, i, j])
-
-
-            if addcut(edges, set_visit, m, x_vars, instance.NR_CUST)== False:
-                if isMIP:  # integer variables, components connected: solution found
-                    break
-                m.freeTransform()
-                for (omega, i, j) in x_vars:  # all components connected, switch to integer model
-                    m.chgVarType(x_vars[omega, i, j], "B")
-                    isMIP = True
+    # if True:
+    #     while True:
+    #         m.optimize()
+    #
+    #         edges = []
+    #         for omega in range(2 ** instance.NR_CUST):
+    #             for i in range(0, instance.NR_CUST + instance.NR_PUP + 2):
+    #                 for j in range(0, instance.NR_CUST + instance.NR_PUP + 2):
+    #                     if j > i:
+    #                         if m.getVal(x_vars[omega, i, j]) > EPS:
+    #                             edges.append([omega, i, j])
+    #
+    #
+    #         if addcut(edges, set_visit, m, x_vars, instance.NR_CUST)== False:
+    #             if isMIP:  # integer variables, components connected: solution found
+    #                 break
+    #             m.freeTransform()
+    #             for (omega, i, j) in x_vars:  # all components connected, switch to integer model
+    #                 m.chgVarType(x_vars[omega, i, j], "B")
+    #                 isMIP = True
 
     policy = 0
     for i in range(1, instance.NR_CUST + 1):
@@ -193,7 +193,7 @@ if __name__ == '__main__':
                                     "i_VRPDO_2segm_manyPUP_scip", str(sys.argv[-1]) + ".txt")
     else:
        file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_scip",
-                                    "VRPDO_size_6_phome_0.4_ppup_0.0_incrate_0.06_nrpup1_0.txt")
+                                    "VRPDO_size_6_phome_0.4_ppup_0.0_incrate_0.06_nrpup1_1.txt")
 
     OCVRPInstance = OCVRPParser.parse(file_instance)
     print(OCVRPInstance)

@@ -25,7 +25,8 @@ if __name__ == '__main__':
                                      "i_VRPDO_discount_proportional_2segm_manyPUP", str(sys.argv[-1])+".txt")
     else:
         file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_scip",
-                                     "VRPDO_size_5_phome_0.4_ppup_0.0_incrate_0.06_nrpup1_0.txt")
+                                     "VRPDO_size_6_phome_0.4_ppup_0.0_incrate_0.06_nrpup1_5.txt")
+
 
     OCVRPInstance = OCVRPParser.parse(file_instance)
     print(OCVRPInstance)

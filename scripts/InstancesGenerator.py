@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import gzip
 import random
+from src.main.discount_strategy.io.print_functions import Painter
+
 import pickle
 import math
 import matplotlib.pyplot as plt
@@ -366,8 +368,8 @@ def generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type ):
     mainDirStorage = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_scip")
     #nr_custs = [30]
     #nr_custs = [10, 15, 20, 25, 30, 35, 40, 45, 50]
-    nr_custs = [4,5,6,7,8,9,10,11,12,13]
-    disc_rates = [  0.06]
+    nr_custs = [10, 30, 50]
+    disc_rates = [  0.03, 0.12]
     #disc_rates = [0.015, 0.24]
     #dict_probabilities = {0.0:[0, 0.2, 0.4, 0.6, 0.8]}
     dict_probabilities = {0.0: [ 0.4 ]}
@@ -375,7 +377,7 @@ def generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type ):
     #disc_rates = [0.005, 0.01,0.015, 0.02,0.025, 0.03,0.035, 0.04,0.045, 0.05, 0.06, 0.07, 0.08, 0.09]
     instanceList = os.path.join(mainDirStorage, 'list.txt')
 
-    for id_instance in range(10):
+    for id_instance in range(5):
         shuffled_cust_list = os.path.join(mainDirZhou, 'shuffled_customers_' + str(id_instance) + '.txt')
         for nr_cust in nr_custs:
             #p_pup, p_home = 0,0
@@ -388,7 +390,7 @@ def generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type ):
                     if True:
                         if True:
                             for u in disc_rates:
-                                for nr_pup in [1]:
+                                for nr_pup in [5]:
                                     #p_pup, p_home = 0, 0
                                     with open(shuffled_cust_list, "rb") as file_shuffled:
                                         depots_id = pickle.load(file_shuffled)
@@ -762,17 +764,42 @@ def saturation():
         print(disc,dict_probabilities[rate_from_disc(disc)][1] )
     return dict_probabilities
 
-def generate_artificial(template_name, instance_base):
-    instance_template = os.path.join(path_to_data, "data", "solomon", template_name+".csv")
-    nr_custs = [15]
-    # elif instance_template == 'solomonC100':
-    #     # pupnode, depotnode = 2, 100  #the best alternative of nodes
-    #     pupnode, depotnode = 1, 52
-    #     # disc_sizes = [1, 4, 12]
-    #     # disc_sizes = [2,4,6]
-    #     disc_sizes = [2, 3, 4]
-    #     u_s = [0.2, 0.5, 0.1, 0.12, 0.18, 0.24, 0.4, 0.6, 0.8, 1, 2]  # discout parameters relative to the routing cost
-    #     # disc_sizes = [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+def generate_artificial():
+    instance_name = "solomonC101"
+    OCVRPInstance = OCVRPParser.parse( os.path.join(path_to_data, "data", "solomon",  instance_name+".txt"))
+
+    OCVRPInstance.calculateInsertionBounds()
+    mainDirStorage = os.path.join(path_to_data, "data", "solomon", "artificial")
+    nr_cust = 15
+    nr_pup = 2
+    p_home = 0.4
+    p_pup = 0
+    # babPolicy = 0
+    # painter = Painter()
+    # painter.printVertexDisc(OCVRPInstance, babPolicy)
+    for discount_rate in [0.1, 0.2, 0.3]:
+        instanceDir = os.path.join(mainDirStorage, instance_name+ "_discount_" + str(discount_rate) + ".txt")
+        with open(instanceDir, 'w+', encoding='utf-8') as file:
+            file.write("NAME: {}\n".format(instance_name+ "_discount_" + str(discount_rate)))
+            file.write("SIZE: {}\n".format(nr_cust))
+            file.write("NUMBER_PUPs: {}\n\n".format(nr_pup))
+
+            file.write("LOCATION COORDINATES:\n\n")
+
+            file.write("DEPOT V. XCOORD. YCOORD.\n")
+            file.write("{} {} {}\n\n".format(0, OCVRPInstance.depot.xCoord, OCVRPInstance.depot.yCoord))
+
+            file.write("PUP V. XCOORD. YCOORD.\n")
+            iter = nr_cust
+            for pup in OCVRPInstance.pups:
+                iter += 1
+                file.write("{} {} {}\n".format(iter,pup.xCoord, pup.yCoord))
+            file.write("\n")
+
+            file.write("CUST V. XCOORD. YCOORD. PROB_ALWAYS_HOME PROB_ALWAYS_PUP SHIPPING_FEE\n")
+            for customer in OCVRPInstance.customers:
+                file.write("{} {} {} {} {} {}\n".format(customer.id, customer.xCoord, customer.yCoord, p_home, p_pup,
+                                                        round(OCVRPInstance.distanceMatrix[customer.id, customer.closest_pup_id] * discount_rate , 2)))
 
 if __name__ == "__main__":
     #saturation()
@@ -781,7 +808,7 @@ if __name__ == "__main__":
     mainDirTSPLIB = os.path.join((Path(os.path.abspath(__file__)).parents[1]), "data", "TSPLIB_all_instances")
     instance_example =  os.path.join(path_to_data, "data", "i_VRPDO_saturation_manyPup",
                                      "VRPDO_size_15_phome_0.4_ppup_0.0_incrate_0.06_nrpup5_0.txt")
-    #generate_artificial('C101', instance_example)
+    generate_artificial()
     #instance_types =['berlin52', 'solomonR100', 'solomonRC100', 'solomonC100']
     #instance_types = ['berlin52', 'solomonR100', 'solomonRC100', 'solomonC100']
     #instance_types = ['berlin52_clustered3']
@@ -789,7 +816,7 @@ if __name__ == "__main__":
     #instance_types = ['eil101']
     #generate_3_segments_instance_zhou_constant_density(instance_type='I1-12-30-200')
     #generate_3_segments_instance_zhou_saturation(instance_type='I1-12-30-200')
-    generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type='I1-12-30-200')
+    #generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type='I1-12-30-200')
 
     #for instance_type in instance_types:
     #    file_instance_basic = os.path.join(mainDirTSPLIB, instance_type + '.tsp')

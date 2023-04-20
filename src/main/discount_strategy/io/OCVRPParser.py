@@ -109,14 +109,14 @@ def parse(file_instance):
     for i in range(1, nr_cust+1):
         customersDistance[i] = math.sqrt((vertices[i]['x'] - vertices[0]['x']) ** 2 +
                                                (vertices[i]['y'] - vertices[0]['y']) ** 2)
-
-    verticesReenum = {}
-    for i in [0]+list(range(nr_cust+1,nr_cust+nr_pup+1)):
-        verticesReenum[i] = vertices[i]
-    id = 1
-    for i in sorted(customersDistance, key=customersDistance.get, reverse=True):
-        verticesReenum[id] = vertices[i]
-        id += 1
+    verticesReenum = vertices
+    # verticesReenum = {}
+    # for i in [0]+list(range(nr_cust+1,nr_cust+nr_pup+1)):
+    #     verticesReenum[i] = vertices[i]
+    # id = 1
+    # for i in sorted(customersDistance, key=customersDistance.get, reverse=True):
+    #     verticesReenum[id] = vertices[i]
+    #     id += 1
 
     customers = []
     for i in range(1, nr_cust+1):
@@ -129,6 +129,7 @@ def parse(file_instance):
             if distance_temp < distance_to_closest_pup:
                 distance_to_closest_pup = distance_temp
                 closest_pup_id = pup.id
+
 
         customer = Customer(verticesReenum[i]['x'] , verticesReenum[i]['y'], i,verticesReenum[i]['prob_home'],verticesReenum[i]['prob_pup'],
                             verticesReenum[i]['shipping_fee'], closest_pup_id  )
