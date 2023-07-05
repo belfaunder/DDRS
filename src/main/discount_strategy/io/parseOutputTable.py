@@ -1777,36 +1777,27 @@ def experiment_variation_nrcust(folder):
     #print table with percentage of nodes pruned by dominance rules 1, 2, and bounding
     if True:
         # parseBAB(os.path.join(folder, "05_07_babfull_exact_num_pruned.txt"), folder, "05_07_babfull_exact_num_pruned")
-        df_bab = pd.parseProfile(os.path.join(folder, "05_07_babfull_exact_num_pruned.csv"))
-
-        df_results = pd.DataFrame(index=list(range(10, 21)),
-                                  columns=['t_bab', 'n_bab', 'sp1',
-                                           't_basic', 'n_basic', 'sp4',
-                                           't_ins', 'n_ins', 'sp2',
-                                           't_cliques', 'n_cliques', 'sp3',
-                                           't_lb', 'n_lb'])
+        df_bab = parseProfile(os.path.join(folder, "05_07_babfull_exact_num_pruned.txt"))
+        #df_bab = pd.read_csv(os.path.join(folder, "05_07_babfull_exact_num_pruned.csv"))
+                #['nrCust',"nrPup", 'p_home', 'discount_rate', 'time_bab', 'time_tb', 'nodes',
+                #'num_tsps', 'obj_val_bab', 'policy_bab_ID', 'num_disc_bab', 'instance',
+                #'pr_cliques_nonleaf', 'pr_cliques_leaf', 'pr_rs_nonleaf', 'pr_rs_leaf',
+                #'pr_insertionCost_nonleaf', 'pr_insertionCost_leaf', 'pr_bounds_nonleaf',
+                #'pr_bounds_leaf','tsp_time', 'time_exact_bounds', 'time_lb_addition', 'time_branch']
+        df_results = pd.DataFrame(index=list(range(10, 20)),
+                                  columns=['nr_nodes','npruned_d1', 'npruned_d2', 'npruned_bounds'])
         # df = df.fillna(0)
-        for nrCust in range(10, 20):
-            df_slice = df[(df.nrCust == nrCust)].copy()
+        for nrCust in range(10, 19):
+            df_slice = df_bab[(df_bab.nrCust == nrCust)].copy()
             if nrCust < 20:
                 print(nrCust)
-                df_results.at[nrCust, 't_bab'] = df_slice['time_bab'].mean()
-                df_results.at[nrCust, 'n_bab'] = int(df_slice['nodes'].mean() + 0.5)
+                df_results.at[nrCust, 'nr_nodes'] = int(df_slice['nodes'].mean() +0.5)
 
-                df_results.at[nrCust, 't_ins'] = df_slice['time_domins'].mean()
-                df_results.at[nrCust, 'n_ins'] = "{:<7}".format(str(int(df_slice['nodes_domins'].mean() + 0.5))) + \
-                                                 "(" + str(int(df_slice['pruned_domins'].mean() + 0.5)) + ")"
+                df_results.at[nrCust, 'npruned_d1'] = int(df_slice['pr_insertionCost_leaf'].mean() + df_slice['pr_insertionCost_nonleaf'].mean()+\
+                                                          df_slice['pr_rs_leaf'].mean() + df_slice['pr_rs_nonleaf'].mean()+0.5)
+                df_results.at[nrCust, 'npruned_d2'] = int(df_slice['pr_cliques_nonleaf'].mean() + df_slice['pr_cliques_leaf'].mean()+0.5)
+                df_results.at[nrCust, 'npruned_bounds'] = int(df_slice['pr_bounds_leaf'].mean() + df_slice['pr_bounds_nonleaf'].mean()+0.5)
 
-                df_results.at[nrCust, 't_cliques'] = df_slice['time_domclique'].mean()
-                df_results.at[nrCust, 'n_cliques'] = "{:<7}".format(
-                    str(int(df_slice['nodes_domclique'].mean() + 0.5))) + \
-                                                     "(" + str(int(df_slice['pruned_domcliques'].mean() + 0.5)) + ")"
-
-                df_results.at[nrCust, 't_lb'] = df_slice['time_domlb'].mean()
-                df_results.at[nrCust, 'n_lb'] = int(df_slice['nodes_domlb'].mean() + 0.5)
-                if nrCust < 19:
-                    df_results.at[nrCust, 't_basic'] = df_slice['time_dombasic'].mean()
-                    df_results.at[nrCust, 'n_basic'] = int(df_slice['nodes_dombasic'].mean() + 0.5)
 
         # df_results = df_results[[ 'g_opt_3600','closed_3600','sp1','tto_best', 'tto_best_min', 'tto_best_max']].copy()  'n_bab_av', 'n_bab_min', 'n_bab_max'
 
@@ -3468,7 +3459,7 @@ if __name__ == "__main__":
     folder_data_prob = os.path.join(path_to_data, "data", "i_VRPDO_prob")
     folder_large = os.path.join(path_to_data, "output", "VRPDO_2segm_large")
     #experiment_heuristic_parameters_variation(folder_large)
-    large_exp(folder_large)
+    #large_exp(folder_large)
     #managerial_effect_delta(folder_large)
     # sensitivity_disc_size_comparison_nodisc(folder, folder_data_disc)
     #sensitivity_comparison_nodisc_rs(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
@@ -3479,7 +3470,7 @@ if __name__ == "__main__":
 
     #compare_enumeration_no_Gurobi(folder_2segm_manyPUP)
     #experiment_variation_nrcust_heuristic(folder)
-    #experiment_variation_nrcust(folder_2segm_manyPUP)
+    experiment_variation_nrcust(folder_2segm_manyPUP)
 
 
     #exp_profile()

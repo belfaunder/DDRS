@@ -92,7 +92,7 @@ class BAB_super_class:
         self.instance.ubScenario, self.instance.lbScenario = self.TSPSolver.tspCostUbScenario()
         lbScenarios, lbScenario = {}, self.instance.lbScenario
         # COVERED_BOUND
-        #DOMINANCE_CHECK_REMOVED
+        #DOMINANCE_CHECK_BOUNDS_REMOVED
         lbScenarios, self.instance.lbScenario  = self.set_lbScenarios()
         ubRoute = self.instance.ubScenario
         lbRoute = self.instance.lbScenario
@@ -121,7 +121,7 @@ class BAB_super_class:
         # we already added scenario 0 to the exact cost of the root - this is done in set_probability_covered function
 
 
-        # DOMINANCE_CHECK_REMOVED
+        # DOMINANCE_CHECK_BOUNDS_REMOVED
         #root.lbRoute = sum(root.lbScenarios[id][1] * root.lbScenarios[id][0] for id in root.lbScenarios) + root.exactValue + (1-tspProbDict[scenario_0])*lbScenario
         root.lbScenarios[0][1] = 0
         root.lbRoute = sum(root.lbScenarios[id][1] * root.lbScenarios[id][0] for id in root.lbScenarios) + root.exactValue
@@ -234,7 +234,7 @@ class BAB_super_class:
 
         lbScenariosRight = set_probability_covered(lbScenariosRight, noDiscountIDRight, tspProbDictRight, self.instance)
 
-        #DOMINANCE_CHECK_REMOVED
+        #DOMINANCE_CHECK_BOUNDS_REMOVED
         #lbRouteRight = sum(
         #    lbScenariosRight[id][1] * lbScenariosRight[id][0] for id in lbScenariosRight) + exactValueRight + (1-exactValProbRight)*self.instance.lbScenario
 
@@ -326,7 +326,7 @@ class BAB_super_class:
         if node.lbRoute + node.lbExpDiscount > self.bestNode.ubVal():
             node.fathomedState = True
 
-        #DOMINANCE_CHECK_REMOVED
+        #DOMINANCE_CHECK_TOREMOVED
         # elif self.canFathomByTheoremCliques(node):
         #   node.fathomedState = True
         #   if node.layer == self.instance.NR_CUST:
