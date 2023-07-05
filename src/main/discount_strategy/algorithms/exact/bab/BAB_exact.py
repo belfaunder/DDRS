@@ -69,6 +69,7 @@ class BABExact(BAB_super_class):
                 nextNode.fathomed()
 
             elif self.canBranch(nextNode):
+                self.pruned_branching += 1
                 self.branch(nextNode, self.setCustomerToBranch(nextNode))
             if  openNodes.empty() and (not self.isLeaf(self.bestNode)):
                 self.openNodes.push(self.bestNode, self.bestNode.ubRoute)
@@ -142,8 +143,8 @@ class BABExact(BAB_super_class):
                     self.bestUb = min(self.bestUb, self.bestNode.ubVal())
             return False
         elif node.lbVal() > self.bestUb :
-            #if node.layer < self.instance.NR_CUST:
-            #    self.pruned_bounds_nonleaf += 1
+            if node.layer < self.instance.NR_CUST:
+               self.pruned_bounds_nonleaf += 1
             return True
         else:
             updateBoundsFromDictionary(self, node)
@@ -155,8 +156,8 @@ class BABExact(BAB_super_class):
             while cycle_iteration<10:
                 cycle_iteration+=1
                 if node.lbVal() > self.bestUb:
-                    #if node.layer < self.instance.NR_CUST:
-                    #    self.pruned_bounds_nonleaf += 1
+                    if node.layer < self.instance.NR_CUST:
+                       self.pruned_bounds_nonleaf += 1
                     return True
 
                 # fathom by bound (found new Best Node): if current precision is small, then fathom, else - branch on the best node

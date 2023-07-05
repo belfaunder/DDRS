@@ -305,11 +305,11 @@ def updateBoundsFromDictionary(Bab, node):
             #lastEnteranceDictionary is the last element of Route Cost that was checked for this node
             node.lastEnteranceDictionary = next(reversed(Bab.instance.routeCost))
 
-        # else:
-        #     if node.layer == Bab.instance.NR_CUST:
-        #        Bab.pruned_insertionCost_leaf += 1
-        #     else:
-        #        Bab.pruned_insertionCost_nonleaf += 1
+        else:
+            if node.layer == Bab.instance.NR_CUST:
+               Bab.pruned_insertionCost_leaf += 1
+            else:
+               Bab.pruned_insertionCost_nonleaf += 1
 
 def updateBoundsWithNewTSPs(Bab, node):
 

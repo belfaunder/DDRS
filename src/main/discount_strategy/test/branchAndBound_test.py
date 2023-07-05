@@ -34,27 +34,25 @@ if __name__ == "__main__":
     print(prefix, "TIME_LIMIT:", constants.TIME_LIMIT)
     if os.name != 'nt':
         file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "data",
-                                     "i_VRPDO_2segm_manyPUP_large", str(sys.argv[-1])+".txt")
-
+                                     "i_VRPDO_discount_proportional_2segm_manyPUP", str(sys.argv[-1])+".txt")
     else:
         #file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
         #                             "VRPDO_size_10_phome_0.4_ppup_0.0_incrate_0.06_nrpup3_4.txt")
 
-        file_instance = os.path.join(path_to_data, "data", "solomon","artificial", "solomonC101_discount_0.3.txt")
-
+        file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
+                                     "VRPDO_size_12_phome_0.1_ppup_0.0_incrate_0.12_nrpup3_3.txt")
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()
     print(OCVRPInstance)
-
     bab = BABExact(instance=OCVRPInstance, solverType = solverType)
     #rsPolicyID, rsValue = ring_star_deterministic_no_TW(OCVRPInstance, OCVRPInstance.NR_CUST)
-    #babPolicy = rsPolicyID
-    babPolicy = 25865
-    #babPolicy, time, lbPrint, ubPrint = bab.runBranchAndBound()
-    painter = Painter()
-    OCVRPInstance_clustered = OCVRPParser.parse(file_instance)
-    OCVRPInstance_random = OCVRPParser.parse(os.path.join(path_to_data, "data", "solomon","artificial", "solomonR101_discount_0.3.txt"))
-    painter.printVertexDiscTemp(OCVRPInstance_clustered,21504, OCVRPInstance_random, 25865)
+    # #babPolicy = rsPolicyID
+    # babPolicy = 25865
+    babPolicy, time, lbPrint, ubPrint = bab.runBranchAndBound()
+    # painter = Painter()
+    # OCVRPInstance_clustered = OCVRPParser.parse(file_instance)
+    # OCVRPInstance_random = OCVRPParser.parse(os.path.join(path_to_data, "data", "solomon","artificial", "solomonR101_discount_0.3.txt"))
+    # painter.printVertexDiscTemp(OCVRPInstance_clustered,21504, OCVRPInstance_random, 25865)
     # for pup in OCVRPInstance.pups:
     #     print(pup.id, pup.closest_cust_id)
     #start_time = process_time()
@@ -63,15 +61,15 @@ if __name__ == "__main__":
     #EnumerationSolver.exactPolicyByEnumeration(True)
     #print(prefix, 'Time_enumeration ', process_time()-start_time)
 
-    # print(prefix,"pruned_by_cliques_nonleaf:", bab.pruned_cliques_nonleaf)
-    # print(prefix,"pruned_by_cliques_leaf:", bab.pruned_cliques_leaf)
-    # print(prefix,"pruned_by_rs_nonleaf:", bab.pruned_rs_nonleaf)
-    # print(prefix,"pruned_by_rs_leaf:", bab.pruned_rs_leaf)
-    # print(prefix, "pruned_by_insertionCost_nonleaf:", bab.pruned_insertionCost_nonleaf)
-    # print(prefix, "pruned_by_insertionCost_leaf:", bab.pruned_insertionCost_leaf)
-    # print(prefix, "pruned_by_bounds_nonleaf:", bab.pruned_bounds_nonleaf)
-    # print(prefix, "pruned_by_bounds:", bab.nrNodes - bab.pruned_cliques_leaf - bab.pruned_cliques_nonleaf - bab.pruned_rs_leaf -\
-    #       bab.pruned_rs_nonleaf-  bab.pruned_insertionCost_nonleaf - bab.pruned_insertionCost_leaf -  bab.pruned_bounds_nonleaf)
+    print(prefix,"pruned_by_cliques_nonleaf:", bab.pruned_cliques_nonleaf)
+    print(prefix,"pruned_by_cliques_leaf:", bab.pruned_cliques_leaf)
+    print(prefix,"pruned_by_rs_nonleaf:", bab.pruned_rs_nonleaf)
+    print(prefix,"pruned_by_rs_leaf:", bab.pruned_rs_leaf)
+    print(prefix, "pruned_by_insertionCost_nonleaf:", bab.pruned_insertionCost_nonleaf)
+    print(prefix, "pruned_by_insertionCost_leaf:", bab.pruned_insertionCost_leaf)
+    print(prefix, "pruned_by_bounds_nonleaf:", bab.pruned_bounds_nonleaf)
+    print(prefix, "pruned_by_bounds:", bab.nrNodes - bab.pruned_branching - bab.pruned_cliques_leaf - bab.pruned_cliques_nonleaf - bab.pruned_rs_leaf -\
+          bab.pruned_rs_nonleaf-  bab.pruned_insertionCost_nonleaf - bab.pruned_insertionCost_leaf -  bab.pruned_bounds_nonleaf)
 
     #mainDirStorage =  os.path.join(path_to_data,"output")
     #convergence = os.path.join(mainDirStorage, 'convergence.txt')

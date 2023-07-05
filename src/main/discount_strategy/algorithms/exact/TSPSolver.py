@@ -30,7 +30,6 @@ def subtourelim(model, where):
                          # model.addConstr(grb.quicksum(model._x_vars[i, j] for i, j in combinations(tour, 2))
                          <= len(tour) - 1)
 
-
 # Given a tuplelist of edges, find the shortest subtour
 def subtour(edges, set_visit):
     unvisited = set_visit.copy()
