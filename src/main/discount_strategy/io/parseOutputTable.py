@@ -1750,7 +1750,7 @@ def experiment_variation_nrcust(folder):
     parseBAB(os.path.join(folder, "02_23_bab_exact.txt"), folder, "02_23_bab_exact")
     #parseEnumeration(os.path.join(folder, "02_13_enumeration.txt"), folder, "02_13_enumeration")
 
-    if True: #print table with bab_exact and enumeration running times
+    if False: #print table with bab_exact and enumeration running times
         df = pd.read_csv(os.path.join(folder, "02_23_bab_exact.csv"))
         df_enum =  pd.read_csv(os.path.join(folder, "02_13_enumeration.csv"))
         # df = df[df.nrCust < 19].copy()
@@ -1774,6 +1774,46 @@ def experiment_variation_nrcust(folder):
         # print(df_results.to_latex(formatters=['{:0.2f}', None, None, '{:0.1f}','{:0.5f}','{:0.1f}'], na_rep='')
         print("")
     # check dominance usage  02_26_bab_exact_domcheck.txt
+    #print table with percentage of nodes pruned by dominance rules 1, 2, and bounding
+    if True:
+        # parseBAB(os.path.join(folder, "05_07_babfull_exact_num_pruned.txt"), folder, "05_07_babfull_exact_num_pruned")
+        df_bab = pd.parseProfile(os.path.join(folder, "05_07_babfull_exact_num_pruned.csv"))
+
+        df_results = pd.DataFrame(index=list(range(10, 21)),
+                                  columns=['t_bab', 'n_bab', 'sp1',
+                                           't_basic', 'n_basic', 'sp4',
+                                           't_ins', 'n_ins', 'sp2',
+                                           't_cliques', 'n_cliques', 'sp3',
+                                           't_lb', 'n_lb'])
+        # df = df.fillna(0)
+        for nrCust in range(10, 20):
+            df_slice = df[(df.nrCust == nrCust)].copy()
+            if nrCust < 20:
+                print(nrCust)
+                df_results.at[nrCust, 't_bab'] = df_slice['time_bab'].mean()
+                df_results.at[nrCust, 'n_bab'] = int(df_slice['nodes'].mean() + 0.5)
+
+                df_results.at[nrCust, 't_ins'] = df_slice['time_domins'].mean()
+                df_results.at[nrCust, 'n_ins'] = "{:<7}".format(str(int(df_slice['nodes_domins'].mean() + 0.5))) + \
+                                                 "(" + str(int(df_slice['pruned_domins'].mean() + 0.5)) + ")"
+
+                df_results.at[nrCust, 't_cliques'] = df_slice['time_domclique'].mean()
+                df_results.at[nrCust, 'n_cliques'] = "{:<7}".format(
+                    str(int(df_slice['nodes_domclique'].mean() + 0.5))) + \
+                                                     "(" + str(int(df_slice['pruned_domcliques'].mean() + 0.5)) + ")"
+
+                df_results.at[nrCust, 't_lb'] = df_slice['time_domlb'].mean()
+                df_results.at[nrCust, 'n_lb'] = int(df_slice['nodes_domlb'].mean() + 0.5)
+                if nrCust < 19:
+                    df_results.at[nrCust, 't_basic'] = df_slice['time_dombasic'].mean()
+                    df_results.at[nrCust, 'n_basic'] = int(df_slice['nodes_dombasic'].mean() + 0.5)
+
+        # df_results = df_results[[ 'g_opt_3600','closed_3600','sp1','tto_best', 'tto_best_min', 'tto_best_max']].copy()  'n_bab_av', 'n_bab_min', 'n_bab_max'
+
+        print(df_results.to_latex(float_format='{:0.0f}'.format, na_rep=''))
+        # print(df_results.to_latex(formatters=['{:0.2f}', None, None, '{:0.1f}','{:0.5f}','{:0.1f}'], na_rep=''))
+
+        print("")
     if False:
         #parseBAB(os.path.join(folder, "02_26_bab_exact_domcheck.txt"), folder, "02_26_bab_exact_domcheck")
         df_bab = pd.read_csv(os.path.join(folder, "02_26_bab_exact_domcheck.csv"))
