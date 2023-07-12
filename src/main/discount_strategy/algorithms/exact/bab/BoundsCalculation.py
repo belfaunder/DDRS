@@ -226,10 +226,10 @@ def updateBoundsFromDictionary(Bab, node):
     if node.parent is not None:
         #DOMINANCE_CHECK_TOREMOVED
         status_not_changed = True
-        # if node is not Bab.bestNode:
-        #    status_not_changed = updateByInsertionCost(node, Bab)
-        # else:
-        #    status_not_changed = True
+        if node is not Bab.bestNode:
+           status_not_changed = updateByInsertionCost(node, Bab)
+        else:
+           status_not_changed = True
 
         if status_not_changed:
             #setGivenDiscount = node.setGivenDiscount

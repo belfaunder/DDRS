@@ -51,9 +51,9 @@ class BABExact(BAB_super_class):
             # containing the open nodes maintains the nodes in sorted order
             nextNode = openNodes.pop()
 
-            #lbPrint.append( self.bestNode.lbVal() )
-            ##ubPrint.append(self.bestNode.ubVal())
-            #time.append(process_time()-start_time)
+            # lbPrint.append( self.bestNode.lbVal() )
+            # ubPrint.append(self.bestNode.ubVal())
+            # time.append(process_time()-start_time)
             #print("\nnextNode", nextNode.withDiscountID, bin(nextNode.withDiscountID), nextNode.layer,
             #      nextNode.exactValueProb, nextNode.exactValue, nextNode.lbRoute,
             #   nextNode.lbVal(), nextNode.ubVal())

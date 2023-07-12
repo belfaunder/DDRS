@@ -365,13 +365,13 @@ def generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type ):
             dict[i]['y'] *= 10
     #instance_type = "VRPDODistDepAccept"
     instance_type = "VRPDO"
-    mainDirStorage = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_scip")
+    mainDirStorage = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPup_classes")
     #nr_custs = [30]
     #nr_custs = [10, 15, 20, 25, 30, 35, 40, 45, 50]
-    nr_custs = [10, 30, 50]
+    nr_custs = [15]
     disc_rates = [  0.03, 0.12]
     #disc_rates = [0.015, 0.24]
-    #dict_probabilities = {0.0:[0, 0.2, 0.4, 0.6, 0.8]}
+    #dict_probabilities = {0.0:[0.1, 0.4, 0.7]}
     dict_probabilities = {0.0: [ 0.4 ]}
     #dict_probabilities = {0.0: [0.4]}
     #disc_rates = [0.005, 0.01,0.015, 0.02,0.025, 0.03,0.035, 0.04,0.045, 0.05, 0.06, 0.07, 0.08, 0.09]
@@ -390,7 +390,7 @@ def generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type ):
                     if True:
                         if True:
                             for u in disc_rates:
-                                for nr_pup in [5]:
+                                for nr_pup in [1,3,5]:
                                     #p_pup, p_home = 0, 0
                                     with open(shuffled_cust_list, "rb") as file_shuffled:
                                         depots_id = pickle.load(file_shuffled)
@@ -806,9 +806,9 @@ if __name__ == "__main__":
     #print_zhou()
     #generate_examples_concorde(os.path.join((Path(os.path.abspath(__file__)).parents[1]), "data","data_for_pyconcorde", "berlin70.tsp"))
     mainDirTSPLIB = os.path.join((Path(os.path.abspath(__file__)).parents[1]), "data", "TSPLIB_all_instances")
-    instance_example =  os.path.join(path_to_data, "data", "i_VRPDO_saturation_manyPup",
-                                     "VRPDO_size_15_phome_0.4_ppup_0.0_incrate_0.06_nrpup5_0.txt")
-    generate_artificial()
+    # instance_example =  os.path.join(path_to_data, "data", "i_VRPDO_saturation_manyPup",
+    #                                  "VRPDO_size_15_phome_0.4_ppup_0.0_incrate_0.06_nrpup5_0.txt")
+    # generate_artificial()
     #instance_types =['berlin52', 'solomonR100', 'solomonRC100', 'solomonC100']
     #instance_types = ['berlin52', 'solomonR100', 'solomonRC100', 'solomonC100']
     #instance_types = ['berlin52_clustered3']
@@ -816,7 +816,7 @@ if __name__ == "__main__":
     #instance_types = ['eil101']
     #generate_3_segments_instance_zhou_constant_density(instance_type='I1-12-30-200')
     #generate_3_segments_instance_zhou_saturation(instance_type='I1-12-30-200')
-    #generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type='I1-12-30-200')
+    generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type='I1-12-30-200')
 
     #for instance_type in instance_types:
     #    file_instance_basic = os.path.join(mainDirTSPLIB, instance_type + '.tsp')

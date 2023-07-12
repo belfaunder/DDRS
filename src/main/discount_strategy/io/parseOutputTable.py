@@ -1366,7 +1366,7 @@ def sensitivity_disc_size_comparison_nodisc(folder, folder_data):
 
 def print_convergence_gap():
     mainDirStorage = os.path.join(path_to_data, "output")
-    convergence = os.path.join(mainDirStorage, 'convergence.txt')
+    convergence = os.path.join(mainDirStorage, 'convergence_19.txt')
     # matplotlib.rcParams['text.usetex'] = True
     # rc('text', usetex=True)
     # plt.rcParams['font.size'] = '16'
@@ -1385,13 +1385,20 @@ def print_convergence_gap():
     # for i, lb in enumerate(lbPrint):
     #    gap.append((ubPrint[i] - lbPrint[i]) / ubPrint[i])
     # plt.plot(time, gap, '-', label='Gap')
-    bab_obj = 614.3618363291553/10
+    #bab_obj = 614.3618363291553/10
+    bab_obj = 638.0608078079995/10
     plt.axhline(y=bab_obj, color='r', linestyle='--', alpha=0.3, label='optimal objective value')
     ubPrint_new = [i / 10 for i in ubPrint]
     lbPrint_new = [i / 10 for i in lbPrint]
 
+    lbPrint_new.reverse()
+    lbPrint_removed = [lbPrint_new[0]]
+    for lb in lbPrint_new:
+        lbPrint_removed.append(min(lb, lbPrint_removed[-1]))
+    lbPrint_removed.reverse()
+
     plt.plot(time, ubPrint_new, '-', label='best known upper bound ')
-    plt.plot(time, lbPrint_new, ':', label='best known lower bound ')
+    plt.plot(time, lbPrint_removed[:-1], ':', label='best known lower bound ')
     #axes.set(yscale="log")
 
     # plt.plot(time, ubPrint, '-',  label='best upper bound ' + r'$(\overline{z}^{*})$')
@@ -1400,6 +1407,10 @@ def print_convergence_gap():
     plt.xlabel("Running time (sec)")
     plt.ylabel("Expected fulfillment cost")
     plt.legend()
+    axes.spines['top'].set_visible(False)
+    axes.spines['right'].set_visible(False)
+    # ax.spines['bottom'].set_visible(False)
+    # ax.spines['left'].set_visible(False)
     plt.savefig(os.path.join(path_to_images, 'convergence.eps'), transparent=False, bbox_inches='tight')
     plt.show()
 
@@ -1747,7 +1758,7 @@ def experiment_variation_nrcust(folder):
     # Speed test on nr_cust_variation instances
     # parseBAB_RS_NODISC(os.path.join(folder, "bab_rs_nodisc_i_VRPDO_notfinished.txt"), folder, "i_VRPDO_time")
     #parseBAB_RS_NODISC(os.path.join(folder, "bab_VRPDO_discount_proportional_02_02.txt"), folder, "i_VRPDO_discount_proportional_02_02")
-    parseBAB(os.path.join(folder, "02_23_bab_exact.txt"), folder, "02_23_bab_exact")
+    #parseBAB(os.path.join(folder, "02_23_bab_exact.txt"), folder, "02_23_bab_exact")
     #parseEnumeration(os.path.join(folder, "02_13_enumeration.txt"), folder, "02_13_enumeration")
 
     if False: #print table with bab_exact and enumeration running times
@@ -1775,7 +1786,7 @@ def experiment_variation_nrcust(folder):
         print("")
     # check dominance usage  02_26_bab_exact_domcheck.txt
     #print table with percentage of nodes pruned by dominance rules 1, 2, and bounding
-    if True:
+    if False:
         # parseBAB(os.path.join(folder, "05_07_babfull_exact_num_pruned.txt"), folder, "05_07_babfull_exact_num_pruned")
         df_bab = parseProfile(os.path.join(folder, "05_07_babfull_exact_num_pruned.txt"))
         #df_bab = pd.read_csv(os.path.join(folder, "05_07_babfull_exact_num_pruned.csv"))
@@ -1801,6 +1812,108 @@ def experiment_variation_nrcust(folder):
 
         # df_results = df_results[[ 'g_opt_3600','closed_3600','sp1','tto_best', 'tto_best_min', 'tto_best_max']].copy()  'n_bab_av', 'n_bab_min', 'n_bab_max'
 
+        print(df_results.to_latex(float_format='{:0.0f}'.format, na_rep=''))
+        # print(df_results.to_latex(formatters=['{:0.2f}', None, None, '{:0.1f}','{:0.5f}','{:0.1f}'], na_rep=''))
+
+        print("")
+    # print table with runing time and number of explored nodes if we use or not dominance rules
+    if False:
+        rowTitle = ['nrCust', "nrPup", 'p_home', 'discount_rate', 'time_bab', 'time_tb', 'nodes',
+                    'num_tsps', 'obj_val_bab', 'policy_bab_ID', 'num_disc_bab', 'instance',
+                    'pr_cliques_nonleaf', 'pr_cliques_leaf', 'pr_rs_nonleaf', 'pr_rs_leaf',
+                    'pr_insertionCost_nonleaf', 'pr_insertionCost_leaf', 'pr_bounds_nonleaf',
+                    'pr_bounds_leaf', 'tsp_time', 'time_exact_bounds', 'time_lb_addition', 'time_branch']
+        folder_domcheck = os.path.join(folder,"07_2023_dominance_checks")
+        df_full = parseProfile(os.path.join(folder_domcheck, "05_07_babfull_exact_num_pruned.txt"))
+        df_noins = parseProfile(os.path.join(folder_domcheck, "05_07_babnoins_exact_num_pruned.txt"))
+        df_nocliques = parseProfile(os.path.join(folder_domcheck, "05_07_babnocliques_exact_num_pruned.txt"))
+        df_noinscliques= parseProfile(os.path.join(folder_domcheck, "05_07_babnocliquesnoins_exact_num_pruned.txt"))
+        df_results = pd.DataFrame(index=list(range(10, 20)),
+                                  columns=[ 't_noinscliques', 'n_noinscliques', 'sp1',
+                                            't_nocliques', 'n_nocliques', 'sp3',
+                                           't_noins', 'n_noins', 'sp2',
+                                          't_full', 'n_full'])
+        # df = df.fillna(0)
+        for nrCust in range(10, 16):
+            df_full_slice = df_full[(df_full.nrCust == nrCust)].copy()
+            df_noins_slice = df_noins[(df_noins.nrCust == nrCust)].copy()
+            df_nocliques_slice = df_nocliques[(df_nocliques.nrCust == nrCust)].copy()
+            df_noinscliques_slice = df_noinscliques[(df_noinscliques.nrCust == nrCust)].copy()
+
+            if nrCust < 20:
+                print(nrCust)
+                df_results.at[nrCust, 't_full'] = df_full_slice['time_bab'].mean()
+                df_results.at[nrCust, 'n_full'] = int(df_full_slice['nodes'].mean() + 0.5)
+
+                df_results.at[nrCust, 't_noins'] = df_noins_slice['time_bab'].mean()
+                df_results.at[nrCust, 'n_noins'] = int(df_noins_slice['nodes'].mean() + 0.5)
+                #df_results.at[nrCust, 'n_noins'] = "{:<7}".format(str(int(df_noins_slice['nodes_domins'].mean() + 0.5))) + \
+                #                                 "(" + str(int(df_noins_slice['pruned_domins'].mean() + 0.5)) + ")"
+
+                df_results.at[nrCust, 't_nocliques'] = df_nocliques_slice['time_bab'].mean()
+                df_results.at[nrCust, 'n_nocliques'] = int(df_nocliques_slice['nodes'].mean() + 0.5)
+
+                df_results.at[nrCust, 't_noinscliques'] = df_noinscliques_slice['time_bab'].mean()
+                df_results.at[nrCust, 'n_noinscliques'] = int(df_noinscliques_slice['nodes'].mean() + 0.5)
+
+        # df_results = df_results[[ 'g_opt_3600','closed_3600','sp1','tto_best', 'tto_best_min', 'tto_best_max']].copy()  'n_bab_av', 'n_bab_min', 'n_bab_max'
+        print(df_results.to_latex(float_format='{:0.0f}'.format, na_rep=''))
+        # print(df_results.to_latex(formatters=['{:0.2f}', None, None, '{:0.1f}','{:0.5f}','{:0.1f}'], na_rep=''))
+
+        print("")
+    if True:
+        rowTitle = ['nrCust', "nrPup", 'p_home', 'discount_rate', 'time_bab', 'time_tb', 'nodes',
+                    'num_tsps', 'obj_val_bab', 'policy_bab_ID', 'num_disc_bab', 'instance',
+                    'pr_cliques_nonleaf', 'pr_cliques_leaf', 'pr_rs_nonleaf', 'pr_rs_leaf',
+                    'pr_insertionCost_nonleaf', 'pr_insertionCost_leaf', 'pr_bounds_nonleaf',
+                    'pr_bounds_leaf', 'tsp_time', 'time_exact_bounds', 'time_lb_addition', 'time_branch']
+        folder_domcheck = os.path.join(folder,"07_2023_dominance_checks")
+        df_full = parseProfile(os.path.join(folder_domcheck, "05_07_babfull_exact_num_pruned.txt"))
+        df_noins = parseProfile(os.path.join(folder_domcheck, "05_07_babnoins_exact_num_pruned.txt"))
+        df_nocliques = parseProfile(os.path.join(folder_domcheck, "05_07_babnocliques_exact_num_pruned.txt"))
+        df_noinscliques = parseProfile(os.path.join(folder_domcheck, "05_07_babnocliquesnoins_exact_num_pruned.txt"))
+        df_results = pd.DataFrame(index=list(range(10, 20)),
+                                  columns=[ 't_full', 'np_full_bound', 'np_full_dom1', 'np_full_dom2', 'sp1',
+                                            't_noins', 'np_noins_bound', 'np_noins_dom',  'sp2',
+                                           't_nocliques', 'np_nocliques_bound',  'np_nocliques_dom', 'sp3',
+                                      't_noinscliques', 'np_noinscliques_bound'                                  ])
+        # df = df.fillna(0)
+        for nrCust in range(10, 19):
+            df_full_slice = df_full[(df_full.nrCust == nrCust)].copy()
+            df_noins_slice = df_noins[(df_noins.nrCust == nrCust)].copy()
+            df_nocliques_slice = df_nocliques[(df_nocliques.nrCust == nrCust)].copy()
+            df_noinscliques_slice = df_noinscliques[(df_noinscliques.nrCust == nrCust)].copy()
+
+            if nrCust < 20:
+                print(nrCust)
+                df_results.at[nrCust, 't_noinscliques'] = df_noinscliques_slice['time_bab'].mean()
+                df_results.at[nrCust, 'np_noinscliques_bound'] = int(df_noinscliques_slice['pr_bounds_leaf'].mean() +
+                                                                df_noinscliques_slice['pr_bounds_nonleaf'].mean()+0.5)
+
+                df_results.at[nrCust, 't_noins'] = df_noins_slice['time_bab'].mean()
+                df_results.at[nrCust, 'np_noins_bound'] = int(df_noins_slice['pr_bounds_leaf'].mean() + df_noins_slice['pr_bounds_nonleaf'].mean()+0.5)
+                df_results.at[nrCust, 'np_noins_dom'] = int(df_noins_slice['pr_cliques_leaf'].mean() + df_noins_slice['pr_cliques_nonleaf'].mean()+0.5)
+
+
+                df_results.at[nrCust, 't_nocliques'] = df_nocliques_slice['time_bab'].mean()
+                df_results.at[nrCust, 'np_nocliques_dom'] = int(df_nocliques_slice['pr_insertionCost_leaf'].mean() +
+                                                              df_nocliques_slice['pr_insertionCost_nonleaf'].mean() +
+                                                              df_nocliques_slice['pr_rs_leaf'].mean() +
+                                                              df_nocliques_slice['pr_rs_nonleaf'].mean() + 0.5)
+                df_results.at[nrCust, 'np_nocliques_bound'] =  int(df_nocliques_slice['pr_bounds_leaf'].mean() +
+                                                               df_nocliques_slice['pr_bounds_nonleaf'].mean()+0.5)
+
+                df_results.at[nrCust, 't_full'] = df_full_slice['time_bab'].mean()
+                df_results.at[nrCust, 'np_full_dom2'] = int(df_full_slice['pr_cliques_leaf'].mean() + df_full_slice['pr_cliques_nonleaf'].mean()+0.5)
+
+                df_results.at[nrCust, 'np_full_dom1'] = int(df_full_slice['pr_insertionCost_leaf'].mean() +
+                                                                df_full_slice['pr_insertionCost_nonleaf'].mean() +
+                                                                df_full_slice['pr_rs_leaf'].mean() +
+                                                                df_full_slice['pr_rs_nonleaf'].mean() + 0.5)
+                df_results.at[nrCust, 'np_full_bound'] = int(df_full_slice['pr_bounds_leaf'].mean() +
+                                                                  df_full_slice['pr_bounds_nonleaf'].mean() + 0.5)
+
+        # df_results = df_results[[ 'g_opt_3600','closed_3600','sp1','tto_best', 'tto_best_min', 'tto_best_max']].copy()  'n_bab_av', 'n_bab_min', 'n_bab_max'
         print(df_results.to_latex(float_format='{:0.0f}'.format, na_rep=''))
         # print(df_results.to_latex(formatters=['{:0.2f}', None, None, '{:0.1f}','{:0.5f}','{:0.1f}'], na_rep=''))
 
@@ -2189,8 +2302,11 @@ def experiment_heuristic_parameters_variation(folder):
             df_results.at[n, 's'+sample+"gap"] = round(df_slice['gap_av'].mean(), 2)
 
     #print(df_results.to_latex(float_format='{:0.1f}'.format, na_rep=''))
-    df_results = df_results[['exactt',  'exactn', "s1",  's200t', 's200node','s200gap', 's3',
-                              's100t', 's100node','s100gap','s4',  's20t', 's20node','s20gap','s2', 's0t', 's0node','s0gap']].copy()
+    #df_results = df_results[['exactt',  'exactn', "s1",  's200t', 's200node','s200gap', 's3',
+    #                          's100t', 's100node','s100gap','s4',  's20t', 's20node','s20gap','s2', 's0t', 's0node','s0gap']].copy()
+    df_results = df_results[['exactt', "s1", 's200t', 's200gap', 's3',
+                             's100t', 's100gap', 's4', 's20t', 's20gap', 's2', 's0t',
+                             's0gap']].copy()
     print(df_results.to_latex(float_format='{:0.1f}'.format, na_rep=''))
 
 
@@ -2419,7 +2535,7 @@ def compare_enumeration_no_Gurobi(folder ):
     #parseEnumeration(os.path.join(folder, "02_06_enumeration.txt"), folder, "02_06_enumeration")
     #parseEnumeration(os.path.join(folder, "02_07_enumeration_withGurobi.txt"), folder, "02_07_enumeration_withGurobi")
     withGurobi = pd.read_csv(os.path.join(folder, "02_07_enumeration_withGurobi.csv"))
-    noGurobi = pd.read_csv(os.path.join(folder, "02_06_enumeration.csv"))
+    noGurobi = pd.read_csv(os.path.join(folder, "02_13_enumeration.csv"))
 
     withGurobi = withGurobi[['instance', 'time_running_enum']].copy()
     withGurobi.rename(columns={'time_running_enum': 'time_running_enum_withGurobi'}, inplace=True)
@@ -2971,18 +3087,16 @@ def sensitivity_comparison_nodisc_rs(folder):
                 else:
                     df_results.at[iter+i, 'algo'] = 0
                     df_results.at[iter+i, 'savings'] =  max(row['gap_uniform'], 0)
-            elif i==3:
-                if row['nrPup'] == 3:
-                    pass
-                else:
-                    df_results.at[iter+i, 'algo'] = 3
-                    df_results.at[iter+i, 'savings'] = max(df_remote[df_remote['instance']==row['instance']]['gap_remote'].mean(), 0)
-        iter += 4
+            # elif i==3:
+            #     if row['nrPup'] == 3:
+            #         pass
+            #     else:
+            #         df_results.at[iter+i, 'algo'] = 3
+            #         df_results.at[iter+i, 'savings'] = max(df_remote[df_remote['instance']==row['instance']]['gap_remote'].mean(), 0)
+        iter += 3
     df_results.sort_values("algo")
     sns.set()
     sns.set(font_scale=1.2)
-    sns.set_context(rc={'font.sans-serif': 'Computer Modern Sans Serif'})
-    sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
     sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
 
     if True:
@@ -3011,14 +3125,14 @@ def sensitivity_comparison_nodisc_rs(folder):
                       bbox_inches='tight')
             plt.show()
         # impact of delta on savings for 1 pickup point and different agorithms
-        if True:
-
+        if False:
 
             df_temp = df_results[df_results.discount_rate == 0.06].copy() #try 0.12
             fig, axes = plt.subplots(1, 1, sharex=True)
             df1 = df_temp.copy()
-            sns.lineplot(ax=axes, data=df1, x='p_accept', y='savings', markers=True,
-                         markersize=11, linewidth=1, hue='algo', style='algo',  # algo   nrPup
+            sns.lineplot(ax=axes, data=df1, x='p_accept', y='savings', markers=["o","^","s"],
+                         markersize=10,
+                         hue='algo', style='algo',  # algo   nrPup
                          palette="deep", err_style="bars", errorbar=('pi', 100), err_kws={'capsize': 5})
             # sns.scatterplot(ax=axes, data=df1, x='p_accept', y='savings', markers=True,
             #                hue='algo', style='algo',  #    nrPup algo
@@ -3028,7 +3142,11 @@ def sensitivity_comparison_nodisc_rs(folder):
             plt.legend(title=False)
             axes.set(yscale="symlog")
             axes.set_ylim(None, 110)
-            plt.legend(title=False,    labels=['ALL', 'NOI', 'DI','R'])
+            plt.legend(title=False,    labels=['ALL', 'NOI', 'DI'],  markerscale=1.2)
+
+            # lgnd = axes.legend(title=False, handles=handles, fontsize=16, markerscale=1.9,
+            #                    labels=['ALL', 'NOI', 'DI', 'R'], loc='upper right',
+            #                    bbox_to_anchor=(1.0, 1.0))
             plt.savefig(os.path.join(path_to_images, 'Savings_delta_ALL_NOI_DI_R_30.eps'), transparent=False,
                         bbox_inches='tight')
             plt.show()
@@ -3091,28 +3209,28 @@ def large_exp(folder):
                                                x['obj_val_uniform'])/10, axis=1)
 
     sns.set()
-    sns.set(font_scale=1.2)
-    sns.set_context(rc={'font.sans-serif': 'Computer Modern Sans Serif'})
-    sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
+    sns.set(font_scale=1.4)
+    #sns.set_context(rc={'font.sans-serif': 'Computer Modern Sans Serif'})
+    #sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
     sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
     fig, axes = plt.subplots(1, 1, figsize=(10, 5))
         # impact of the problem size on the objective value hue number of pups
     if True: #impact of the problem size on the objective value hue number of pups
         df = df[df['nrCust'].isin([20, 25, 30, 35, 40, 45, 50])].copy()
         df = df[df.discount_rate == 0.06].copy()
-        df = df[['nrCust','nrPup', 'objValPrint' ]].copy()
+        df = df[['nrCust','nrPup', 'objValPrint', 'time_bab' ]].copy()
         #parseBAB(os.path.join(folder, "03_10_bab_large_10_15.txt"), folder,  "03_10_bab_large_10_15")
         df_small = pd.read_csv(os.path.join(folder, "03_10_bab_large_10_15.csv"))
         df_small['objValPrint'] = df_small['obj_val_bab']/10
-        df_small = df_small[['nrCust','nrPup', 'objValPrint' ]].copy()
+        df_small = df_small[['nrCust','nrPup', 'objValPrint','time_bab' ]].copy()
         df = pd.concat([df, df_small])
 
         df['nrCustPrint'] = df['nrCust']+ df['nrPup']*0.3-1
 
         #sns.scatterplot(ax=axes, data=df, x='nrCustPrint', y='objValPrint', markers=True,
         #              linewidth=1, hue='nrPup', style='nrPup',  # discount_rate   nrPup
-        #             palette="deep", legend = False)
-        sns.lineplot(ax=axes, data=df, x='nrCustPrint', y='objValPrint', markers=True,
+        #             palette="deep", legend = False)time_bab   objValPrint
+        sns.lineplot(ax=axes, data=df, x='nrCustPrint', y='time_bab', markers=True,
                      markersize=12, linewidth=1, hue='nrPup', style='nrPup',  # discount_rate   nrPup
                      palette="deep", err_style="bars", errorbar=('pi', 100), err_kws={'capsize': 3})
         #sns.lineplot(ax=axes, data=df, x='nrCustNodisc', y='obj_val_nodisc', markers=True,
@@ -3124,9 +3242,10 @@ def large_exp(folder):
         axes.set(xlabel='' + 'Problem size, n')
         # # axes.set_xticks([0.2, 0.4, 0.6, 0.8, 1.0])
         axes.set(ylabel='Expected fulfillment cost')
+        #axes.set(yscale="log")
         plt.legend(title='Number of pickup points', loc='lower right', bbox_to_anchor=(1.0, 0.0))
-        plt.savefig(os.path.join(path_to_images, 'Total_cost_delta_nr_customers_nr_pups.eps'), transparent=False,
-                    bbox_inches='tight')
+        # plt.savefig(os.path.join(path_to_images, 'Total_cost_delta_nr_customers_nr_pups.eps'), transparent=False,
+        #             bbox_inches='tight')
         plt.show()
     # impact of the problem size on the savings of BAB in comparison to rs and nodsic
     if False:
@@ -3172,7 +3291,10 @@ def large_exp(folder):
         axes.set(xlabel='' + 'Problem size, n')
         # # axes.set_xticks([0.2, 0.4, 0.6, 0.8, 1.0])
         axes.set(ylabel='Savings (%)')
-        plt.legend(title=False, loc='upper right', bbox_to_anchor=(1.0, 1.0))
+        lgnd = plt.legend(title=False, loc='upper right', bbox_to_anchor=(1.0, 1.0))
+        #lgnd = plt.legend(loc="lower left", scatterpoints=1, fontsize=10)
+        lgnd.legendHandles[0]._sizes = [30]
+        lgnd.legendHandles[1]._sizes = [30]
         plt.savefig(os.path.join(path_to_images, 'heuristic_improvement.eps'), transparent=False,
                     bbox_inches='tight')
         plt.show()
@@ -3182,6 +3304,7 @@ def large_exp(folder):
         df = pd.read_csv(os.path.join(folder, "bab_large_temp.csv"))
         #parseBAB_REMOTE(os.path.join(folder, "08_03_remote.txt"), folder, "08_03_remote")
         df_remote = pd.read_csv(os.path.join(folder, "08_03_remote.csv"))
+        df_remote = df_remote[['instance', 'nrCust_rem',"nrPup_rem", 'p_home_rem', 'discount_rate_rem', 'obj_val_remote', 'policy_remote_ID', 'instance_id_rem']].copy()
         df['objValPrint'] = df.apply(lambda x: min(x['obj_val_bab'], x['obj_val_rs'], x['obj_val_nodisc'],
                                                    x['obj_val_uniform']), axis=1)
         df_copy = df[['instance','nrCust', 'policy_bab_ID','objValPrint']].copy()
@@ -3203,7 +3326,7 @@ def large_exp(folder):
                     # df_results.at[iter + i, 'p_accept'] = row['p_accept']
                     df_results.at[iter + i, 'discount_rate'] = row['discount_rate']
                     df_results.at[iter + i, 'nrPup'] = row['nrPup']
-                    df_results.at[iter + i, 'nrCust'] = row['nrCust']  + i * 0.5 - 0.5
+                    df_results.at[iter + i, 'nrCust'] = row['nrCust']  + i * 0.9 - 0.9
                     if i == 0:
                         if row['nrPup'] == 1:
                             pass
@@ -3222,11 +3345,11 @@ def large_exp(folder):
                         else:
                             df_results.at[iter + i, 'algo'] = 0
                             df_results.at[iter + i, 'savings'] = max(row['gap_uniform'], 0)
-                    elif i==3:
-
-                        df_results.at[iter + i, 'algo'] = 3
-                        df_results.at[iter + i, 'savings'] = max(df_remote[df_remote['instance']==row['instance']]['gap_remote'].mean(), 0)
-                iter += 4
+                    # elif i==3:
+                    #
+                    #     df_results.at[iter + i, 'algo'] = 3
+                    #     df_results.at[iter + i, 'savings'] = max(df_remote[df_remote['instance']==row['instance']]['gap_remote'].mean(), 0)
+                iter += 3
         df_results = df_results[df_results['discount_rate'].isin([0.06])].copy()
         df_results = df_results[df_results['nrPup'].isin([1,3])].copy()
         df_results.sort_values("algo")
@@ -3234,10 +3357,10 @@ def large_exp(folder):
         #                linewidth=1, hue='algo', style='algo',  # discount_rate   nrPup
         #                palette="deep", legend=False)
         sns.lineplot(ax=axes, data=df_results, x='nrCust', y='savings', markers=True,
-                    markersize=12, linewidth=1, hue='algo', style='algo',  # discount_rate   nrPup
+                    markersize=12, hue='algo', style='algo',  # discount_rate   nrPup
                     palette="deep", err_style="bars", errorbar=('pi', 100), err_kws={'capsize': 3}, alpha = 0.5)
-        sns.lineplot(ax=axes, data=df_results, x='nrCust', y='savings', markers=True,
-                     markersize=12, linewidth=1, hue='algo', style='algo',  # discount_rate   nrPup
+        sns.lineplot(ax=axes, data=df_results, x='nrCust', y='savings', markers=["o","^","s"],
+                     markersize=12, hue='algo', style='algo',  # discount_rate   nrPup
                      palette="deep", ci=None)
         #plt.legend(title=False, labels=['ALL', 'NOI', 'DI', 'R'])
         #df_results.dropna(subset=['savings'], inplace = True)
@@ -3249,18 +3372,119 @@ def large_exp(folder):
         # # axes.set_xticks([0.2, 0.4, 0.6, 0.8, 1.0])
         axes.set(ylabel='Savings (%)')
         handles, labels = axes.get_legend_handles_labels()
-        handles = [handles[4], handles[5], handles[6],handles[7]]
+        handles = [handles[3], handles[4], handles[5]] #handles[7]
         #axes.legend(handles, labels,  loc='upper right', bbox_to_anchor=(1.0, 1.0))
-        axes.legend( title=False,  handles=handles,  labels=[ 'ALL', 'NOI', 'DI','R'], loc='upper right', bbox_to_anchor=(1.0, 1.0))
-
+        lgnd = axes.legend( title=False,  handles=handles, fontsize=16,markerscale=1.9,
+                            labels=[ 'ALL', 'NOI', 'DI'], loc='upper right',
+                            bbox_to_anchor=(1.0, 1.0))
         #plt.legend(title=False, loc='upper right', bbox_to_anchor=(1.0, 1.0))
         plt.savefig(os.path.join(path_to_images, 'heuristic_improvement.eps'), transparent=False,
                    bbox_inches='tight')
         plt.show()
+    #parse remote
+    if True:
+        df = pd.read_csv(os.path.join(folder, "bab_large_temp.csv"))
+        #parseBAB_REMOTE(os.path.join(folder, "08_03_remote.txt"), folder, "08_03_remote_full")
+        df_remote = pd.read_csv(os.path.join(folder, "08_03_remote.csv"))
+
+        df['objValPrint'] = df.apply(lambda x: min(x['obj_val_bab'], x['obj_val_rs'], x['obj_val_nodisc'],
+                                                   x['obj_val_uniform']), axis=1)
+        df_copy = df[['instance', 'nrCust', 'policy_bab_ID', 'objValPrint']].copy()
+        df_remote = df_remote.merge(df_copy, on='instance')
+        df_remote['same_remote'] =''
+        df_remote['babbin'] = ''
+        df_remote['remotebin'] = ''
+        for index, row in df_remote.iterrows():
+            same_remote = 0
+
+            try:
+                df_remote['babbin'].at[index] = bin(int(row['policy_bab_ID']))
+                df_remote['remotebin'].at[index] = bin(int(row['policy_remote_ID']))
+                for cust in range(row['nrCust']):
+                    if int(row['policy_bab_ID'])& (1<< cust) == int(row['policy_remote_ID'])& (1<< cust) :
+                        same_remote += 1
+                df_remote.at[index, 'same_remote'] = same_remote/row['nrCust']
+            except:
+                pass
+        df_remote = df_remote.dropna(axis=0)
+        df_results = pd.DataFrame(index=df_remote.nrCust.unique(), columns=['same_remote'])
+        for n in df_remote.nrCust.unique():
+            df_slice = df_remote[(df_remote.nrCust == n)].copy()
+            df_results.at[n, 'same_remote'] = round(df_slice['same_remote'].mean(), 2)
+        print(df_results.to_latex(float_format='{:0.2f}'.format, na_rep=''))
+        print("")
 
 def managerial_location(folder):
     #parseBABHeuristic(os.path.join(folder, "02_18_bab_nodisc_rs_30.txt"), folder, "02_18_bab_nodisc_rs_30")
     # effect of centrality and delta on the distribution of  offered incentives
+    if True:
+        df = pd.read_csv(os.path.join(folder, "02_18_bab_nodisc_rs_30.csv"))
+        folder_data = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_30")
+        df = df[df.discount_rate == 0.06].copy()
+        df = df[df.nrPup == 3].copy()
+        df = df[["p_home", 'discount_rate', 'nrPup', 'policy_bab_ID', 'instance']].copy()
+        sns.set()
+        sns.set(font_scale=1.2)
+        sns.set_context(rc={'font.sans-serif': 'Computer Modern Sans Serif'})
+        sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
+        sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
+        fig, axes = plt.subplots(1, 1, sharey=True, sharex=True)
+        df['instance_type'] = df['instance'].apply(lambda x: int(str(x).split('_')[10]))
+        #df = df[df['instance_type'].isin([0,2,3,4])].copy()
+
+        for p_home in [0.2, 0.8]:
+            df1 = df[df.p_home == p_home].copy()
+            closeness = []
+            all = []
+            num_bins = 5
+            percent = [0] * num_bins
+            percent_all = [0] * num_bins
+            number_instances = 0
+            for index, row in df1.iterrows():
+                number_instances += 1
+                instance = row['instance']
+                OCVRPInstance = OCVRPParser.parse(os.path.join(folder_data, instance + ".txt"))
+                for cust in OCVRPInstance.customers:
+                    farness = OCVRPInstance.distanceMatrix[cust.id, cust.closest_pup_id]
+                    # farness = (sum(OCVRPInstance.distanceMatrix[cust.id, j.id] for j in OCVRPInstance.customers if
+                    #                    j is not cust) + \
+                    #                sum(OCVRPInstance.distanceMatrix[cust.id, j.id] for j in OCVRPInstance.pups) + \
+                    #                OCVRPInstance.distanceMatrix[cust.id, OCVRPInstance.depot.id]) / (
+                    #                           OCVRPInstance.NR_CUST + OCVRPInstance.NR_PUP)
+                    all.append(farness / 10)
+                    if row['policy_bab_ID'] & (1 << cust.id - 1):
+                        closeness.append(farness/10)
+
+            num_bins = [0, 3, 6, 9, 12, 15]
+            heights, bins = np.histogram(closeness, bins=num_bins)
+            heights_all, bins_all = np.histogram(all, bins=num_bins)
+
+            percent = [i / number_instances for i in heights]
+            percent_all = [i / number_instances for i in heights_all]
+            axes_bins = [1.5, 4.5, 7.5, 10.5, 13.5]
+            if p_home==0.8:
+                bins = [i+ 0.5 for i in axes_bins]
+                print("bins", bins, percent_all)
+                pattern = "/"
+                label_all = None
+            else:
+                label_all = 'all customers'
+                #percent[2] -=2
+                #percent[3] += 2
+                bins = [i - 0.5 for i in axes_bins]
+                pattern = 'X'
+
+            axes.bar(bins, percent_all, width=1, align="edge",  label=label_all,color='lightgrey')  # str()discount_rate
+            axes.bar(bins, percent, width=1, align="edge",  label=r'$\Delta = $'+str(round(1-p_home,1)), hatch=pattern)  # str()discount_rate
+
+        axes.set(xlabel='Distance to the closest pickup point')
+        axes.set(ylabel='Number of offered incentives')
+        #plt.gca().set_xticks([round(i+0.5,1) for i in bins_all[:-1]])
+        plt.gca().set_xticks([2, 5, 8, 11, 14], ['0-3', '3-6', '6-9', '9-12', '12-15'])
+
+        plt.legend( loc='upper right')
+        plt.savefig(os.path.join(path_to_images, 'centrality_delta.eps'), transparent=False, bbox_inches='tight')
+        plt.show()
     if False:
         df = pd.read_csv(os.path.join(folder, "02_18_bab_nodisc_rs_30.csv"))
         folder_data = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_30")
@@ -3330,7 +3554,7 @@ def managerial_location(folder):
         plt.show()
 
     # effect of centrality and discount on the distribution of  offered incentives
-    if True:
+    if False:
         df = pd.read_csv(os.path.join(folder, "02_18_bab_nodisc_rs_30.csv"))
         folder_data = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_30")
         df = df[df.p_home == 0.4].copy()
@@ -3459,9 +3683,9 @@ if __name__ == "__main__":
     folder_data_prob = os.path.join(path_to_data, "data", "i_VRPDO_prob")
     folder_large = os.path.join(path_to_data, "output", "VRPDO_2segm_large")
     #experiment_heuristic_parameters_variation(folder_large)
-    #large_exp(folder_large)
+    large_exp(folder_large)
     #managerial_effect_delta(folder_large)
-    # sensitivity_disc_size_comparison_nodisc(folder, folder_data_disc)
+    #sensitivity_disc_size_comparison_nodisc(folder, folder_data_disc)
     #sensitivity_comparison_nodisc_rs(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
     #print_convergence_gap()
 
@@ -3470,14 +3694,14 @@ if __name__ == "__main__":
 
     #compare_enumeration_no_Gurobi(folder_2segm_manyPUP)
     #experiment_variation_nrcust_heuristic(folder)
-    experiment_variation_nrcust(folder_2segm_manyPUP)
+    #experiment_variation_nrcust(folder_2segm_manyPUP)
 
 
     #exp_profile()
     #managerial_effect_delta(folder)
-    # large_exp(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
+    #large_exp(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
 
-    #managerial_location(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
+    managerial_location(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
     #managerial_effect_delta(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
 
     #experiment_bab_solution_time_classes(folder_2segm_manyPUP)
