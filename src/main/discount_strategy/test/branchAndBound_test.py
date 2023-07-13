@@ -40,7 +40,7 @@ if __name__ == "__main__":
         #                             "VRPDO_size_10_phome_0.4_ppup_0.0_incrate_0.06_nrpup3_4.txt")
 
         file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPup_classes",
-                                     "VRPDO_size_15_phome_0.4_ppup_0.0_incrate_0.12_nrpup5_4.txt")
+                                     "VRPDO_size_15_phome_0.1_ppup_0.0_incrate_0.6_nrpup1_0.txt")
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()
     print(OCVRPInstance)
@@ -71,18 +71,18 @@ if __name__ == "__main__":
     # print(prefix, "pruned_by_bounds:", bab.nrNodes - bab.pruned_branching - bab.pruned_cliques_leaf - bab.pruned_cliques_nonleaf - bab.pruned_rs_leaf -\
     #       bab.pruned_rs_nonleaf-  bab.pruned_insertionCost_nonleaf - bab.pruned_insertionCost_leaf -  bab.pruned_bounds_nonleaf)
 
-    mainDirStorage =  os.path.join(path_to_data,"output")
-    convergence = os.path.join(mainDirStorage, 'convergence.txt')
-
-    with open(convergence, 'wb') as file:
-       pickle.dump(time, file)
-       pickle.dump(lbPrint, file)
-       pickle.dump(ubPrint, file)
-
-    with open(convergence, "rb") as file:
-        time = pickle.load(file)
-        lbPrint = pickle.load(file)
-        ubPrint = pickle.load(file)
+    # mainDirStorage =  os.path.join(path_to_data,"output")
+    # convergence = os.path.join(mainDirStorage, 'convergence.txt')
+    #
+    # with open(convergence, 'wb') as file:
+    #    pickle.dump(time, file)
+    #    pickle.dump(lbPrint, file)
+    #    pickle.dump(ubPrint, file)
+    #
+    # with open(convergence, "rb") as file:
+    #     time = pickle.load(file)
+    #     lbPrint = pickle.load(file)
+    #     ubPrint = pickle.load(file)
     #Painter.printConvergence(OCVRPInstance, time, lbPrint, ubPrint, ubPrint[-1])
     if 2**bitCount(babPolicy) < constants.SAMPLE_SIZE:
         estimation_bab = one_policy_cost_estimation(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)
