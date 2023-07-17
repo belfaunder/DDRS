@@ -2405,33 +2405,62 @@ def experiment_bab_solution_time_classes(folder):
 
 def experiment_bab_solution_time_classes_pups(folder):
     #parseBAB(os.path.join(folder, "07_23_bab_classes_15.txt"), folder, "07_23_bab_classes_15")
-    df_bab = pd.read_csv(os.path.join(folder, "07_23_bab_classes_15.csv"))
-    df_bab = df_bab[df_bab.instance_id!=3].copy()
+    #df_bab = pd.read_csv(os.path.join(folder, "07_23_bab_classes_15.csv"))
 
-    df_bab['class'] = df_bab.apply(lambda x: 'low_determinism' if x['p_home'] == 0.7 else (
-        'high_determinism' if x['p_home'] == 0.1 else (
-            'high_disc' if x['discount_rate'] == 0.12 else (
-                'low_disc' if x['discount_rate'] == 0.03 else 'base'))), axis=1)
+    #plot 5 images: effect of n on running time for different npup
+    if False:
+        df_bab = df_bab[df_bab['nrCust']<19].copy()
+        df_bab = df_bab[df_bab['instance_id'].isin([0,1, 2,4,5,6,8,9])].copy()
 
-    df_bab['class_id'] = df_bab.apply(lambda x: 2 if x['p_home'] == 0.7 else (
-        3 if x['p_home'] == 0.1 else (
-            5 if x['discount_rate'] == 0.12 else (
-                4 if x['discount_rate'] == 0.03 else 1))), axis=1)
+        df_bab['class'] = df_bab.apply(lambda x: 'low_determinism' if x['p_home'] == 0.7 else (
+            'high_determinism' if x['p_home'] == 0.1 else (
+                'high_disc' if x['discount_rate'] == 0.12 else (
+                    'low_disc' if x['discount_rate'] == 0.03 else 'base'))), axis=1)
 
-    df_bab.nrPup = df_bab['nrPup'].astype('int')
-    df_bab['nrCust_print'] = df_bab['nrCust'] - 0.5 + df_bab['nrPup'] * 0.15
+        df_bab['class_id'] = df_bab.apply(lambda x: 2 if x['p_home'] == 0.7 else (
+            3 if x['p_home'] == 0.1 else (
+                5 if x['discount_rate'] == 0.12 else (
+                    4 if x['discount_rate'] == 0.03 else 1))), axis=1)
 
-    for class_id in [1, 2, 3, 4, 5]:
-        fig, ax = plt.subplots(1, 1, figsize=(8, 5))
-        df_temp = df_bab[df_bab['class_id'] == class_id].copy()
-        #sns.lineplot(ax=ax, data=df_temp, x='nrCust', y='time_bab', hue = 'nrPup',  markers=True)
-        sns.lineplot(ax=ax, data=df_temp, x='nrCust_print', y='time_bab', markers=True,
-                     markersize=9, linewidth=1, hue='nrPup', style='nrPup',  # discount_rate   nrPup
-                     palette="deep", err_style="bars", errorbar=('pi', 100), err_kws={'capsize': 3},
-                     dashes=False, legend=True)
-        ax.set_title(df_temp['class'].iloc[0])
-        ax.set(yscale="log")
-        plt.show()
+        df_bab.nrPup = df_bab['nrPup'].astype('int')
+        df_bab['nrCust_print'] = df_bab['nrCust'] - 0.4 + (5-df_bab['nrPup']) * 0.1
+
+        for class_id in [1, 2, 3, 4, 5]:
+            fig, ax = plt.subplots(1, 1, figsize=(8, 5))
+            df_temp = df_bab[df_bab['class_id'] == class_id].copy()
+            #sns.lineplot(ax=ax, data=df_temp, x='nrCust', y='time_bab', hue = 'nrPup',  markers=True)
+            sns.lineplot(ax=ax, data=df_temp, x='nrCust_print', y='time_bab', markers=True,
+                         markersize=9, linewidth=1, hue='nrPup', style='nrPup',  # discount_rate   nrPup
+                         palette="deep", err_style="bars", errorbar=(("pi")), err_kws={'capsize': 3},
+                         dashes=False, legend=True)
+            ax.set_title(df_temp['class'].iloc[0])
+            ax.set(yscale="log")
+            plt.show()
+
+    #table with effect of parameters on solution time and fulfillment cost
+    if True:
+        #parseBAB(os.path.join(folder, "17_07_23_bab_classes.txt"), folder, "17_07_23_bab_classes")
+        df_bab = pd.read_csv(os.path.join(folder, "17_07_23_bab_classes.csv"))
+        df_bab = df_bab[df_bab['nrCust'] == 15].copy()
+        df_bab = df_bab[df_bab['instance_id'].isin([0,1, 2,4,5,6,7, 8, 9])].copy()
+
+        df_results = pd.DataFrame(  columns=['delta', 'u', 'p', 'time', 'fulf_cost', 'num_inc'])
+        iter = -1
+        dict_parameters = {0:[0.6, 0.06], 1:[0.3, 0.06], 2:[0.9, 0.06], 3:[0.6, 0.03], 4:[0.6, 0.12]}
+        for key in dict_parameters:
+            delta = dict_parameters[key][0]
+            u = dict_parameters[key][1]
+            for nr_pup in [1, 3, 5]:
+                iter += 1
+                df_slice = df_bab[(df_bab['p_home']==round(1-delta,1)) &(df_bab['discount_rate']==u)&(df_bab['nrPup']==nr_pup)].copy()
+                if iter % 3==0:
+                    df_results.at[iter, 'delta'] = delta
+                    df_results.at[iter, 'u'] = u
+                df_results.at[iter, 'p'] = nr_pup
+                df_results.at[iter, 'time'] = df_slice['time_bab'].mean()
+                df_results.at[iter, 'fulf_cost'] = df_slice['obj_val_bab'].mean()
+                df_results.at[iter, 'num_inc'] = df_slice['num_disc_bab'].mean()
+    print(df_results.to_latex(float_format='{:0.2f}'.format, na_rep='', index=False)) #
 
 
 def average_discount(instance_name):
@@ -3783,7 +3812,7 @@ if __name__ == "__main__":
 
     #compare_enumeration_no_Gurobi(folder_2segm_manyPUP)
     #experiment_variation_nrcust_heuristic(folder)
-    experiment_variation_nrcust(folder_2segm_manyPUP)
+    #experiment_variation_nrcust(folder_2segm_manyPUP)
 
 
     #exp_profile()
@@ -3792,7 +3821,7 @@ if __name__ == "__main__":
     #managerial_location(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
     #managerial_effect_delta(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
     #experiment_bab_solution_time_classes(folder_2segm_manyPUP)
-    #experiment_bab_solution_time_classes_pups(folder_2segm_manyPUP)
+    experiment_bab_solution_time_classes_pups(folder_2segm_manyPUP)
     # parseBAB(os.path.join(folder, "bab_7types_nrCust.txt"), folder, "bab_7types_nrCust")
 
     # experiment_heuristic_general()

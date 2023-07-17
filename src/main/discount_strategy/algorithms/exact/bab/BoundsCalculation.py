@@ -407,22 +407,6 @@ def updateBoundsWithNewTSPs(Bab, node):
                             break
                     node.ubRoute -= scenarioProb * (Bab.instance.ubScenario - scenarioCost)
 
-                if False:
-                    #print("added new scenario",bin(scenario))
-                    true_exact_cost = 0
-                    true_exact_prob = 0
-                    for gamma in node.tspDict:
-                        for scenario in node.tspDict[gamma]:
-                            scenario_prob = probability.scenarioProb(scenario, node.withDiscountID,
-                                                                     node.layer, Bab.instance.NR_CUST,
-                                                                     Bab.instance.p_home, Bab.instance.p_pup)
-                            true_exact_prob += scenario_prob
-                            true_exact_cost += scenario_prob * Bab.instance.routeCost[scenario]
-                            # print("here", bin(scenario), "true scenario_prob", scenario_prob,"in dict", nextNode.tspProbDict[scenario])
-                    if true_exact_prob > node.exactValueProb + constants.EPS or true_exact_prob < node.exactValueProb - constants.EPS:
-                        print(" node.exactValueProb", node.exactValueProb, true_exact_prob)
-
-
                 if (node.ubRoute - node.lbRoute) / node.ubRoute <= 0.9 * gap_old or \
                         (node.lbRoute + node.lbExpDiscount >= Bab.bestUb) or (
                         node.ubRoute + node.ubExpDiscount < Bab.bestNode.lbVal()) or (added > 100):
@@ -431,15 +415,6 @@ def updateBoundsWithNewTSPs(Bab, node):
                     break
             if not continue_flag:
                 break
-
-        # for gamma in range( n-len(setMayVary), n+1):
-        #    if gamma not in node.tspDict:
-        #        node.tspDict[gamma] = []
-        #    if len(node.tspDict[gamma]) == comb(len(node.setGivenDiscount), gamma-len(node.setNotGivenDiscount)):
-        #        continue
-        # alpha is the number of deviated customers,
-        # f customers are added to the route,
-        # (alpha-f) customers are removed from the route
 
 
 def updateBoundsWithNewTSPsHeuristic(Bab, node):

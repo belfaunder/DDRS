@@ -245,7 +245,7 @@ class TSPSolver:
             m._set_visit = set_visit
             m._x_vars = x_vars
             m.Params.lazyConstraints = 1
-            m.update()
+            #m.update()
             # Optimize model
 
             m.optimize(subtourelim)
