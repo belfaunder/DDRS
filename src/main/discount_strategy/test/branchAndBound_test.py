@@ -37,7 +37,7 @@ if __name__ == "__main__":
                                      "i_VRPDO_2segm_manyPup_classes", str(sys.argv[-1])+".txt")
     else:
         file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPup_classes",
-                                     "VRPDO_size_15_phome_0.4_ppup_0.0_incrate_0.06_nrpup5_6.txt")
+                                     "VRPDO_size_18_phome_0.4_ppup_0.0_incrate_0.06_nrpup3_3.txt")
 
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()
@@ -46,7 +46,7 @@ if __name__ == "__main__":
     #rsPolicyID, rsValue = ring_star_deterministic_no_TW(OCVRPInstance, OCVRPInstance.NR_CUST)
     # #babPolicy = rsPolicyID
     # babPolicy = 25865
-    babPolicy, time, lbPrint, ubPrint = bab.runBranchAndBound()
+    #babPolicy, time, lbPrint, ubPrint = bab.runBranchAndBound()
     # painter = Painter()
     # OCVRPInstance_clustered = OCVRPParser.parse(file_instance)
     # OCVRPInstance_random = OCVRPParser.parse(os.path.join(path_to_data, "data", "solomon","artificial", "solomonR101_discount_0.3.txt"))
@@ -82,6 +82,10 @@ if __name__ == "__main__":
     #     lbPrint = pickle.load(file)
     #     ubPrint = pickle.load(file)
     #Painter.printConvergence(OCVRPInstance, time, lbPrint, ubPrint, ubPrint[-1])
+    babPolicy = 100400
+
+    print(bin(100400))
+
     if 2**bitCount(babPolicy) < constants.SAMPLE_SIZE:
         estimation_bab = one_policy_cost_estimation(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)
     else:

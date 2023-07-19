@@ -2405,7 +2405,7 @@ def experiment_bab_solution_time_classes(folder):
 
 def experiment_bab_solution_time_classes_pups(folder):
     #parseBAB(os.path.join(folder, "07_23_bab_classes_15.txt"), folder, "07_23_bab_classes_15")
-    #df_bab = pd.read_csv(os.path.join(folder, "07_23_bab_classes_15.csv"))
+    #df_bab = pd.read_csv(os.path.join(folder, "17_07_23_bab_classes.csv"))
 
     #plot 5 images: effect of n on running time for different npup
     if False:
@@ -2441,26 +2441,70 @@ def experiment_bab_solution_time_classes_pups(folder):
     if True:
         #parseBAB(os.path.join(folder, "17_07_23_bab_classes.txt"), folder, "17_07_23_bab_classes")
         df_bab = pd.read_csv(os.path.join(folder, "17_07_23_bab_classes.csv"))
-        df_bab = df_bab[df_bab['nrCust'] == 15].copy()
-        df_bab = df_bab[df_bab['instance_id'].isin([0,1, 2,4,5,6,7, 8, 9])].copy()
+        df_bab = df_bab[df_bab['nrCust'] == 18].copy()
 
-        df_results = pd.DataFrame(  columns=['delta', 'u', 'p', 'time', 'fulf_cost', 'num_inc'])
+
+        df_results = pd.DataFrame(  columns=['class','delta', 'u', 'p', 'sp0', 'time', 'time_min',  'time_max','sp1', 'fulf_cost',
+                                             'fulf_cost_min','fulf_cost_max','sp2', 'num_inc','num_inc_min','num_inc_max'])
         iter = -1
-        dict_parameters = {0:[0.6, 0.06], 1:[0.3, 0.06], 2:[0.9, 0.06], 3:[0.6, 0.03], 4:[0.6, 0.12]}
+        dict_parameters = {0:[0.6, 0.06, 'C1'], 1:[0.3, 0.06,'C2'], 2:[0.9, 0.06,'C3'], 3:[0.6, 0.03,'C4'], 4:[0.6, 0.12,'C5']}
+        df_bab_temp = df_bab[df_bab['instance_id'].isin([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])].copy()
+        for key in dict_parameters:
+            delta = dict_parameters[key][0]
+            u = dict_parameters[key][1]
+            if u==0.12:
+                df_bab_temp = df_bab[df_bab['instance_id'].isin([0, 1, 2,3, 4, 5, 6,7,9])].copy()
+            if u==0.03:
+                df_bab_temp = df_bab[df_bab['instance_id'].isin([0, 1, 2,3, 4, 5, 7,8,9])].copy()
+            if delta==0.3:
+                df_bab_temp = df_bab[df_bab['instance_id'].isin([0, 1, 2, 4, 5,6, 8])].copy()
+            for nr_pup in [1, 3, 5]:
+                iter += 1
+                df_slice = df_bab_temp[(df_bab_temp['p_home']==round(1-delta,1)) &(df_bab_temp['discount_rate']==u)&(df_bab_temp['nrPup']==nr_pup)].copy()
+                if iter % 3==0:
+                    df_results.at[iter, 'class'] = dict_parameters[key][2]
+                    df_results.at[iter, 'delta'] = delta
+                    df_results.at[iter, 'u'] = u*10
+                df_results.at[iter, 'p'] = nr_pup
+                df_results.at[iter, 'time'] = round(df_slice['time_bab'].mean())
+                df_results.at[iter, 'time_min'] = round(df_slice['time_bab'].min())
+                df_results.at[iter, 'time_max'] = round(df_slice['time_bab'].max())
+                df_results.at[iter, 'fulf_cost'] = round(df_slice['obj_val_bab'].mean())
+                df_results.at[iter, 'fulf_cost_min'] = round(df_slice['obj_val_bab'].min())
+                df_results.at[iter, 'fulf_cost_max'] = round(df_slice['obj_val_bab'].max())
+                df_results.at[iter, 'num_inc'] = df_slice['num_disc_bab'].mean()
+                df_results.at[iter, 'num_inc_min'] = df_slice['num_disc_bab'].min()
+                df_results.at[iter, 'num_inc_max'] = df_slice['num_disc_bab'].max()
+
+    print(df_results.to_latex(float_format='{:0.1f}'.format, na_rep='', index=False)) #
+    # table with effect of parameters on solution time and fulfillment cost for n=30 customers
+    if False:
+        folder = os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison")
+
+        # parseBAB(os.path.join(folder, "17_07_23_bab_classes.txt"), folder, "17_07_23_bab_classes")
+        df_bab = pd.read_csv(os.path.join(folder, "02_18_bab_nodisc_rs_30.csv"))
+        df_bab = df_bab[df_bab['nrCust'] == 30].copy()
+        #df_bab = df_bab[df_bab['instance_id'].isin([0, 1, 2, 4, 5, 6, 8, 9])].copy()
+
+        df_results = pd.DataFrame(columns=['delta', 'u', 'p',  'fulf_cost', 'num_inc'])
+        iter = -1
+        dict_parameters = {0: [0.6, 0.06], 1: [0.2, 0.06], 2: [0.8, 0.06], 3: [0.6, 0.03], 4: [0.6, 0.12]}
         for key in dict_parameters:
             delta = dict_parameters[key][0]
             u = dict_parameters[key][1]
             for nr_pup in [1, 3, 5]:
                 iter += 1
-                df_slice = df_bab[(df_bab['p_home']==round(1-delta,1)) &(df_bab['discount_rate']==u)&(df_bab['nrPup']==nr_pup)].copy()
-                if iter % 3==0:
+                df_slice = df_bab[(df_bab['p_home'] == round(1 - delta, 1)) & (df_bab['discount_rate'] == u) & (
+                            df_bab['nrPup'] == nr_pup)].copy()
+                if iter % 3 == 0:
                     df_results.at[iter, 'delta'] = delta
-                    df_results.at[iter, 'u'] = u
+                    df_results.at[iter, 'u'] = u * 10
                 df_results.at[iter, 'p'] = nr_pup
-                df_results.at[iter, 'time'] = df_slice['time_bab'].mean()
-                df_results.at[iter, 'fulf_cost'] = df_slice['obj_val_bab'].mean()
+                #df_results.at[iter, 'time'] = df_slice['time_bab'].mean()
+                df_results.at[iter, 'fulf_cost'] = round(df_slice['obj_val_bab'].mean())
                 df_results.at[iter, 'num_inc'] = df_slice['num_disc_bab'].mean()
-    print(df_results.to_latex(float_format='{:0.2f}'.format, na_rep='', index=False)) #
+        print(df_results.to_latex(float_format='{:0f}'.format, na_rep='', index=False))  #
+
 
 
 def average_discount(instance_name):
@@ -3806,8 +3850,8 @@ if __name__ == "__main__":
     #sensitivity_disc_size_comparison_nodisc(folder, folder_data_disc)
     #sensitivity_comparison_nodisc_rs(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
     #print_convergence_gap()
-
     folder_2segm = os.path.join(path_to_data, "output", "VRPDO_discount_proportional_2segm")
+
     folder_2segm_manyPUP = os.path.join(path_to_data, "output", "VRPDO_discount_proportional_2segm_manyPUP")
 
     #compare_enumeration_no_Gurobi(folder_2segm_manyPUP)
