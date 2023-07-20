@@ -9,8 +9,11 @@ import cProfile
 import pstats
 from src.main.discount_strategy.util import constants
 path_to_data = constants.PATH_TO_DATA
+path_to_images = constants.PATH_TO_IMAGES
 from src.main.discount_strategy.util.bit_operations import bitCount
 import pickle
+import numpy as np
+from matplotlib.ticker import PercentFormatter
 from src.main.discount_strategy.algorithms.exact.bab.BAB_exact import BABExact
 #from src.main.discount_strategy.algorithms.exact.enumeration.enumeration_scenarios_2_segm import ScenarioEnumerationSolver
 from src.main.discount_strategy.algorithms.heuristic.sample_average import sampleAverageApproximation_PoissonBinomial
@@ -34,100 +37,51 @@ if __name__ == "__main__":
     print(prefix, "Exact BAB")
     print(prefix,"solverType: ", solverType)
     print(prefix, "TIME_LIMIT:", constants.TIME_LIMIT)
-    if os.name != 'nt':
-        file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "data",
-                                     "i_VRPDO_2segm_manyPup_classes", str(sys.argv[-1])+".txt")
-    else:
-        file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPup_classes",
-                                     "VRPDO_size_15_phome_0.1_ppup_0.0_incrate_0.06_nrpup3_0.txt")
-
-    OCVRPInstance = OCVRPParser.parse(file_instance)
-    OCVRPInstance.calculateInsertionBounds()
-    print(OCVRPInstance)
-    bab = BABExact(instance=OCVRPInstance, solverType = solverType)
-    #rsPolicyID, rsValue = ring_star_deterministic_no_TW(OCVRPInstance, OCVRPInstance.NR_CUST)
-    # #babPolicy = rsPolicyID
-    # babPolicy = 25865
-    babPolicy, time, lbPrint, ubPrint = bab.runBranchAndBound()
-
-
-    n = OCVRPInstance.NR_CUST
-    temp_prob = []
-    for scenario in range(2**n):
-        if not (~babPolicy & scenario):
-            temp_prob.append(probability.scenarioProb_2segm(scenario, babPolicy, n, n, OCVRPInstance.p_pup_delta))
-    sns.displot(temp_prob, bins=50)
-    plt.xlabel('Probability best policy')
-    plt.yscale('log')
-    plt.show()
-    policy_all = 2**n - 1
-    temp_prob = []
-    for scenario in range(2 ** n):
-        if not (~policy_all & scenario):
-            temp_prob.append(probability.scenarioProb_2segm(scenario, policy_all, n, n, OCVRPInstance.p_pup_delta))
-    sns.displot(temp_prob,  bins=50)  #
-    plt.yscale('log')
-    plt.xlabel('Probability policy_all')
-    plt.show()
-
-    print(max(temp_prob))
-    # painter = Painter()
-    # OCVRPInstance_clustered = OCVRPParser.parse(file_instance)
-    # OCVRPInstance_random = OCVRPParser.parse(os.path.join(path_to_data, "data", "solomon","artificial", "solomonR101_discount_0.3.txt"))
-    # painter.printVertexDiscTemp(OCVRPInstance_clustered,21504, OCVRPInstance_random, 25865)
-    # for pup in OCVRPInstance.pups:
-    #     print(pup.id, pup.closest_cust_id)
-    #start_time = process_time()
-    #rsPolicyID, rsValue = ring_star_deterministic_no_TW(OCVRPInstance, OCVRPInstance.NR_CUST)
-    #EnumerationSolver = ScenarioEnumerationSolver(instance=OCVRPInstance)
-    #EnumerationSolver.exactPolicyByEnumeration(True)
-    #print(prefix, 'Time_enumeration ', process_time()-start_time)
-
-    print(prefix,"pruned_by_cliques_nonleaf:", bab.pruned_cliques_nonleaf)
-    print(prefix,"pruned_by_cliques_leaf:", bab.pruned_cliques_leaf)
-    print(prefix,"pruned_by_rs_nonleaf:", bab.pruned_rs_nonleaf)
-    print(prefix,"pruned_by_rs_leaf:", bab.pruned_rs_leaf)
-    print(prefix, "pruned_by_insertionCost_nonleaf:", bab.pruned_insertionCost_nonleaf)
-    print(prefix, "pruned_by_insertionCost_leaf:", bab.pruned_insertionCost_leaf)
-    print(prefix, "pruned_by_bounds_nonleaf:", bab.pruned_bounds_nonleaf)
-    print(prefix, "pruned_by_bounds:", bab.nrNodes - bab.pruned_branching - bab.pruned_cliques_leaf - bab.pruned_cliques_nonleaf - bab.pruned_rs_leaf -\
-          bab.pruned_rs_nonleaf-  bab.pruned_insertionCost_nonleaf - bab.pruned_insertionCost_leaf -  bab.pruned_bounds_nonleaf)
-
-    # mainDirStorage =  os.path.join(path_to_data,"output")
-    # convergence = os.path.join(mainDirStorage, 'convergence.txt')
+    # fig, axes = plt.subplots(3, 1, figsize=(4, 12), sharex = True)
+    # plt.xscale('log')
+    # iter =0
+    # for prob in [0.1, 0.4, 0.7]:
+    #     file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPup_classes",
+    #                                  "VRPDO_size_15_phome_" + str(prob)+"_ppup_0.0_incrate_0.06_nrpup3_0.txt")
     #
-    # with open(convergence, 'wb') as file:htop
-    #    pickle.dump(time, file)
-    #    pickle.dump(lbPrint, file)
-    #    pickle.dump(ubPrint, file)
+    #     OCVRPInstance = OCVRPParser.parse(file_instance)
+    #     OCVRPInstance.calculateInsertionBounds()
+    #     bab = BABExact(instance=OCVRPInstance, solverType = solverType)
+    #     babPolicy, time, lbPrint, ubPrint = bab.runBranchAndBound()
     #
-    # with open(convergence, "rb") as file:
-    #     time = pickle.load(file)
-    #     lbPrint = pickle.load(file)
-    #     ubPrint = pickle.load(file)
-    #Painter.printConvergence(OCVRPInstance, time, lbPrint, ubPrint, ubPrint[-1])
-    babPolicy = 100400
+    #     n = OCVRPInstance.NR_CUST
+    #     # temp_prob = []
+    #     # for scenario in range(2**n):
+    #     #     if not (~babPolicy & scenario):
+    #     #         temp_prob.append(probability.scenarioProb_2segm(scenario, babPolicy, n, n, OCVRPInstance.p_pup_delta))
+    #     # sns.displot(temp_prob, bins=50)
+    #     # plt.xlabel('Probability best policy')
+    #     # plt.yscale('log')
+    #     # plt.show()
+    #     policy_all = 2**n - 1
+    #     policy_all = babPolicy
+    #     temp_prob = []
+    #     for scenario in range(2 ** n):
+    #         if not (~policy_all & scenario):
+    #             temp_prob.append(probability.scenarioProb_2segm(scenario, policy_all, n, n, OCVRPInstance.p_pup_delta))
+    #
+    #
+    #     axes[iter].hist(temp_prob, bins=[0.0000001, 0.000001, 0.00001, 0.0001,0.001, 0.01, 0.1,1])
+    #     axes[iter].set_ylabel("delta " + str(round(1-prob,1)))
+    #     iter += 1
+    # plt.xlabel('Probability policy_best')
+    # plt.savefig(os.path.join(path_to_images, 'distribution_probability_scenarios_best.png'), transparent=False, bbox_inches='tight')
+    # plt.show()
 
-    print(bin(100400))
+    # N = 21
+    # x = list(range(N))
+    # y = [(x1- N)/(2*x1 - N) for x1 in x]
+    # plt.plot(x, y)
+    # plt.show()
+    N = 21
+    N0 = 5
+    x = list(i/20 for i in range(0,20))
 
-    if 2**bitCount(babPolicy) < constants.SAMPLE_SIZE:
-        estimation_bab = one_policy_cost_estimation(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)
-    else:
-        estimation_bab = sampleAverageApproximation_PoissonBinomial_1sample_2segm(instance = OCVRPInstance,
-                                                                            policy = babPolicy, solverType = solverType)
-    print(prefix, 'Estimated_BAB_cost:',estimation_bab )
-
-    # EnumerationSolver = ScenarioEnumerationSolver(instance=OCVRPInstance, solverType=solverType)
-    # EnumerationSolver.exactPolicyByEnumeration_withoutGurobi_2segm()
-
-# prof = cProfile.Profile()
-
-# if __name__ == '__main__':
-#     arr = []
-#     prof.enable()
-#     test()
-#     prof.disable()
-#     #prof.print_stats()
-#     #prof.dump_stats("main_func.prof")
-#     p = pstats.Stats(prof)
-#     p.strip_dirs().sort_stats(pstats.SortKey.CUMULATIVE).print_stats(50)
+    y = [(1-x1)**N0 * (x1)**(N-N0) for x1 in x]
+    plt.plot(x, y)
+    plt.show()

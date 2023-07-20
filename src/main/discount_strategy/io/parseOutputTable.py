@@ -336,6 +336,14 @@ def parseBAB(file_path, folder, output_name):
                     num_tsps = float(lines[idx + 6].split(':')[1])
                     optimal = int(lines[idx + 7].split(':')[1])
                     obj_val = float(lines[idx + 8].split(':')[1].split('Obj_val(lb)')[0])
+                    try:
+                        pruned_by_cliques= int(lines[idx + 13].split(':')[1]) +  int(lines[idx + 14].split(':')[1]) + int(lines[idx + 15].split(':')[1]) + int(lines[idx + 16].split(':')[1])
+                        pruned_by_insertionCost= int(lines[idx + 17].split(':')[1]) +  int(lines[idx + 18].split(':')[1])
+                        pruned_by_bounds = int(lines[idx + 19].split(':')[1]) +int(lines[idx + 20].split(':')[1])
+                    except:
+                        pruned_by_cliques = 0
+                        pruned_by_insertionCost = 0
+                        pruned_by_bounds = 0
                     #obj_val = float(lines[idx + 13].split('[')[1].split(',')[0])
                     # 2sd:
                     #sd = float(lines[idx + 13].split('[')[1].split(',')[0]) - float(
@@ -350,13 +358,13 @@ def parseBAB(file_path, folder, output_name):
                     #               policy_ID, num_disc, instance])
                     data.append(
                         [eps, nrCust, nrPup, p_home,  discount, time_running, time_first_opt, nodes, num_tsps, optimal,'',
-                         obj_val,'', policy_ID, num_disc, instance,instance_id, p_pup])
+                         obj_val,'', policy_ID, num_disc, instance,instance_id, p_pup, pruned_by_cliques, pruned_by_insertionCost, pruned_by_bounds])
             except:
                 data.append([eps, nrCust, nrPup, p_home,  discount, "", "", "", "", "", "", "",
                              "", "", "", instance, p_pup])
                 print("bab problem with instance ", (line.split('/')[len(line.split('/')) - 1]), " line: ", idx)
     rowTitle = ['eps', 'nrCust',"nrPup", 'p_home', 'discount_rate', 'time_bab', 'time_tb', 'nodes',
-                'num_tsps', 'optimal', 'gap', 'obj_val_bab', '2sd_bab', 'policy_bab_ID', 'num_disc_bab', 'instance', 'instance_id','p_pup', ]
+                'num_tsps', 'optimal', 'gap', 'obj_val_bab', '2sd_bab', 'policy_bab_ID', 'num_disc_bab', 'instance', 'instance_id','p_pup', 'pruned_by_cliques', 'pruned_by_insertionCost','pruned_by_bounds']
     writer(os.path.join(folder, output_name + ".csv"), data, rowTitle)
 
 
@@ -2445,7 +2453,8 @@ def experiment_bab_solution_time_classes_pups(folder):
 
 
         df_results = pd.DataFrame(  columns=['class','delta', 'u', 'p', 'sp0', 'time', 'time_min',  'time_max','sp1', 'fulf_cost',
-                                             'fulf_cost_min','fulf_cost_max','sp2', 'num_inc','num_inc_min','num_inc_max'])
+                                             'fulf_cost_min','fulf_cost_max','sp2', 'num_inc','num_inc_min','num_inc_max', 'nodes',  'num_tsps',
+                                             'pruned_by_cliques', 'pruned_by_insertionCost','pruned_by_bounds'])
         iter = -1
         dict_parameters = {0:[0.6, 0.06, 'C1'], 1:[0.3, 0.06,'C2'], 2:[0.9, 0.06,'C3'], 3:[0.6, 0.03,'C4'], 4:[0.6, 0.12,'C5']}
         df_bab_temp = df_bab[df_bab['instance_id'].isin([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])].copy()
@@ -2475,7 +2484,17 @@ def experiment_bab_solution_time_classes_pups(folder):
                 df_results.at[iter, 'num_inc'] = df_slice['num_disc_bab'].mean()
                 df_results.at[iter, 'num_inc_min'] = df_slice['num_disc_bab'].min()
                 df_results.at[iter, 'num_inc_max'] = df_slice['num_disc_bab'].max()
+                df_results.at[iter, 'nodes'] = round(df_slice['nodes'].mean())
+                df_results.at[iter, 'num_tsps'] = round(df_slice['num_tsps'].mean())
+                df_results.at[iter, 'pruned_by_cliques'] = round(df_slice['pruned_by_cliques'].mean())
+                df_results.at[iter, 'pruned_by_insertionCost'] = round(df_slice['pruned_by_insertionCost'].mean())
+                df_results.at[iter, 'pruned_by_bounds'] = round(df_slice['pruned_by_bounds'].mean())
+    df_results = df_results[['class','delta', 'u', 'p', 'sp0', 'time', 'time_min',  'time_max','sp1', 'fulf_cost',
+                                             'sp2', 'num_inc', 'nodes',  'num_tsps',
+                                             'pruned_by_cliques', 'pruned_by_insertionCost','pruned_by_bounds']].copy()
 
+    #df_results = df_results[['class','delta', 'u', 'p', 'sp0', 'time', 'time_min',  'time_max','sp1', 'fulf_cost',
+    #                                         'fulf_cost_min','fulf_cost_max','sp2', 'num_inc','num_inc_min','num_inc_max']].copy()
     print(df_results.to_latex(float_format='{:0.1f}'.format, na_rep='', index=False)) #
     # table with effect of parameters on solution time and fulfillment cost for n=30 customers
     if False:
