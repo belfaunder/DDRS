@@ -79,7 +79,7 @@ if __name__ == "__main__":
     # plt.plot(x, y)
     # plt.show()
     N = 21
-    N0 = 5
+    N0 = 20
     x = list(i/20 for i in range(0,20))
 
     y = [(1-x1)**N0 * (x1)**(N-N0) for x1 in x]

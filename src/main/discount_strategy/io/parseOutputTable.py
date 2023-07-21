@@ -3381,7 +3381,7 @@ def large_exp(folder):
     sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
     fig, axes = plt.subplots(1, 1, figsize=(10, 5))
         # impact of the problem size on the objective value hue number of pups
-    if True: #impact of the problem size on the objective value hue number of pups
+    if False: #impact of the problem size on the objective value hue number of pups
         df = df[df['nrCust'].isin([20, 25, 30, 35, 40, 45, 50])].copy()
         df = df[df.discount_rate == 0.06].copy()
         df = df[['nrCust','nrPup', 'objValPrint', 'time_bab' ]].copy()
@@ -3864,7 +3864,7 @@ if __name__ == "__main__":
     folder_data_prob = os.path.join(path_to_data, "data", "i_VRPDO_prob")
     folder_large = os.path.join(path_to_data, "output", "VRPDO_2segm_large")
     #experiment_heuristic_parameters_variation(folder_large)
-    #large_exp(folder_large)
+    large_exp(folder_large)
     #managerial_effect_delta(folder_large)
     #sensitivity_disc_size_comparison_nodisc(folder, folder_data_disc)
     #sensitivity_comparison_nodisc_rs(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
@@ -3884,7 +3884,7 @@ if __name__ == "__main__":
     #managerial_location(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
     #managerial_effect_delta(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
     #experiment_bab_solution_time_classes(folder_2segm_manyPUP)
-    experiment_bab_solution_time_classes_pups(folder_2segm_manyPUP)
+    #experiment_bab_solution_time_classes_pups(folder_2segm_manyPUP)
     # parseBAB(os.path.join(folder, "bab_7types_nrCust.txt"), folder, "bab_7types_nrCust")
 
     # experiment_heuristic_general()
