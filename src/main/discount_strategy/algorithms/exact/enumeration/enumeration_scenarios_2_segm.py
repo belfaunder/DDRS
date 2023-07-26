@@ -1,7 +1,7 @@
 import itertools
 from src.main.discount_strategy.util.bit_operations import bitCount
 import gurobipy as grb
-
+import seaborn as sns
 import numpy as np
 from src.main.discount_strategy.util import constants
 from src.main.discount_strategy.util import probability
@@ -72,6 +72,8 @@ class ScenarioEnumerationSolver:
         bestPolicy = 0
         bestPolicyCost = 10**10
 
+        temp_cost = []
+
         for policy in Y:
             policyCost = 0
             for i in range(1, n + 1):
@@ -82,10 +84,12 @@ class ScenarioEnumerationSolver:
                 if not (~policy & scenario):
                     scenarioProb = probability.scenarioProb_2segm(scenario, policy, n, n, self.instance.p_pup_delta)
                     policyCost += scenarioProb* routeCost[scenario]
-
+            temp_cost.append(policyCost)
             if policyCost < bestPolicyCost:
                 bestPolicyCost = policyCost
                 bestPolicy = policy
+        sns.displot(temp_cost, bins=50)
+        plt.show()
 
         print(prefix+ "Obj_val: ", round(bestPolicyCost, 5))
         print(prefix+ "Best_policy_enumeration_ID: ", bestPolicy)

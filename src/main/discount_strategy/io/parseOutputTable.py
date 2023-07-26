@@ -337,9 +337,14 @@ def parseBAB(file_path, folder, output_name):
                     optimal = int(lines[idx + 7].split(':')[1])
                     obj_val = float(lines[idx + 8].split(':')[1].split('Obj_val(lb)')[0])
                     try:
-                        pruned_by_cliques= int(lines[idx + 13].split(':')[1]) +  int(lines[idx + 14].split(':')[1]) + int(lines[idx + 15].split(':')[1]) + int(lines[idx + 16].split(':')[1])
-                        pruned_by_insertionCost= int(lines[idx + 17].split(':')[1]) +  int(lines[idx + 18].split(':')[1])
-                        pruned_by_bounds = int(lines[idx + 19].split(':')[1]) +int(lines[idx + 20].split(':')[1])
+                        pruned_by_cliques_l= int(lines[idx + 14].split(':')[1])
+                        pruned_by_cliques_nl= int(lines[idx + 13].split(':')[1])
+                        pruned_by_rs_l =  int(lines[idx + 16].split(':')[1])
+                        pruned_by_rs_nl = int(lines[idx + 15].split(':')[1])
+                        pruned_by_insertionCost_nl= int(lines[idx + 17].split(':')[1])
+                        pruned_by_insertionCost_l = int(lines[idx + 18].split(':')[1])
+                        pruned_by_bounds_nl = int(lines[idx + 19].split(':')[1])
+                        pruned_by_bounds_l = int(lines[idx + 20].split(':')[1])
                     except:
                         pruned_by_cliques = 0
                         pruned_by_insertionCost = 0
@@ -358,13 +363,16 @@ def parseBAB(file_path, folder, output_name):
                     #               policy_ID, num_disc, instance])
                     data.append(
                         [eps, nrCust, nrPup, p_home,  discount, time_running, time_first_opt, nodes, num_tsps, optimal,'',
-                         obj_val,'', policy_ID, num_disc, instance,instance_id, p_pup, pruned_by_cliques, pruned_by_insertionCost, pruned_by_bounds])
+                         obj_val,'', policy_ID, num_disc, instance,instance_id, p_pup, pruned_by_cliques_nl,
+                         pruned_by_cliques_l,pruned_by_rs_nl, pruned_by_rs_l, pruned_by_insertionCost_nl, pruned_by_insertionCost_l, pruned_by_bounds_nl, pruned_by_bounds_l])
             except:
                 data.append([eps, nrCust, nrPup, p_home,  discount, "", "", "", "", "", "", "",
                              "", "", "", instance, p_pup])
                 print("bab problem with instance ", (line.split('/')[len(line.split('/')) - 1]), " line: ", idx)
     rowTitle = ['eps', 'nrCust',"nrPup", 'p_home', 'discount_rate', 'time_bab', 'time_tb', 'nodes',
-                'num_tsps', 'optimal', 'gap', 'obj_val_bab', '2sd_bab', 'policy_bab_ID', 'num_disc_bab', 'instance', 'instance_id','p_pup', 'pruned_by_cliques', 'pruned_by_insertionCost','pruned_by_bounds']
+                'num_tsps', 'optimal', 'gap', 'obj_val_bab', '2sd_bab', 'policy_bab_ID', 'num_disc_bab', 'instance',
+                'instance_id','p_pup', 'pruned_by_cliques_nl','pruned_by_cliques_l','pruned_by_rs_nl', 'pruned_by_rs_l',
+                                             'pruned_by_insertionCost_nl', 'pruned_by_insertionCost_l', 'pruned_by_bounds_nl', 'pruned_by_bounds_l']
     writer(os.path.join(folder, output_name + ".csv"), data, rowTitle)
 
 
@@ -2447,14 +2455,15 @@ def experiment_bab_solution_time_classes_pups(folder):
 
     #table with effect of parameters on solution time and fulfillment cost
     if True:
-        #parseBAB(os.path.join(folder, "17_07_23_bab_classes.txt"), folder, "17_07_23_bab_classes")
+        #parseBAB(os.path.join(folder, "21_07_23_bab_classes.txt"), folder, "21_07_23_bab_classes")
         df_bab = pd.read_csv(os.path.join(folder, "17_07_23_bab_classes.csv"))
         df_bab = df_bab[df_bab['nrCust'] == 18].copy()
 
 
-        df_results = pd.DataFrame(  columns=['class','delta', 'u', 'p', 'sp0', 'time', 'time_min',  'time_max','sp1', 'fulf_cost',
+        df_results = pd.DataFrame(  columns=['class','delta', 'u', 'p', 'sp0', 'time', 'time_min',  'time_max','sp1','sp3', 'fulf_cost',
                                              'fulf_cost_min','fulf_cost_max','sp2', 'num_inc','num_inc_min','num_inc_max', 'nodes',  'num_tsps',
-                                             'pruned_by_cliques', 'pruned_by_insertionCost','pruned_by_bounds'])
+                                             'pruned_by_cliques_nl','pruned_by_cliques_l','pruned_by_rs_nl', 'pruned_by_rs_l',
+                                             'pruned_by_insertionCost_nl', 'pruned_by_insertionCost_l', 'pruned_by_bounds_nl', 'pruned_by_bounds_l', 'pruned_n', 'pruned_n_min','pruned_n_max'])
         iter = -1
         dict_parameters = {0:[0.6, 0.06, 'C1'], 1:[0.3, 0.06,'C2'], 2:[0.9, 0.06,'C3'], 3:[0.6, 0.03,'C4'], 4:[0.6, 0.12,'C5']}
         df_bab_temp = df_bab[df_bab['instance_id'].isin([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])].copy()
@@ -2467,8 +2476,16 @@ def experiment_bab_solution_time_classes_pups(folder):
                 df_bab_temp = df_bab[df_bab['instance_id'].isin([0, 1, 2,3, 4, 5, 7,8,9])].copy()
             if delta==0.3:
                 df_bab_temp = df_bab[df_bab['instance_id'].isin([0, 1, 2, 4, 5,6, 8])].copy()
+            df_bab_temp['pruned_nodes'] = df_bab_temp['pruned_by_cliques_nl'] + \
+                                          df_bab_temp['pruned_by_cliques_l'] + \
+                                          df_bab_temp['pruned_by_rs_nl'] + \
+                                          df_bab_temp['pruned_by_rs_l'] + \
+                                          df_bab_temp['pruned_by_insertionCost_nl'] + \
+                                          df_bab_temp['pruned_by_insertionCost_l'] + \
+                                          df_bab_temp['pruned_by_bounds_nl'] + df_bab_temp['pruned_by_bounds_l']
             for nr_pup in [1, 3, 5]:
                 iter += 1
+                print(key)
                 df_slice = df_bab_temp[(df_bab_temp['p_home']==round(1-delta,1)) &(df_bab_temp['discount_rate']==u)&(df_bab_temp['nrPup']==nr_pup)].copy()
                 if iter % 3==0:
                     df_results.at[iter, 'class'] = dict_parameters[key][2]
@@ -2486,15 +2503,25 @@ def experiment_bab_solution_time_classes_pups(folder):
                 df_results.at[iter, 'num_inc_max'] = df_slice['num_disc_bab'].max()
                 df_results.at[iter, 'nodes'] = round(df_slice['nodes'].mean())
                 df_results.at[iter, 'num_tsps'] = round(df_slice['num_tsps'].mean())
-                df_results.at[iter, 'pruned_by_cliques'] = round(df_slice['pruned_by_cliques'].mean())
-                df_results.at[iter, 'pruned_by_insertionCost'] = round(df_slice['pruned_by_insertionCost'].mean())
-                df_results.at[iter, 'pruned_by_bounds'] = round(df_slice['pruned_by_bounds'].mean())
-    df_results = df_results[['class','delta', 'u', 'p', 'sp0', 'time', 'time_min',  'time_max','sp1', 'fulf_cost',
-                                             'sp2', 'num_inc', 'nodes',  'num_tsps',
-                                             'pruned_by_cliques', 'pruned_by_insertionCost','pruned_by_bounds']].copy()
+                df_results.at[iter, 'pruned_by_cliques_nl'] = round(df_slice['pruned_by_cliques_nl'].mean())
+                df_results.at[iter, 'pruned_by_cliques_l'] = round(df_slice['pruned_by_cliques_l'].mean())
+                df_results.at[iter, 'pruned_by_rs_nl'] = round(df_slice['pruned_by_rs_nl'].mean())
+                df_results.at[iter, 'pruned_by_rs_l'] = round(df_slice['pruned_by_rs_l'].mean())
+                df_results.at[iter, 'pruned_by_insertionCost_nl'] = round(df_slice['pruned_by_insertionCost_nl'].mean())
+                df_results.at[iter, 'pruned_by_insertionCost_l'] = round(df_slice['pruned_by_insertionCost_l'].mean())
+                df_results.at[iter, 'pruned_by_bounds_nl'] = round(df_slice['pruned_by_bounds_nl'].mean())
+                df_results.at[iter, 'pruned_by_bounds_l'] = round(df_slice['pruned_by_bounds_l'].mean())
+                df_results.at[iter, 'pruned_n'] = round(df_slice['pruned_nodes'].mean())
+                df_results.at[iter, 'pruned_n_min'] = round(df_slice['pruned_nodes'].min())
+                df_results.at[iter, 'pruned_n_max'] = round(df_slice['pruned_nodes'].max())
 
-    #df_results = df_results[['class','delta', 'u', 'p', 'sp0', 'time', 'time_min',  'time_max','sp1', 'fulf_cost',
-    #                                         'fulf_cost_min','fulf_cost_max','sp2', 'num_inc','num_inc_min','num_inc_max']].copy()
+    # df_results = df_results[['delta', 'u', 'p', 'sp0', 'time', 'time_min',  'time_max','sp1', 'fulf_cost',
+    #                                          'sp2', 'num_inc', 'nodes',  'num_tsps',
+    #                                          'pruned_by_cliques_nl','pruned_by_cliques_l','pruned_by_rs_nl', 'pruned_by_rs_l',
+    #                                          'pruned_by_insertionCost_nl', 'pruned_by_insertionCost_l', 'pruned_by_bounds_nl', 'pruned_by_bounds_l']].copy()
+
+    df_results = df_results[['class','delta', 'u', 'p', 'sp0', 'time', 'time_min',  'time_max','sp1', 'pruned_n', 'pruned_n_min', 'pruned_n_max','sp3',
+                             'fulf_cost','fulf_cost_min','fulf_cost_max','sp2', 'num_inc','num_inc_min','num_inc_max']].copy()
     print(df_results.to_latex(float_format='{:0.1f}'.format, na_rep='', index=False)) #
     # table with effect of parameters on solution time and fulfillment cost for n=30 customers
     if False:
@@ -3583,6 +3610,106 @@ def large_exp(folder):
 def managerial_location(folder):
     #parseBABHeuristic(os.path.join(folder, "02_18_bab_nodisc_rs_30.txt"), folder, "02_18_bab_nodisc_rs_30")
     # effect of centrality and delta on the distribution of  offered incentives
+    if True:
+
+        df_bab = pd.read_csv(os.path.join(folder, "17_07_23_bab_classes.csv"))
+
+        df = df_bab[df_bab['nrCust'] == 18].copy()
+        folder_data = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPup_classes")
+        df = df[df.nrPup == 3].copy()
+        # df['class'] = df.apply(lambda x: 'low_determinism' if x['p_home'] == 0.7 else (
+        #     'high_determinism' if x['p_home'] == 0.1 else (
+        #         'high_disc' if x['discount_rate'] == 0.12 else (
+        #             'low_disc' if x['discount_rate'] == 0.03 else 'base'))), axis=1)
+
+        df['class_id'] = df.apply(lambda x: 2 if x['p_home'] == 0.7 else (
+            3 if x['p_home'] == 0.1 else (
+                5 if x['discount_rate'] == 0.12 else (
+                    4 if x['discount_rate'] == 0.03 else 1))), axis=1)
+
+        df = df[["class_id", 'discount_rate', 'nrPup', 'policy_bab_ID', 'instance']].copy()
+
+        sns.set()
+        sns.set(font_scale=1.2)
+        sns.set_context(rc={'font.sans-serif': 'Computer Modern Sans Serif'})
+        sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
+        sns.set_style('ticks', {"xtick.bottom": False, "ytick.direction": "in"})
+        fig, axes = plt.subplots(1, 1, sharey=True, sharex=True)
+        df['instance_type'] = df['instance'].apply(lambda x: int(str(x).split('_')[10]))
+        # df = df[df['instance_type'].isin([0,2,3,4])].copy()
+        distances = [3.3, 6.6, 9.9, 16]
+        #distances = [3, 6, 9, 16]
+        dict_distances = {}
+        class_bins = [1, 2, 3, 4, 5]
+        bottom_dict = {}
+        for distance in distances:
+            bottom_dict[distance] = [0] * (len(class_bins))
+        for distance in distances:
+            dict_distances[distance] = [0] * (len(class_bins))
+
+        colors = [(30 / 255, 30 / 255, 50 / 255, 0.8),
+                  (190 / 255, 190 / 255, 200 / 255),
+                  (90 / 255, 120 / 255, 90 / 255),
+                  (230 / 255, 230 / 255, 255 / 255),
+                  (140 / 255, 140 / 255, 160 / 255)]
+        iter = -1
+        list_farness = []
+        for class_id in class_bins:
+            iter += 1
+            df1 = df[df.class_id == class_id].copy()
+            number_instances = 0
+            for index, row in df1.iterrows():
+                number_instances += 1
+                instance = row['instance']
+                OCVRPInstance = OCVRPParser.parse(os.path.join(folder_data, instance + ".txt"))
+                for cust in OCVRPInstance.customers:
+                    farness = OCVRPInstance.distanceMatrix[cust.id, cust.closest_pup_id] / 10
+                    list_farness.append(farness)
+                    for distance in distances:
+                        if farness < distance:
+                            if row['policy_bab_ID'] & (1 << cust.id - 1):
+                                dict_distances[distance][iter] += 1
+                            break
+            for distance in distances:
+                dict_distances[distance][iter] = dict_distances[distance][iter] / number_instances
+        print(sum(list_farness) / len(list_farness))
+        print("max farness", max(list_farness))
+        distances.reverse()
+        for distance in distances:
+            iter = -1
+            for iter_temp in class_bins:
+                iter += 1
+                for dist_temp in distances:
+                    if dist_temp < distance:
+                        bottom_dict[distance][iter] += dict_distances[dist_temp][iter]
+
+        lable_dict = {3.3: '0 - 3', 6.6: '3 - 6', 9.9: '6 - 9', 16:'> 9' }
+        class_bins_print = [0.7, 1.7, 2.7, 3.7, 4.7]
+        for index, distance in enumerate(distances):
+            print("distance", distance)
+            axes.bar(class_bins_print, dict_distances[distance], bottom=bottom_dict[distance], width=0.6, align="edge",
+                     color=colors[index], label=lable_dict[distance])
+            # str()discount_rate
+            # axes.bar(delta_bins, percent, width=1, align="edge",  label=r'$\Delta = $'+str(round(1-p_home,1)), hatch=pattern)  # str()discount_rate
+
+        axes.set(xlabel='Parameter combination')
+        axes.set(ylabel='Number of incentives')
+        # #plt.gca().set_xticks([round(i+0.5,1) for i in bins_all[:-1]]) r'$(\Delta = 0.6, u=0.06)$
+        # plt.gca().set_xticks(class_bins, ['C1\n ' +r'$\Delta = 0.6$'  +'\n'+r'$u=0.06$',
+        #                                   'C2\n ' +r'$\Delta = 0.3$'  +'\n'+r'$u=0.06$',
+        #                                   'C3\n ' +r'$\Delta = 0.9$'  +'\n'+r'$u=0.06$',
+        #                                   'C4\n ' +r'$\Delta = 0.6$'  +'\n'+r'$u=0.03$',
+        #                                   'C5\n ' +r'$\Delta = 0.6$'  +'\n'+r'$u=0.12$'])
+        plt.gca().set_xticks(class_bins, ['C1',
+                                          'C2',
+                                          'C3',
+                                          'C4',
+                                          'C5'])
+        plt.yticks(np.arange(0, 11 + 1, 2.0))
+        #axes.set_ylim(0, 23)
+        plt.legend(loc='upper left', title='Distance to \npickup point')
+        plt.savefig(os.path.join(path_to_images, 'centrality_delta_2.eps'), transparent=False, bbox_inches='tight')
+        plt.show()
     if False:
         df = pd.read_csv(os.path.join(folder, "02_18_bab_nodisc_rs_30.csv"))
         folder_data = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_30")
@@ -3729,9 +3856,8 @@ def managerial_location(folder):
         plt.legend( loc='upper right')
         plt.savefig(os.path.join(path_to_images, 'centrality_delta.eps'), transparent=False, bbox_inches='tight')
         plt.show()
-
     # effect of centrality and discount on the distribution of  offered incentives
-    if True:
+    if False:
         df = pd.read_csv(os.path.join(folder, "02_18_bab_nodisc_rs_30.csv"))
         folder_data = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_30")
         df = df[df.p_home == 0.4].copy()
@@ -3885,6 +4011,7 @@ if __name__ == "__main__":
     #managerial_effect_delta(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
     #experiment_bab_solution_time_classes(folder_2segm_manyPUP)
     experiment_bab_solution_time_classes_pups(folder_2segm_manyPUP)
+    #managerial_location(folder_2segm_manyPUP)
     # parseBAB(os.path.join(folder, "bab_7types_nrCust.txt"), folder, "bab_7types_nrCust")
 
     # experiment_heuristic_general()

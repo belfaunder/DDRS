@@ -54,11 +54,11 @@ class BABExact(BAB_super_class):
             # lbPrint.append( self.bestNode.lbVal() )
             # ubPrint.append(self.bestNode.ubVal())
             # time.append(process_time()-start_time)
-            #print("\nnextNode", nextNode.withDiscountID, bin(nextNode.withDiscountID), nextNode.layer,
-            #      nextNode.exactValueProb, nextNode.exactValue, nextNode.lbRoute,
-            #   nextNode.lbVal(), nextNode.ubVal())
-            #print("bestNode", bin(self.bestNode.withDiscountID), self.bestNode.withDiscountID,
-            #      self.bestNode.exactValueProb, self.bestNode.lbRoute, self.bestNode.lbVal() ,self.bestNode.ubVal()  )
+            # print("\nnextNode", nextNode.withDiscountID, bin(nextNode.withDiscountID),
+            #       nextNode.exactValueProb, nextNode.exactValue, nextNode.lbRoute,
+            #    nextNode.lbVal(), nextNode.ubVal())
+            # print("bestNode", bin(self.bestNode.withDiscountID), self.bestNode.withDiscountID,
+            #       self.bestNode.exactValueProb, self.bestNode.lbRoute, self.bestNode.lbVal() ,self.bestNode.ubVal()  )
 
             # print(len(self.instance.routeCost))
             #for id in nextNode.lbScenarios:
