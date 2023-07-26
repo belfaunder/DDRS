@@ -3611,19 +3611,16 @@ def managerial_location(folder):
     #parseBABHeuristic(os.path.join(folder, "02_18_bab_nodisc_rs_30.txt"), folder, "02_18_bab_nodisc_rs_30")
     # effect of centrality and delta on the distribution of  offered incentives
     if True:
-
-        df_bab = pd.read_csv(os.path.join(folder, "17_07_23_bab_classes.csv"))
-
-        df = df_bab[df_bab['nrCust'] == 18].copy()
-        folder_data = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPup_classes")
+        df = pd.read_csv(os.path.join(folder, "02_18_bab_nodisc_rs_30.csv"))
+        folder_data = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_30")
         df = df[df.nrPup == 3].copy()
         # df['class'] = df.apply(lambda x: 'low_determinism' if x['p_home'] == 0.7 else (
         #     'high_determinism' if x['p_home'] == 0.1 else (
         #         'high_disc' if x['discount_rate'] == 0.12 else (
         #             'low_disc' if x['discount_rate'] == 0.03 else 'base'))), axis=1)
 
-        df['class_id'] = df.apply(lambda x: 2 if x['p_home'] == 0.7 else (
-            3 if x['p_home'] == 0.1 else (
+        df['class_id'] = df.apply(lambda x: 2 if x['p_home'] == 0.8 else (
+            3 if x['p_home'] == 0.2 else (
                 5 if x['discount_rate'] == 0.12 else (
                     4 if x['discount_rate'] == 0.03 else 1))), axis=1)
 
@@ -3637,8 +3634,8 @@ def managerial_location(folder):
         fig, axes = plt.subplots(1, 1, sharey=True, sharex=True)
         df['instance_type'] = df['instance'].apply(lambda x: int(str(x).split('_')[10]))
         # df = df[df['instance_type'].isin([0,2,3,4])].copy()
-        distances = [3.3, 6.6, 9.9, 16]
-        #distances = [3, 6, 9, 16]
+        # distances = [3, 6, 9, 12, 15]
+        distances = [3, 8, 16]
         dict_distances = {}
         class_bins = [1, 2, 3, 4, 5]
         bottom_dict = {}
@@ -3683,7 +3680,7 @@ def managerial_location(folder):
                     if dist_temp < distance:
                         bottom_dict[distance][iter] += dict_distances[dist_temp][iter]
 
-        lable_dict = {3.3: '0 - 3', 6.6: '3 - 6', 9.9: '6 - 9', 16:'> 9' }
+        lable_dict = {3: '0 - 4', 8: '4 - 8', 16: '> 8', }
         class_bins_print = [0.7, 1.7, 2.7, 3.7, 4.7]
         for index, distance in enumerate(distances):
             print("distance", distance)
@@ -3705,10 +3702,10 @@ def managerial_location(folder):
                                           'C3',
                                           'C4',
                                           'C5'])
-        plt.yticks(np.arange(0, 11 + 1, 2.0))
-        #axes.set_ylim(0, 23)
-        plt.legend(loc='upper left', title='Distance to \npickup point')
-        plt.savefig(os.path.join(path_to_images, 'centrality_delta_2.eps'), transparent=False, bbox_inches='tight')
+        plt.yticks(np.arange(0, 21 + 1, 2.0))
+        axes.set_ylim(0, 23)
+        plt.legend(loc='upper left', title='Distance to pickup point')
+        #plt.savefig(os.path.join(path_to_images, 'centrality_delta_2.eps'), transparent=False, bbox_inches='tight')
         plt.show()
     if False:
         df = pd.read_csv(os.path.join(folder, "02_18_bab_nodisc_rs_30.csv"))
@@ -4010,8 +4007,8 @@ if __name__ == "__main__":
     #managerial_location(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
     #managerial_effect_delta(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
     #experiment_bab_solution_time_classes(folder_2segm_manyPUP)
-    experiment_bab_solution_time_classes_pups(folder_2segm_manyPUP)
-    #managerial_location(folder_2segm_manyPUP)
+    #experiment_bab_solution_time_classes_pups(folder_2segm_manyPUP)
+    managerial_location(folder_2segm_manyPUP)
     # parseBAB(os.path.join(folder, "bab_7types_nrCust.txt"), folder, "bab_7types_nrCust")
 
     # experiment_heuristic_general()
