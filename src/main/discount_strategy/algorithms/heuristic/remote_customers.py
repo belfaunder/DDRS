@@ -35,8 +35,8 @@ def policy_remote_customers(instance):
         distancesf = [instance.distanceMatrix[cust.id, j.id] for j in instance.customers if
                            j is not cust] + [instance.distanceMatrix[cust.id, j.id] for j in instance.pups] + [instance.distanceMatrix[cust.id, instance.depot.id]]
         #print(cust.id, sorted(distancesf), instance.distanceMatrix[cust.id, cust.closest_pup_id])
-        farness[cust.id] = round(sum(sorted(distancesf)[:1])/1)
-        list_farness_all.append(round(sum(sorted(distancesf)[:1])/1))
+        farness[cust.id] = round(sum(sorted(distancesf)[:4])/4)
+        list_farness_all.append(round(sum(sorted(distancesf)[:4])/4))
     list_farness.reverse()
     list_discounts.reverse()
     list_farness_all.reverse()

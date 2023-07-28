@@ -3613,7 +3613,7 @@ def large_exp(folder):
         df_remote[['nrCust_rem', "p_home_rem", "nrPup_rem", 'discount_rate_rem']] = \
             df_remote[['nrCust_rem', "p_home_rem", "nrPup_rem", 'discount_rate_rem']].apply(pd.to_numeric)
         df_remote = df_remote[
-            (df_remote.nrCust_rem == 18) & (df_remote.nrPup_rem == 3) & (df_remote.discount_rate_rem == 0.06) & (
+            (df_remote.nrCust_rem == 18) & (df_remote.nrPup_rem == 3) & (df_remote.discount_rate_rem == 0.12) & (
                         df_remote.p_home_rem == 0.4)]
 
         df_copy = df[['instance', 'nrCust', 'policy_bab_ID', 'obj_val_bab']].copy()
