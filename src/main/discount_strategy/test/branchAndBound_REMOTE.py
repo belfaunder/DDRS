@@ -12,7 +12,7 @@ from src.main.discount_strategy.algorithms.exact.bab.BAB_exact import BABExact
 from src.main.discount_strategy.algorithms.heuristic.sample_average import sampleAverageApproximation_PoissonBinomial_1sample_2segm
 from src.main.discount_strategy.algorithms.heuristic.sample_average import one_policy_cost_estimation
 from src.main.discount_strategy.io import OCVRPParser
-from src.main.discount_strategy.algorithms.heuristic.remote_customers import policy_remote_customers
+from src.main.discount_strategy.algorithms.heuristic.remote_customers import policy_remote_customers,policy_remote_rs
 
 from src.main.discount_strategy.io import print_functions
 from src.main.discount_strategy.algorithms.exact.ring_star_without_TW import ring_star_deterministic_no_TW
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()
     print(OCVRPInstance)
-    remote_policy_ID = policy_remote_customers(OCVRPInstance)
+    remote_policy_ID = policy_remote_rs(OCVRPInstance)
 
 
 
@@ -55,7 +55,6 @@ if __name__ == "__main__":
     # estimation_remote = sampleAverageApproximation_PoissonBinomial_1sample_2segm(instance=OCVRPInstance,
     #                                                                              policy=0,
     #                                                                              solverType=solverType)
-    print(bin(remote_policy_ID))
-    print(bin(258))
+
     print(prefix+ 'Remote_policy:', remote_policy_ID)
     print(prefix+ 'Estimated_REMOTE_cost:', estimation_remote)

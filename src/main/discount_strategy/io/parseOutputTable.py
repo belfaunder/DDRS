@@ -3612,35 +3612,48 @@ def large_exp(folder):
         df_remote = pd.read_csv(os.path.join(folder, "28_07_23_remote.csv"))
         df_remote[['nrCust_rem', "p_home_rem", "nrPup_rem", 'discount_rate_rem']] = \
             df_remote[['nrCust_rem', "p_home_rem", "nrPup_rem", 'discount_rate_rem']].apply(pd.to_numeric)
-        df_remote = df_remote[
-            (df_remote.nrCust_rem == 18) & (df_remote.nrPup_rem == 3) & (df_remote.discount_rate_rem == 0.12) & (
-                        df_remote.p_home_rem == 0.4)]
+        df_remote = df_remote[(df_remote.nrCust_rem == 18) & (df_remote.nrPup_rem == 3)]
+        # df_remote = df_remote[
+        #     (df_remote.nrCust_rem == 15) & (df_remote.nrPup_rem == 3) & (df_remote.discount_rate_rem == 0.06) & (
+        #             df_remote.p_home_rem == 0.4)]
+
+        df_remote['class_id'] = df_remote.apply(lambda x: 2 if x['p_home_rem'] == 0.7 else (
+            3 if x['p_home_rem'] == 0.1 else (
+                5 if x['discount_rate_rem'] == 0.12 else (
+                    4 if x['discount_rate_rem'] == 0.03 else 1))), axis=1)
 
         df_copy = df[['instance', 'nrCust', 'policy_bab_ID', 'obj_val_bab']].copy()
         df_remote = df_remote.merge(df_copy, on='instance')
         df_remote['same_remote'] =''
+        df_remote['cost_diff'] = ''
         df_remote['babbin'] = ''
         df_remote['remotebin'] = ''
 
-        for index, row in df_remote.iterrows():
-            print(bin(row['policy_remote_ID']), bin(row['policy_bab_ID']), (row['obj_val_remote'] - row['obj_val_bab'])/row['obj_val_remote'])
-            same_remote = 0
-            try:
-                df_remote['babbin'].at[index] = bin(int(row['policy_bab_ID']))
-                df_remote['remotebin'].at[index] = bin(int(row['policy_remote_ID']))
-                for cust in range(row['nrCust']):
-                    if int(row['policy_bab_ID'])& (1<< cust) == int(row['policy_remote_ID'])& (1<< cust) :
-                        same_remote += 1
-                df_remote.at[index, 'same_remote'] = same_remote/row['nrCust']
-            except:
-                pass
-        df_remote = df_remote.dropna(axis=0)
-        df_results = pd.DataFrame(index=df_remote.nrCust.unique(), columns=['same_remote'])
-        for n in df_remote.nrCust.unique():
-            df_slice = df_remote[(df_remote.nrCust == n)].copy()
-            df_results.at[n, 'same_remote'] = round(df_slice['same_remote'].mean(), 2)
-        print(df_results.to_latex(float_format='{:0.2f}'.format, na_rep=''))
-        print("")
+        for class_id in [1,2,3,4,5]:
+            df_temp = df_remote[(df_remote.class_id == class_id)].copy()
+            for index, row in df_temp.iterrows():
+                #print(bin(row['policy_remote_ID']), bin(row['policy_bab_ID']),
+                # (row['obj_val_remote'] - row['obj_val_bab'])/row['obj_val_remote'])
+                same_remote = 0
+                try:
+                    df_temp['babbin'].at[index] = bin(int(row['policy_bab_ID']))
+                    df_temp['remotebin'].at[index] = bin(int(row['policy_remote_ID']))
+                    for cust in range(row['nrCust']):
+                        if int(row['policy_bab_ID'])& (1<< cust) == int(row['policy_remote_ID'])& (1<< cust) :
+                            same_remote += 1
+                    df_temp.at[index, 'same_remote'] = same_remote/row['nrCust']
+                    df_temp.at[index, 'cost_diff'] = (row['obj_val_remote'] - row['obj_val_bab'])/row['obj_val_remote']
+                except:
+                    pass
+
+            df_temp = df_temp.dropna(axis=0)
+            #df_results = pd.DataFrame(index=df_temp.nrCust.unique(), columns=['same_remote'])
+            print( class_id, round(df_temp['same_remote'].mean(), 2),  round(df_temp['cost_diff'].mean(), 2))
+            # for n in df_temp.nrCust.unique():
+            #     df_slice = df_temp[(df_temp.nrCust == n)].copy()
+            #     df_results.at[n, 'same_remote'] = round(df_slice['same_remote'].mean(), 2)
+            # print(df_results.to_latex(float_format='{:0.2f}'.format, na_rep=''))
+            #print("")
 
 def managerial_location(folder):
     #parseBABHeuristic(os.path.join(folder, "02_18_bab_nodisc_rs_30.txt"), folder, "02_18_bab_nodisc_rs_30")
