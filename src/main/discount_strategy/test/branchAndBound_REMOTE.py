@@ -33,10 +33,10 @@ if __name__ == "__main__":
     print(prefix, "TIME_LIMIT:", constants.TIME_LIMIT)
     if os.name != 'nt':
         file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "data",
-                                     "i_VRPDO_2segm_manyPUP_30", str(sys.argv[-1]) + ".txt")
+                                     "i_VRPDO_2segm_manyPup_classes", str(sys.argv[-1]) + ".txt")
     else:
-        file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
-                                     "VRPDO_size_17_phome_0.7_ppup_0.0_incrate_0.12_nrpup3_9.txt")
+        file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPup_classes",
+                                     "VRPDO_size_18_phome_0.4_ppup_0.0_incrate_0.06_nrpup3_7.txt")
         # file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
         #                             "VRPDO_size_10_phome_0.2_ppup_0.0_incrate_0.03_0.txt")
 
@@ -45,11 +45,15 @@ if __name__ == "__main__":
     print(OCVRPInstance)
     remote_policy_ID = policy_remote_customers(OCVRPInstance)
 
+
+
     if 2 ** bitCount(remote_policy_ID) < constants.SAMPLE_SIZE:
         estimation_remote = one_policy_cost_estimation(instance=OCVRPInstance, policy=remote_policy_ID, solverType=solverType)
     else:
         estimation_remote = sampleAverageApproximation_PoissonBinomial_1sample_2segm(instance=OCVRPInstance,
                                                                             policy=remote_policy_ID, solverType=solverType)
 
+    print(bin(remote_policy_ID))
+    #print(bin(82726))
     print(prefix+ 'Remote_policy:', remote_policy_ID)
     print(prefix+ 'Estimated_REMOTE_cost:', estimation_remote)

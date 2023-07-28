@@ -39,7 +39,7 @@ if __name__ == "__main__":
                                      "i_VRPDO_2segm_manyPup_classes", str(sys.argv[-1])+".txt")
     else:
         file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPup_classes",
-                                     "VRPDO_size_15_phome_0.1_ppup_0.0_incrate_0.06_nrpup5_0.txt")
+                                     "VRPDO_size_14_phome_0.4_ppup_0.0_incrate_0.06_nrpup3_0.txt")
 
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()
@@ -49,32 +49,33 @@ if __name__ == "__main__":
     # #babPolicy = rsPolicyID
     # babPolicy = 25865
     babPolicy, time, lbPrint, ubPrint = bab.runBranchAndBound()
+    #
+    #
+    # n = OCVRPInstance.NR_CUST
+    # temp_prob = []
+    # for scenario in range(2**n):
+    #     if not (~babPolicy & scenario):
+    #         temp_prob.append(probability.scenarioProb_2segm(scenario, babPolicy, n, n, OCVRPInstance.p_pup_delta))
+    # sns.displot(temp_prob, bins=50)
+    # plt.xlabel('Probability best policy')
+    # plt.yscale('log')
+    # plt.show()
+    # policy_all = 2**n - 1
+    # temp_prob = []
+    # for scenario in range(2 ** n):
+    #     if not (~policy_all & scenario):
+    #         temp_prob.append(probability.scenarioProb_2segm(scenario, policy_all, n, n, OCVRPInstance.p_pup_delta))
+    # sns.displot(temp_prob,  bins=50)  #
+    # plt.yscale('log')
+    # plt.xlabel('Probability policy_all')
+    # plt.show()
+    #
+    # print(max(temp_prob))
 
-
-    n = OCVRPInstance.NR_CUST
-    temp_prob = []
-    for scenario in range(2**n):
-        if not (~babPolicy & scenario):
-            temp_prob.append(probability.scenarioProb_2segm(scenario, babPolicy, n, n, OCVRPInstance.p_pup_delta))
-    sns.displot(temp_prob, bins=50)
-    plt.xlabel('Probability best policy')
-    plt.yscale('log')
-    plt.show()
-    policy_all = 2**n - 1
-    temp_prob = []
-    for scenario in range(2 ** n):
-        if not (~policy_all & scenario):
-            temp_prob.append(probability.scenarioProb_2segm(scenario, policy_all, n, n, OCVRPInstance.p_pup_delta))
-    sns.displot(temp_prob,  bins=50)  #
-    plt.yscale('log')
-    plt.xlabel('Probability policy_all')
-    plt.show()
-
-    print(max(temp_prob))
-    # painter = Painter()
+    #painter.printVertexDiscTemp(OCVRPInstance_clustered,21504, OCVRPInstance_random, 25865)
     # OCVRPInstance_clustered = OCVRPParser.parse(file_instance)
     # OCVRPInstance_random = OCVRPParser.parse(os.path.join(path_to_data, "data", "solomon","artificial", "solomonR101_discount_0.3.txt"))
-    # painter.printVertexDiscTemp(OCVRPInstance_clustered,21504, OCVRPInstance_random, 25865)
+
     # for pup in OCVRPInstance.pups:
     #     print(pup.id, pup.closest_cust_id)
     #start_time = process_time()
@@ -106,9 +107,6 @@ if __name__ == "__main__":
     #     lbPrint = pickle.load(file)
     #     ubPrint = pickle.load(file)
     #Painter.printConvergence(OCVRPInstance, time, lbPrint, ubPrint, ubPrint[-1])
-    babPolicy = 100400
-
-    print(bin(100400))
 
     if 2**bitCount(babPolicy) < constants.SAMPLE_SIZE:
         estimation_bab = one_policy_cost_estimation(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)

@@ -3611,19 +3611,18 @@ def managerial_location(folder):
     #parseBABHeuristic(os.path.join(folder, "02_18_bab_nodisc_rs_30.txt"), folder, "02_18_bab_nodisc_rs_30")
     # effect of centrality and delta on the distribution of  offered incentives
     if True:
-        df = pd.read_csv(os.path.join(folder, "02_18_bab_nodisc_rs_30.csv"))
-        folder_data = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_30")
-        df = df[df.nrPup == 3].copy()
+        df = pd.read_csv(os.path.join(folder, "17_07_23_bab_classes.csv"))
+        folder_data = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPup_classes")
+        df = df[(df.nrPup == 3) & (df.nrCust == 18)].copy()
         # df['class'] = df.apply(lambda x: 'low_determinism' if x['p_home'] == 0.7 else (
         #     'high_determinism' if x['p_home'] == 0.1 else (
         #         'high_disc' if x['discount_rate'] == 0.12 else (
         #             'low_disc' if x['discount_rate'] == 0.03 else 'base'))), axis=1)
 
-        df['class_id'] = df.apply(lambda x: 2 if x['p_home'] == 0.8 else (
-            3 if x['p_home'] == 0.2 else (
+        df['class_id'] = df.apply(lambda x: 2 if x['p_home'] == 0.7 else (
+            3 if x['p_home'] == 0.1 else (
                 5 if x['discount_rate'] == 0.12 else (
                     4 if x['discount_rate'] == 0.03 else 1))), axis=1)
-
         df = df[["class_id", 'discount_rate', 'nrPup', 'policy_bab_ID', 'instance']].copy()
 
         sns.set()
@@ -3634,8 +3633,10 @@ def managerial_location(folder):
         fig, axes = plt.subplots(1, 1, sharey=True, sharex=True)
         df['instance_type'] = df['instance'].apply(lambda x: int(str(x).split('_')[10]))
         # df = df[df['instance_type'].isin([0,2,3,4])].copy()
-        # distances = [3, 6, 9, 12, 15]
-        distances = [3, 8, 16]
+        distances = [ 4,8,16]
+        #distances = [4, 6, 16]
+        #distances = [3.5, 7, 10.5,16]
+        #distances = [9,12, 15,20]
         dict_distances = {}
         class_bins = [1, 2, 3, 4, 5]
         bottom_dict = {}
@@ -3646,31 +3647,75 @@ def managerial_location(folder):
 
         colors = [(30 / 255, 30 / 255, 50 / 255, 0.8),
                   (190 / 255, 190 / 255, 200 / 255),
-                  (90 / 255, 120 / 255, 90 / 255),
-                  (230 / 255, 230 / 255, 255 / 255),
+                  #(90 / 255, 120 / 255, 90 / 255),
+                 (230 / 255, 230 / 255, 255 / 255),
                   (140 / 255, 140 / 255, 160 / 255)]
         iter = -1
         list_farness = []
+
+        df_temp = df[df.class_id == 1].copy()
+        for index, row in df_temp.iterrows():
+            instance = row['instance']
+            OCVRPInstance = OCVRPParser.parse(os.path.join(folder_data, instance + ".txt"))
+            df1 = df[(df.instance_type == row['instance_type'])].copy()
+            temp_full = []
+            for class_id in class_bins:
+                temp = []
+                df1 = df[(df.class_id == class_id) ].copy()
+                policy = df1['policy_bab_ID'].iloc[0]
+                for cust in OCVRPInstance.customers:
+                    farness = OCVRPInstance.distanceMatrix[cust.id, cust.closest_pup_id] / 10
+                    if farness < distances[0]:
+                        if policy & (1 << cust.id - 1):
+                            temp.append(cust.id)
+                temp_full.append(temp)
+            print(temp_full)
+
+
+
+
         for class_id in class_bins:
             iter += 1
-            df1 = df[df.class_id == class_id].copy()
+            if class_id ==0:
+                df1 = df[df.class_id == 1].copy()
+            else:
+                df1 = df[df.class_id == class_id].copy()
             number_instances = 0
             for index, row in df1.iterrows():
                 number_instances += 1
                 instance = row['instance']
                 OCVRPInstance = OCVRPParser.parse(os.path.join(folder_data, instance + ".txt"))
+                temp =[]
                 for cust in OCVRPInstance.customers:
+
+                    # distancesf = [OCVRPInstance.distanceMatrix[cust.id, j.id] for j in OCVRPInstance.customers if
+                    #                    j is not cust] + [OCVRPInstance.distanceMatrix[cust.id, j.id] for j in OCVRPInstance.pups] + [OCVRPInstance.distanceMatrix[cust.id, OCVRPInstance.depot.id]]
+                    # farness = (sum(OCVRPInstance.distanceMatrix[cust.id, j.id] for j in OCVRPInstance.customers if
+                    #                    j is not cust) + \
+                    #                sum(OCVRPInstance.distanceMatrix[cust.id, j.id] for j in OCVRPInstance.pups) + \
+                    #                OCVRPInstance.distanceMatrix[cust.id, OCVRPInstance.depot.id]) / (
+                    #                           OCVRPInstance.NR_CUST + OCVRPInstance.NR_PUP)/10
                     farness = OCVRPInstance.distanceMatrix[cust.id, cust.closest_pup_id] / 10
+                    #farness = (sum(distancesf) + OCVRPInstance.distanceMatrix[cust.id, cust.closest_pup_id]) / 180
                     list_farness.append(farness)
                     for distance in distances:
                         if farness < distance:
-                            if row['policy_bab_ID'] & (1 << cust.id - 1):
+                            if class_id>0:
+                                if row['policy_bab_ID'] & (1 << cust.id - 1):
+                                    dict_distances[distance][iter] += 1
+
+                                break
+                            else:
                                 dict_distances[distance][iter] += 1
-                            break
+                                break
             for distance in distances:
                 dict_distances[distance][iter] = dict_distances[distance][iter] / number_instances
         print(sum(list_farness) / len(list_farness))
-        print("max farness", max(list_farness))
+        print("max farness", max(list_farness),  min(list_farness),  np.percentile(list_farness, 60), np.percentile(list_farness, 90))
+        for distance in distances:
+            print( distance, dict_distances[distance][0])
+
+
         distances.reverse()
         for distance in distances:
             iter = -1
@@ -3679,13 +3724,15 @@ def managerial_location(folder):
                 for dist_temp in distances:
                     if dist_temp < distance:
                         bottom_dict[distance][iter] += dict_distances[dist_temp][iter]
+        #lable_dict = {4: '0 - 4: out of 6.6 customers', 8: '4 - 8: out of 6.1 customers',16: '  > 8: out of 5.3 customers'}
+        lable_dict = {4: '0 - 4', 8: '4 - 8', 16: '  > 8'}
+        #lable_dict = {3: '0 - 3: out of 5.3 customers', 6: '3 - 6: out of 4.5 customers',16: '  > 6: out of 8.2 customers'}
 
-        lable_dict = {3: '0 - 4', 8: '4 - 8', 16: '> 8', }
-        class_bins_print = [0.7, 1.7, 2.7, 3.7, 4.7]
+        class_bins_print = [ 0.7, 1.7, 2.7, 3.7, 4.7]
         for index, distance in enumerate(distances):
             print("distance", distance)
             axes.bar(class_bins_print, dict_distances[distance], bottom=bottom_dict[distance], width=0.6, align="edge",
-                     color=colors[index], label=lable_dict[distance])
+                     color=colors[index], label=lable_dict[distance] ) #, label=lable_dict[distance]
             # str()discount_rate
             # axes.bar(delta_bins, percent, width=1, align="edge",  label=r'$\Delta = $'+str(round(1-p_home,1)), hatch=pattern)  # str()discount_rate
 
@@ -3697,15 +3744,14 @@ def managerial_location(folder):
         #                                   'C3\n ' +r'$\Delta = 0.9$'  +'\n'+r'$u=0.06$',
         #                                   'C4\n ' +r'$\Delta = 0.6$'  +'\n'+r'$u=0.03$',
         #                                   'C5\n ' +r'$\Delta = 0.6$'  +'\n'+r'$u=0.12$'])
-        plt.gca().set_xticks(class_bins, ['C1',
-                                          'C2',
-                                          'C3',
-                                          'C4',
-                                          'C5'])
-        plt.yticks(np.arange(0, 21 + 1, 2.0))
-        axes.set_ylim(0, 23)
-        plt.legend(loc='upper left', title='Distance to pickup point')
-        #plt.savefig(os.path.join(path_to_images, 'centrality_delta_2.eps'), transparent=False, bbox_inches='tight')
+        plt.gca().set_xticks(class_bins, ['C1','C2',  'C3', 'C4', 'C5'])
+        plt.yticks(np.arange(0, 11 + 1, 2.0))
+        #axes.set_ylim(0, 23)
+
+        lines, labels = axes.get_legend_handles_labels()
+        print(lines, labels)
+        plt.legend(loc='center left', bbox_to_anchor=(1, 0.5), title='Distance to \npickup point',handles = reversed(lines), labels=reversed(labels))
+        plt.savefig(os.path.join(path_to_images, 'centrality_delta_2.eps'), transparent=False, bbox_inches='tight')
         plt.show()
     if False:
         df = pd.read_csv(os.path.join(folder, "02_18_bab_nodisc_rs_30.csv"))
