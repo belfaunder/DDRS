@@ -36,7 +36,7 @@ if __name__ == "__main__":
                                      "i_VRPDO_2segm_manyPup_classes", str(sys.argv[-1]) + ".txt")
     else:
         file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPup_classes",
-                                     "VRPDO_size_18_phome_0.4_ppup_0.0_incrate_0.06_nrpup3_7.txt")
+                                     "VRPDO_size_10_phome_0.4_ppup_0.0_incrate_0.06_nrpup3_7.txt")
         # file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
         #                             "VRPDO_size_10_phome_0.2_ppup_0.0_incrate_0.03_0.txt")
 
@@ -52,8 +52,10 @@ if __name__ == "__main__":
     else:
         estimation_remote = sampleAverageApproximation_PoissonBinomial_1sample_2segm(instance=OCVRPInstance,
                                                                             policy=remote_policy_ID, solverType=solverType)
-
+    # estimation_remote = sampleAverageApproximation_PoissonBinomial_1sample_2segm(instance=OCVRPInstance,
+    #                                                                              policy=0,
+    #                                                                              solverType=solverType)
     print(bin(remote_policy_ID))
-    #print(bin(82726))
+    print(bin(258))
     print(prefix+ 'Remote_policy:', remote_policy_ID)
     print(prefix+ 'Estimated_REMOTE_cost:', estimation_remote)

@@ -3390,16 +3390,15 @@ def large_exp(folder):
     #parseBABHeuristic(os.path.join(folder, "02_16_bab_nodisc_large.txt"), folder, "03_10_bab_nodisc_large")
     #parseBAB_RS_NODISC(os.path.join(folder, "temp.txt"), folder, "temp")
     #parseBABHeuristic(os.path.join(folder, "bab_large_temp.txt"), folder, "bab_large_temp")
-    df = pd.read_csv(os.path.join(folder, "bab_large_temp.csv"))
-    #df = pd.read_csv(os.path.join(folder, "03_10_bab_nodisc_large.csv"))
-    df['cost_per_order'] = df.apply(lambda x:  min(x['obj_val_bab'], x['obj_val_rs'], x['obj_val_uniform'],
-                                                   x['obj_val_nodisc']) / x['nrCust'],
-                                       axis=1)
-    df['cost_per_order_nodisc'] = df.apply(  lambda x:  x['obj_val_nodisc'] / x['nrCust'], axis=1)
-    df['cost_per_order_all'] = df.apply(lambda x: x['obj_val_uniform'] / x['nrCust'], axis=1)
-
-    df['objValPrint'] = df.apply(lambda x: min(x['obj_val_bab'], x['obj_val_rs'], x['obj_val_nodisc'],
-                                               x['obj_val_uniform'])/10, axis=1)
+    # df = pd.read_csv(os.path.join(folder, "bab_large_temp.csv"))
+    # #df = pd.read_csv(os.path.join(folder, "03_10_bab_nodisc_large.csv"))
+    # df['cost_per_order'] = df.apply(lambda x:  min(x['obj_val_bab'], x['obj_val_rs'], x['obj_val_uniform'],
+    #                                                x['obj_val_nodisc']) / x['nrCust'],
+    #                                    axis=1)
+    # df['cost_per_order_nodisc'] = df.apply(  lambda x:  x['obj_val_nodisc'] / x['nrCust'], axis=1)
+    # df['cost_per_order_all'] = df.apply(lambda x: x['obj_val_uniform'] / x['nrCust'], axis=1)
+    # df['objValPrint'] = df.apply(lambda x: min(x['obj_val_bab'], x['obj_val_rs'], x['obj_val_nodisc'],
+    #                                            x['obj_val_uniform'])/10, axis=1)
 
     sns.set()
     sns.set(font_scale=1.4)
@@ -3575,9 +3574,9 @@ def large_exp(folder):
                    bbox_inches='tight')
         plt.show()
     #parse remote
-    if True:
+    if False:
         df = pd.read_csv(os.path.join(folder, "bab_large_temp.csv"))
-        #parseBAB_REMOTE(os.path.join(folder, "08_03_remote.txt"), folder, "08_03_remote_full")
+        parseBAB_REMOTE(os.path.join(folder, "remote.txt"), folder, "08_03_remote_full")
         df_remote = pd.read_csv(os.path.join(folder, "08_03_remote.csv"))
 
         df['objValPrint'] = df.apply(lambda x: min(x['obj_val_bab'], x['obj_val_rs'], x['obj_val_nodisc'],
@@ -3590,6 +3589,42 @@ def large_exp(folder):
         for index, row in df_remote.iterrows():
             same_remote = 0
 
+            try:
+                df_remote['babbin'].at[index] = bin(int(row['policy_bab_ID']))
+                df_remote['remotebin'].at[index] = bin(int(row['policy_remote_ID']))
+                for cust in range(row['nrCust']):
+                    if int(row['policy_bab_ID'])& (1<< cust) == int(row['policy_remote_ID'])& (1<< cust) :
+                        same_remote += 1
+                df_remote.at[index, 'same_remote'] = same_remote/row['nrCust']
+            except:
+                pass
+        df_remote = df_remote.dropna(axis=0)
+        df_results = pd.DataFrame(index=df_remote.nrCust.unique(), columns=['same_remote'])
+        for n in df_remote.nrCust.unique():
+            df_slice = df_remote[(df_remote.nrCust == n)].copy()
+            df_results.at[n, 'same_remote'] = round(df_slice['same_remote'].mean(), 2)
+        print(df_results.to_latex(float_format='{:0.2f}'.format, na_rep=''))
+        print("")
+
+    if True:
+        df = pd.read_csv(os.path.join(folder, "17_07_23_bab_classes.csv"))
+        #parseBAB_REMOTE(os.path.join(folder, "28_07_23_remote.txt"), folder, "28_07_23_remote")
+        df_remote = pd.read_csv(os.path.join(folder, "28_07_23_remote.csv"))
+        df_remote[['nrCust_rem', "p_home_rem", "nrPup_rem", 'discount_rate_rem']] = \
+            df_remote[['nrCust_rem', "p_home_rem", "nrPup_rem", 'discount_rate_rem']].apply(pd.to_numeric)
+        df_remote = df_remote[
+            (df_remote.nrCust_rem == 18) & (df_remote.nrPup_rem == 3) & (df_remote.discount_rate_rem == 0.06) & (
+                        df_remote.p_home_rem == 0.4)]
+
+        df_copy = df[['instance', 'nrCust', 'policy_bab_ID', 'obj_val_bab']].copy()
+        df_remote = df_remote.merge(df_copy, on='instance')
+        df_remote['same_remote'] =''
+        df_remote['babbin'] = ''
+        df_remote['remotebin'] = ''
+
+        for index, row in df_remote.iterrows():
+            print(bin(row['policy_remote_ID']), bin(row['policy_bab_ID']), (row['obj_val_remote'] - row['obj_val_bab'])/row['obj_val_remote'])
+            same_remote = 0
             try:
                 df_remote['babbin'].at[index] = bin(int(row['policy_bab_ID']))
                 df_remote['remotebin'].at[index] = bin(int(row['policy_remote_ID']))
@@ -4041,7 +4076,8 @@ if __name__ == "__main__":
     folder_2segm = os.path.join(path_to_data, "output", "VRPDO_discount_proportional_2segm")
 
     folder_2segm_manyPUP = os.path.join(path_to_data, "output", "VRPDO_discount_proportional_2segm_manyPUP")
-
+    #new remote:
+    large_exp(folder_2segm_manyPUP)
     #compare_enumeration_no_Gurobi(folder_2segm_manyPUP)
     #experiment_variation_nrcust_heuristic(folder)
     #experiment_variation_nrcust(folder_2segm_manyPUP)
@@ -4054,7 +4090,7 @@ if __name__ == "__main__":
     #managerial_effect_delta(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
     #experiment_bab_solution_time_classes(folder_2segm_manyPUP)
     #experiment_bab_solution_time_classes_pups(folder_2segm_manyPUP)
-    managerial_location(folder_2segm_manyPUP)
+    #managerial_location(folder_2segm_manyPUP)
     # parseBAB(os.path.join(folder, "bab_7types_nrCust.txt"), folder, "bab_7types_nrCust")
 
     # experiment_heuristic_general()
