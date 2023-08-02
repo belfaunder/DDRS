@@ -36,7 +36,7 @@ if __name__ == "__main__":
                                      "i_VRPDO_2segm_manyPup_classes", str(sys.argv[-1]) + ".txt")
     else:
         file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPup_classes",
-                                     "VRPDO_size_18_phome_0.4_ppup_0.0_incrate_0.06_nrpup3_7.txt")
+                                     "VRPDO_size_18_phome_0.1_ppup_0.0_incrate_0.06_nrpup3_4.txt")
         # file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
         #                             "VRPDO_size_10_phome_0.2_ppup_0.0_incrate_0.03_0.txt")
 
@@ -45,6 +45,7 @@ if __name__ == "__main__":
     print(OCVRPInstance)
     remote_policy_ID = policy_insights_Nevin(OCVRPInstance)
     print(bin(remote_policy_ID))
+    print(bin(31153))
 
 
 

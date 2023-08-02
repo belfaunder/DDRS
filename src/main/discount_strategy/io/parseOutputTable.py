@@ -3603,7 +3603,7 @@ def large_exp(folder):
         print("")
 
     if True:
-        parseBAB_REMOTE(os.path.join(folder, "2_8_23_insights.txt"), folder, "2_8_23_insights")
+        #parseBAB_REMOTE(os.path.join(folder, "2_8_23_insights.txt"), folder, "2_8_23_insights")
         # large:
         # parseBAB_REMOTE(os.path.join(folder, "28_07_23_remote_large.txt"), folder, "28_07_23_remote_large")
         # df_remote = pd.read_csv(os.path.join(folder, "28_07_23_remote_large.csv"))

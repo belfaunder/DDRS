@@ -79,7 +79,8 @@ def policy_insights_Nevin(instance):
                 distancesf = [instance.distanceMatrix[cust.id, j.id] for j in instance.customers if
                               j is not cust] + [instance.distanceMatrix[cust.id, j.id] for j in instance.pups] + [
                                  instance.distanceMatrix[cust.id, instance.depot.id]]
-                distances_closest_range.append(min(distancesf))
+                distances_closest_range[cust.id] = round(sum(sorted(distancesf)[:5]) / 4)
+                #distances_closest_range.append(min(distancesf))
         # we will offer discounts to "number_incentives" customers of this range if the distance to closest is among the "number_incentives" largest
 
         distances_closest_range = sorted(distances_closest_range, reverse= True)
@@ -89,7 +90,7 @@ def policy_insights_Nevin(instance):
         if num_incentives>0:
             min_allowed_distance_closest = min(distances_closest_range[:num_incentives])
         else:
-            min_allowed_distance_closest = max(distances_closest_range)+10
+            min_allowed_distance_closest = 100000000
 
         num_given = 0
 
