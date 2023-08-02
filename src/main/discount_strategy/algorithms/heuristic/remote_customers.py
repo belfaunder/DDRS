@@ -1,6 +1,7 @@
 from pathlib import Path
 import sys
 from sys import argv
+import math
 import os
 from time import process_time
 import cProfile
@@ -18,6 +19,86 @@ from src.main.discount_strategy.io import print_functions
 from src.main.discount_strategy.algorithms.exact.ring_star_without_TW import ring_star_deterministic_no_TW
 #prefix="tag: "
 prefix=constants.PREFIX
+
+
+def policy_insights_Nevin(instance):
+    def proportion_closest(delta):
+        return (-0.6*delta + 0.9)
+    policy_rs, rsValue = ring_star_deterministic_no_TW(instance, instance.NR_CUST)
+    deltas = [1-cust.prob_home for cust in instance.customers]
+    delta = sum(deltas) / len(deltas)
+    number_incentives = math.ceil(bitCount(policy_rs) * (delta*delta*0.8+0.2))
+    #print(bitCount(policy_rs), number_incentives)
+
+    #painter = Painter()
+    #painter.printVertex(instance)
+    solverType = 'Gurobi'
+    #farness = {}
+    list_farness = []
+    list_dist_closest_customer = []
+    for cust in instance.customers:
+        list_farness.append(instance.distanceMatrix[cust.id, cust.closest_pup_id])
+        distancesf = [instance.distanceMatrix[cust.id, j.id] for j in instance.customers if
+                      j is not cust] + [instance.distanceMatrix[cust.id, j.id] for j in instance.pups] + [
+                         instance.distanceMatrix[cust.id, instance.depot.id]]
+        list_dist_closest_customer.append(min(distancesf))
+    dist_1 = np.percentile(list_farness, 33)
+    dist_2 = np.percentile(list_farness, 66)
+    list_farness.reverse()
+    list_dist_closest_customer.reverse()
+    #print("list_farness", list_farness)
+    #print("list_dist_closest_customer", list_dist_closest_customer)
+
+
+    dict_customers_ranges = {'closest':[], 'middle':[], 'furthest':[]}
+    for cust in instance.customers:
+        if instance.distanceMatrix[cust.id, cust.closest_pup_id] <= dist_1:
+            dict_customers_ranges['closest'].append(cust.id)
+        elif instance.distanceMatrix[cust.id, cust.closest_pup_id] <= dist_2:
+            dict_customers_ranges['middle'].append(cust.id)
+        else:
+            dict_customers_ranges['furthest'].append(cust.id)
+    #print("dict_customers_ranges", dict_customers_ranges)
+    #print("proportion_closest(delta)", proportion_closest(delta))
+    number_incentives_closest = round(proportion_closest(delta) * number_incentives)
+    number_incentives_fatherst= round((1-proportion_closest(delta)) * number_incentives/2)
+    number_incentives_middle = round((1-proportion_closest(delta)) * number_incentives/2)
+
+    number_incentives = {'closest':number_incentives_closest, 'middle':number_incentives_middle, 'furthest':number_incentives_fatherst}
+    #print(number_incentives)
+
+
+    policy = 0
+    for key in dict_customers_ranges.keys():
+        distances_closest_range = []
+        for cust in instance.customers:
+            if cust.id in dict_customers_ranges[key]:
+                distancesf = [instance.distanceMatrix[cust.id, j.id] for j in instance.customers if
+                              j is not cust] + [instance.distanceMatrix[cust.id, j.id] for j in instance.pups] + [
+                                 instance.distanceMatrix[cust.id, instance.depot.id]]
+                distances_closest_range.append(min(distancesf))
+        # we will offer discounts to "number_incentives" customers of this range if the distance to closest is among the "number_incentives" largest
+
+        distances_closest_range = sorted(distances_closest_range, reverse= True)
+        #print(key, "distances_closest_range", distances_closest_range, distances_closest_range[:min(number_incentives[key], len(dict_customers_ranges['closest']))])
+
+        num_incentives = min(number_incentives[key], len(dict_customers_ranges['closest']))
+        if num_incentives>0:
+            min_allowed_distance_closest = min(distances_closest_range[:num_incentives])
+        else:
+            min_allowed_distance_closest = max(distances_closest_range)+10
+
+        for cust in instance.customers:
+            if cust.id in dict_customers_ranges[key]:
+                distancesf = [instance.distanceMatrix[cust.id, j.id] for j in instance.customers if
+                              j is not cust] + [instance.distanceMatrix[cust.id, j.id] for j in instance.pups] + [
+                                 instance.distanceMatrix[cust.id, instance.depot.id]]
+                if min(distancesf) >= min_allowed_distance_closest:
+                    #print(key, cust.id,  min(distancesf))
+                    policy += (1 << int(cust.id - 1))
+    #print(bin(policy))
+
+    return policy
 
 def policy_remote_customers(instance):
     policy_rs, rsValue = ring_star_deterministic_no_TW(instance, instance.NR_CUST)
