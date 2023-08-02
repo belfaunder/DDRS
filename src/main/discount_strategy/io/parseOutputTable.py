@@ -3603,7 +3603,7 @@ def large_exp(folder):
         print("")
 
     if True:
-        #parseBAB_REMOTE(os.path.join(folder, "28_07_23_remote.txt"), folder, "28_07_23_remote")
+        #parseBAB_REMOTE(os.path.join(folder, "2_8_23_insights.txt"), folder, "2_8_23_insights")
         # large:
         # parseBAB_REMOTE(os.path.join(folder, "28_07_23_remote_large.txt"), folder, "28_07_23_remote_large")
         # df_remote = pd.read_csv(os.path.join(folder, "28_07_23_remote_large.csv"))
@@ -3611,7 +3611,7 @@ def large_exp(folder):
 
         df = pd.read_csv(os.path.join(folder, "17_07_23_bab_classes.csv"))
         #parseBAB_REMOTE(os.path.join(folder, "28_07_23_rs.txt"), folder, "28_07_23_rs")
-        df_remote = pd.read_csv(os.path.join(folder, "28_07_23_remote.csv"))
+        df_remote = pd.read_csv(os.path.join(folder, "2_8_23_insights.csv"))
         df_remote[['nrCust_rem', "p_home_rem", "nrPup_rem", 'discount_rate_rem']] = \
         df_remote[['nrCust_rem', "p_home_rem", "nrPup_rem", 'discount_rate_rem']].apply(pd.to_numeric)
         df_copy = df[['instance', 'nrCust', 'policy_bab_ID', 'obj_val_bab']].copy()
@@ -3639,14 +3639,16 @@ def large_exp(folder):
             df_temp = df_temp.dropna(axis=0)
         print("average ",  round(df_temp['cost_diff'].mean(), 3))
 
-        for n in df_temp.nrCust.unique():
+        for n in [18]:
             print(n)
             df_remote1 = df_remote[(df_remote.nrCust_rem == n) & (df_remote.nrPup_rem == 3)]
             for class_id in [1,2,3,4,5]:
+                print("n, class", n, class_id)
                 df_temp = df_remote1[(df_remote1.class_id == class_id)].copy()
                 for index, row in df_temp.iterrows():
-                    #print(bin(row['policy_remote_ID']), bin(row['policy_bab_ID']),
-                    # (row['obj_val_remote'] - row['obj_val_bab'])/row['obj_val_remote'])
+                    print(bin(row['policy_remote_ID']), bin(row['policy_bab_ID']), bitCount(row['policy_remote_ID']),
+                          bitCount(row['policy_bab_ID']),
+                     (row['obj_val_remote'] - row['obj_val_bab'])/row['obj_val_remote'])
                     same_remote = 0
                     try:
                         df_temp['babbin'].at[index] = bin(int(row['policy_bab_ID']))

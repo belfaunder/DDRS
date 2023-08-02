@@ -23,15 +23,16 @@ prefix=constants.PREFIX
 
 def policy_insights_Nevin(instance):
     def proportion_closest(delta):
-        return (-0.6*delta + 0.9)
+        print((-0.6*delta + 0.9))
+        return 0.5
     policy_rs, rsValue = ring_star_deterministic_no_TW(instance, instance.NR_CUST)
     deltas = [1-cust.prob_home for cust in instance.customers]
     delta = sum(deltas) / len(deltas)
     number_incentives = math.ceil(bitCount(policy_rs) * (delta*delta*0.8+0.2))
-    #print(bitCount(policy_rs), number_incentives)
+    print(bitCount(policy_rs), number_incentives)
 
-    #painter = Painter()
-    #painter.printVertex(instance)
+    painter = Painter()
+    painter.printVertex(instance)
     solverType = 'Gurobi'
     #farness = {}
     list_farness = []
@@ -44,10 +45,12 @@ def policy_insights_Nevin(instance):
         list_dist_closest_customer.append(min(distancesf))
     dist_1 = np.percentile(list_farness, 33)
     dist_2 = np.percentile(list_farness, 66)
+    #dist_1 = min(list_farness) + (max(list_farness) - min(list_farness)) / 3
+    #dist_2 = min(list_farness) + (max(list_farness) - min(list_farness)) * 2 / 3
     list_farness.reverse()
     list_dist_closest_customer.reverse()
     #print("list_farness", list_farness)
-    #print("list_dist_closest_customer", list_dist_closest_customer)
+    print("list_dist_closest_customer", list_dist_closest_customer)
 
 
     dict_customers_ranges = {'closest':[], 'middle':[], 'furthest':[]}
@@ -58,14 +61,14 @@ def policy_insights_Nevin(instance):
             dict_customers_ranges['middle'].append(cust.id)
         else:
             dict_customers_ranges['furthest'].append(cust.id)
-    #print("dict_customers_ranges", dict_customers_ranges)
-    #print("proportion_closest(delta)", proportion_closest(delta))
+    print("dict_customers_ranges", dict_customers_ranges)
+    print("proportion_closest(delta)", proportion_closest(delta))
     number_incentives_closest = round(proportion_closest(delta) * number_incentives)
     number_incentives_fatherst= round((1-proportion_closest(delta)) * number_incentives/2)
     number_incentives_middle = round((1-proportion_closest(delta)) * number_incentives/2)
 
     number_incentives = {'closest':number_incentives_closest, 'middle':number_incentives_middle, 'furthest':number_incentives_fatherst}
-    #print(number_incentives)
+    print(number_incentives)
 
 
     policy = 0
@@ -80,7 +83,7 @@ def policy_insights_Nevin(instance):
         # we will offer discounts to "number_incentives" customers of this range if the distance to closest is among the "number_incentives" largest
 
         distances_closest_range = sorted(distances_closest_range, reverse= True)
-        #print(key, "distances_closest_range", distances_closest_range, distances_closest_range[:min(number_incentives[key], len(dict_customers_ranges['closest']))])
+        print(key, "distances_closest_range", distances_closest_range, distances_closest_range[:min(number_incentives[key], len(dict_customers_ranges['closest']))])
 
         num_incentives = min(number_incentives[key], len(dict_customers_ranges['closest']))
         if num_incentives>0:
@@ -88,14 +91,17 @@ def policy_insights_Nevin(instance):
         else:
             min_allowed_distance_closest = max(distances_closest_range)+10
 
+        num_given = 0
+
         for cust in instance.customers:
-            if cust.id in dict_customers_ranges[key]:
+            if num_given < number_incentives[key] and cust.id in dict_customers_ranges[key]:
                 distancesf = [instance.distanceMatrix[cust.id, j.id] for j in instance.customers if
                               j is not cust] + [instance.distanceMatrix[cust.id, j.id] for j in instance.pups] + [
                                  instance.distanceMatrix[cust.id, instance.depot.id]]
                 if min(distancesf) >= min_allowed_distance_closest:
                     #print(key, cust.id,  min(distancesf))
                     policy += (1 << int(cust.id - 1))
+                    num_given+=1
     #print(bin(policy))
 
     return policy

@@ -44,7 +44,7 @@ if __name__ == "__main__":
     OCVRPInstance.calculateInsertionBounds()
     print(OCVRPInstance)
     remote_policy_ID = policy_insights_Nevin(OCVRPInstance)
-    print(bin(142017))
+    print(bin(remote_policy_ID))
 
 
 
