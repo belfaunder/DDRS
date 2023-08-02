@@ -24,7 +24,7 @@ prefix=constants.PREFIX
 def policy_insights_Nevin(instance):
     def proportion_closest(delta):
         print((-0.6*delta + 0.9))
-        return 0.5
+        return -0.6*delta + 0.9
     policy_rs, rsValue = ring_star_deterministic_no_TW(instance, instance.NR_CUST)
     deltas = [1-cust.prob_home for cust in instance.customers]
     delta = sum(deltas) / len(deltas)
@@ -43,10 +43,10 @@ def policy_insights_Nevin(instance):
                       j is not cust] + [instance.distanceMatrix[cust.id, j.id] for j in instance.pups] + [
                          instance.distanceMatrix[cust.id, instance.depot.id]]
         list_dist_closest_customer.append(min(distancesf))
-    dist_1 = np.percentile(list_farness, 33)
-    dist_2 = np.percentile(list_farness, 66)
-    #dist_1 = min(list_farness) + (max(list_farness) - min(list_farness)) / 3
-    #dist_2 = min(list_farness) + (max(list_farness) - min(list_farness)) * 2 / 3
+    #dist_1 = np.percentile(list_farness, 33)
+    #dist_2 = np.percentile(list_farness, 66)
+    dist_1 = min(list_farness) + (max(list_farness) - min(list_farness)) / 3
+    dist_2 = min(list_farness) + (max(list_farness) - min(list_farness)) * 2 / 3
     list_farness.reverse()
     list_dist_closest_customer.reverse()
     #print("list_farness", list_farness)

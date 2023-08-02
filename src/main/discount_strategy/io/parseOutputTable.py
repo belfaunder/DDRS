@@ -3603,7 +3603,7 @@ def large_exp(folder):
         print("")
 
     if True:
-        #parseBAB_REMOTE(os.path.join(folder, "2_8_23_insights.txt"), folder, "2_8_23_insights")
+        parseBAB_REMOTE(os.path.join(folder, "2_8_23_insights.txt"), folder, "2_8_23_insights")
         # large:
         # parseBAB_REMOTE(os.path.join(folder, "28_07_23_remote_large.txt"), folder, "28_07_23_remote_large")
         # df_remote = pd.read_csv(os.path.join(folder, "28_07_23_remote_large.csv"))
@@ -3617,7 +3617,7 @@ def large_exp(folder):
         df_copy = df[['instance', 'nrCust', 'policy_bab_ID', 'obj_val_bab']].copy()
         df_remote = df_remote.merge(df_copy, on='instance')
 
-        df_remote = df_remote[ (df_remote.nrPup_rem == 3)]
+        df_remote = df_remote[ (df_remote.nrPup_rem == 3) &  (df_remote.nrCust_rem == 18)]
         # df_remote = df_remote[
         #     (df_remote.nrCust_rem == 15) & (df_remote.nrPup_rem == 3) & (df_remote.discount_rate_rem == 0.06) & (
         #             df_remote.p_home_rem == 0.4)]
@@ -3643,7 +3643,7 @@ def large_exp(folder):
             print(n)
             df_remote1 = df_remote[(df_remote.nrCust_rem == n) & (df_remote.nrPup_rem == 3)]
             for class_id in [1,2,3,4,5]:
-                print("n, class", n, class_id)
+                print("\nn, class", n, class_id)
                 df_temp = df_remote1[(df_remote1.class_id == class_id)].copy()
                 for index, row in df_temp.iterrows():
                     print(bin(row['policy_remote_ID']), bin(row['policy_bab_ID']), bitCount(row['policy_remote_ID']),
