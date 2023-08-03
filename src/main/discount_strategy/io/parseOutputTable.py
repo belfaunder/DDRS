@@ -3647,7 +3647,7 @@ def large_exp(folder):
                 df_temp = df_remote1[(df_remote1.class_id == class_id)].copy()
                 for index, row in df_temp.iterrows():
                     print(bin(row['policy_remote_ID']), bin(row['policy_bab_ID']), bitCount(row['policy_remote_ID']),
-                          bitCount(row['policy_bab_ID']),
+                          bitCount(row['policy_bab_ID']),row['obj_val_bab'],
                      (row['obj_val_remote'] - row['obj_val_bab'])/row['obj_val_remote'])
                     same_remote = 0
                     try:

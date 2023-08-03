@@ -202,6 +202,7 @@ def policy_remote_customers(instance):
     list_farness = []
     list_discounts = []
     list_farness_all = []
+    list_temp = []
     for cust in instance.customers:
         list_farness.append(instance.distanceMatrix[cust.id, cust.closest_pup_id])
         list_discounts.append(cust.shipping_fee)
@@ -210,18 +211,21 @@ def policy_remote_customers(instance):
         #print(cust.id, sorted(distancesf), instance.distanceMatrix[cust.id, cust.closest_pup_id])
         farness[cust.id] = round(sum(sorted(distancesf)[:4])/4)
         list_farness_all.append(round(sum(sorted(distancesf)[:4])/4))
+        list_temp.append(round((sum(sorted(distancesf)[:5]) / 5 )*(1-cust.prob_home)))
+    list_temp.reverse()
     list_farness.reverse()
     list_discounts.reverse()
     list_farness_all.reverse()
-    # print("list_farness", list_farness)
-    # print("list_discounts", list_discounts)
+    print("list_farness", list_farness)
+    print("list_farness_all", list_farness_all)
+    print("list_temp", list_temp)
+    print("list_discounts", list_discounts)
     # print("list_farness_all", list_farness_all)
-
     #start by removing discounts offered to customers, who are further than dist_1, then remove cusotmer further than dist_2 in the increasing order of cusotmers' distance
     # next, remove customers located closer then dist_1 in the decreasing order
     dist_1 = min(list_farness) + (max(list_farness) - min(list_farness))/4
     print(dist_1)
-    #dist_1 = np.percentile(list_farness, 33)
+    dist_1 = np.percentile(list_farness, 33)
     #print(dist_1)
     dist_2 = min(list_farness) + (max(list_farness) - min(list_farness))*2/3
     dict_cust_remove = {'middle':{}, 'farthest':{}, 'closest':{}}
@@ -229,8 +233,8 @@ def policy_remote_customers(instance):
     for cust in instance.customers:
         if cust.id in list_cust_ids:
             print("consider", cust.id)
-            #if True:
-            if policy_rs & (1 << int(cust.id-1)):
+            if True:
+            #if policy_rs & (1 << int(cust.id-1)):
                 if instance.distanceMatrix[cust.id, cust.closest_pup_id] < dist_1:
                     if cust.shipping_fee < farness[cust.id]:
                         policy += (1 << int(cust.id - 1))
