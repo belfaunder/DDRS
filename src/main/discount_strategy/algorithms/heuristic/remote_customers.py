@@ -175,7 +175,6 @@ def policy_remote_customers(instance):
     policy_rs, rsValue = ring_star_deterministic_no_TW(instance, instance.NR_CUST)
     painter = Painter()
     painter.printVertex(instance)
-    solverType = 'Gurobi'
     farness = {}
 
     list_cust_ids = [cust.id for cust in instance.customers]
@@ -199,6 +198,9 @@ def policy_remote_customers(instance):
 
     print(list_cust_ids)
     print(dict_same_decision)
+    size_neighbours = round(len(instance.customers) / 5)
+    print("size_neighbours", size_neighbours)
+
     list_farness = []
     list_discounts = []
     list_farness_all = []
@@ -209,9 +211,9 @@ def policy_remote_customers(instance):
         distancesf = [instance.distanceMatrix[cust.id, j.id] for j in instance.customers if
                            j is not cust] + [instance.distanceMatrix[cust.id, j.id] for j in instance.pups] + [instance.distanceMatrix[cust.id, instance.depot.id]]
         #print(cust.id, sorted(distancesf), instance.distanceMatrix[cust.id, cust.closest_pup_id])
-        farness[cust.id] = sum(sorted(distancesf)[:4])/4
-        list_farness_all.append(round(sum(sorted(distancesf)[:4])/4))
-        list_temp.append(round((sum(sorted(distancesf)[:3]) / 3 )*(1-cust.prob_home)))
+        farness[cust.id] = sum(sorted(distancesf)[:size_neighbours])/size_neighbours
+        list_farness_all.append(round(sum(sorted(distancesf)[:size_neighbours])/size_neighbours))
+        list_temp.append(round((sum(sorted(distancesf)[:size_neighbours]) / size_neighbours )*(1-cust.prob_home)))
     list_temp.reverse()
     list_farness.reverse()
     list_discounts.reverse()
