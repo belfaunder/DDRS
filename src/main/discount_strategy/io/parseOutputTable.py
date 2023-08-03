@@ -3603,7 +3603,7 @@ def large_exp(folder):
         print("")
 
     if True:
-        parseBAB_REMOTE(os.path.join(folder, "2_8_23_insights.txt"), folder, "2_8_23_insights")
+        #parseBAB_REMOTE(os.path.join(folder, "2_8_23_insights_with_Rs.txt"), folder, "2_8_23_insights_with_Rs")
         # large:
         # parseBAB_REMOTE(os.path.join(folder, "28_07_23_remote_large.txt"), folder, "28_07_23_remote_large")
         # df_remote = pd.read_csv(os.path.join(folder, "28_07_23_remote_large.csv"))
@@ -3611,7 +3611,7 @@ def large_exp(folder):
 
         df = pd.read_csv(os.path.join(folder, "17_07_23_bab_classes.csv"))
         #parseBAB_REMOTE(os.path.join(folder, "28_07_23_rs.txt"), folder, "28_07_23_rs")
-        df_remote = pd.read_csv(os.path.join(folder, "2_8_23_insights.csv"))
+        df_remote = pd.read_csv(os.path.join(folder, "2_8_23_insights_no_Rs.csv"))
         df_remote[['nrCust_rem', "p_home_rem", "nrPup_rem", 'discount_rate_rem']] = \
         df_remote[['nrCust_rem', "p_home_rem", "nrPup_rem", 'discount_rate_rem']].apply(pd.to_numeric)
         df_copy = df[['instance', 'nrCust', 'policy_bab_ID', 'obj_val_bab']].copy()
@@ -3632,12 +3632,12 @@ def large_exp(folder):
         df_remote['cost_diff'] = ''
         df_remote['babbin'] = ''
         df_remote['remotebin'] = ''
-        df_temp = df_remote[(df_remote.class_id == 1) ]
+        df_temp = df_remote
 
         for index, row in df_temp.iterrows():
             df_temp.at[index, 'cost_diff'] = (row['obj_val_remote'] - row['obj_val_bab'])/row['obj_val_remote']
             df_temp = df_temp.dropna(axis=0)
-        print("average ",  round(df_temp['cost_diff'].mean(), 3))
+        print("average ",  round(df_temp['cost_diff'].mean(), 4))
 
         for n in [18]:
             print(n)

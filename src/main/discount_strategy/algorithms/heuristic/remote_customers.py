@@ -209,14 +209,14 @@ def policy_remote_customers(instance):
         distancesf = [instance.distanceMatrix[cust.id, j.id] for j in instance.customers if
                            j is not cust] + [instance.distanceMatrix[cust.id, j.id] for j in instance.pups] + [instance.distanceMatrix[cust.id, instance.depot.id]]
         #print(cust.id, sorted(distancesf), instance.distanceMatrix[cust.id, cust.closest_pup_id])
-        farness[cust.id] = round(sum(sorted(distancesf)[:4])/4)
+        farness[cust.id] = sum(sorted(distancesf)[:4])/4
         list_farness_all.append(round(sum(sorted(distancesf)[:4])/4))
-        list_temp.append(round((sum(sorted(distancesf)[:5]) / 5 )*(1-cust.prob_home)))
+        list_temp.append(round((sum(sorted(distancesf)[:3]) / 3 )*(1-cust.prob_home)))
     list_temp.reverse()
     list_farness.reverse()
     list_discounts.reverse()
     list_farness_all.reverse()
-    print("list_farness", list_farness)
+    print("list_farness_to_pup", list_farness)
     print("list_farness_all", list_farness_all)
     print("list_temp", list_temp)
     print("list_discounts", list_discounts)
@@ -233,8 +233,7 @@ def policy_remote_customers(instance):
     for cust in instance.customers:
         if cust.id in list_cust_ids:
             print("consider", cust.id)
-            if True:
-            #if policy_rs & (1 << int(cust.id-1)):
+            if policy_rs & (1 << int(cust.id-1)):
                 if instance.distanceMatrix[cust.id, cust.closest_pup_id] < dist_1:
                     if cust.shipping_fee < farness[cust.id]:
                         policy += (1 << int(cust.id - 1))
