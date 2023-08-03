@@ -4232,7 +4232,7 @@ if __name__ == "__main__":
 
     folder_2segm_manyPUP = os.path.join(path_to_data, "output", "VRPDO_discount_proportional_2segm_manyPUP")
     #new remote:
-    #large_exp(folder_2segm_manyPUP)
+    large_exp(folder_2segm_manyPUP)
     #compare_enumeration_no_Gurobi(folder_2segm_manyPUP)
     #experiment_variation_nrcust_heuristic(folder)
     #experiment_variation_nrcust(folder_2segm_manyPUP)
@@ -4243,7 +4243,7 @@ if __name__ == "__main__":
     #managerial_effect_delta(folder)
     #large_exp(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
     #n =30
-    managerial_location(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
+    #managerial_location(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
     #managerial_effect_delta(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
     #experiment_bab_solution_time_classes(folder_2segm_manyPUP)
     #experiment_bab_solution_time_classes_pups(folder_2segm_manyPUP)

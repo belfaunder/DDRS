@@ -220,20 +220,24 @@ def policy_remote_customers(instance):
     #start by removing discounts offered to customers, who are further than dist_1, then remove cusotmer further than dist_2 in the increasing order of cusotmers' distance
     # next, remove customers located closer then dist_1 in the decreasing order
     dist_1 = min(list_farness) + (max(list_farness) - min(list_farness))/4
-    dist_1 = np.percentile(list_farness, 33)
     print(dist_1)
+    #dist_1 = np.percentile(list_farness, 33)
+    #print(dist_1)
     dist_2 = min(list_farness) + (max(list_farness) - min(list_farness))*2/3
     dict_cust_remove = {'middle':{}, 'farthest':{}, 'closest':{}}
     policy = 0
     for cust in instance.customers:
         if cust.id in list_cust_ids:
+            print("consider", cust.id)
             #if True:
             if policy_rs & (1 << int(cust.id-1)):
                 if instance.distanceMatrix[cust.id, cust.closest_pup_id] < dist_1:
                     if cust.shipping_fee < farness[cust.id]:
                         policy += (1 << int(cust.id - 1))
                         if cust.id in dict_same_decision:
+                            print(cust.id)
                             for cust2 in dict_same_decision[cust.id]:
+                                print(cust2)
                                 policy += (1 << int(cust2 - 1))
                         #print("here1", cust.id, cust.shipping_fee ,farness[cust.id])
                 else:
@@ -241,6 +245,7 @@ def policy_remote_customers(instance):
                         policy += (1 << int(cust.id - 1))
                         if cust.id in dict_same_decision:
                             for cust2 in dict_same_decision[cust.id]:
+                                print(cust2)
                                 policy += (1 << int(cust2 - 1))
                         #print("here2", cust.id, cust.shipping_fee,(cust.prob_home),farness[cust.id])
     #print(bin(policy))
