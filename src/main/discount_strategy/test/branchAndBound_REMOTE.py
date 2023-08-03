@@ -12,7 +12,7 @@ from src.main.discount_strategy.algorithms.exact.bab.BAB_exact import BABExact
 from src.main.discount_strategy.algorithms.heuristic.sample_average import sampleAverageApproximation_PoissonBinomial_1sample_2segm
 from src.main.discount_strategy.algorithms.heuristic.sample_average import one_policy_cost_estimation
 from src.main.discount_strategy.io import OCVRPParser
-from src.main.discount_strategy.algorithms.heuristic.remote_customers import policy_remote_customers,policy_remote_rs, policy_insights_Nevin
+from src.main.discount_strategy.algorithms.heuristic.remote_customers import policy_remote_customers,policy_remote_customers2,policy_remote_rs, policy_insights_Nevin
 
 from src.main.discount_strategy.io import print_functions
 from src.main.discount_strategy.algorithms.exact.ring_star_without_TW import ring_star_deterministic_no_TW
@@ -36,16 +36,16 @@ if __name__ == "__main__":
                                      "i_VRPDO_2segm_manyPup_classes", str(sys.argv[-1]) + ".txt")
     else:
         file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPup_classes",
-                                     "VRPDO_size_18_phome_0.1_ppup_0.0_incrate_0.06_nrpup3_8.txt")
+                                     "VRPDO_size_18_phome_0.4_ppup_0.0_incrate_0.06_nrpup3_1.txt")
         # file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
         #                             "VRPDO_size_10_phome_0.2_ppup_0.0_incrate_0.03_0.txt")
 
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()
     print(OCVRPInstance)
-    remote_policy_ID = policy_insights_Nevin(OCVRPInstance)
+    remote_policy_ID = policy_remote_customers(OCVRPInstance)
     print(bin(remote_policy_ID))
-    print(bin(31153))
+    print(bin(128))
 
 
 

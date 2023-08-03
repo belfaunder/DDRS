@@ -3603,7 +3603,7 @@ def large_exp(folder):
         print("")
 
     if True:
-        #parseBAB_REMOTE(os.path.join(folder, "2_8_23_insights.txt"), folder, "2_8_23_insights")
+        parseBAB_REMOTE(os.path.join(folder, "2_8_23_insights.txt"), folder, "2_8_23_insights")
         # large:
         # parseBAB_REMOTE(os.path.join(folder, "28_07_23_remote_large.txt"), folder, "28_07_23_remote_large")
         # df_remote = pd.read_csv(os.path.join(folder, "28_07_23_remote_large.csv"))
@@ -3673,10 +3673,11 @@ def large_exp(folder):
 def managerial_location(folder):
     #parseBABHeuristic(os.path.join(folder, "02_18_bab_nodisc_rs_30.txt"), folder, "02_18_bab_nodisc_rs_30")
     # effect of centrality and delta on the distribution of  offered incentives
-    if True:
+    #effect of distance to pup depending on CX n=18
+    if False:
         df = pd.read_csv(os.path.join(folder, "17_07_23_bab_classes.csv"))
         folder_data = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPup_classes")
-        df = df[(df.nrPup == 3) & (df.nrCust == 18)].copy()
+        df = df[(df.nrPup == 3) & (df.nrCust == 15)].copy()
         # df['class'] = df.apply(lambda x: 'low_determinism' if x['p_home'] == 0.7 else (
         #     'high_determinism' if x['p_home'] == 0.1 else (
         #         'high_disc' if x['discount_rate'] == 0.12 else (
@@ -3816,6 +3817,132 @@ def managerial_location(folder):
         plt.legend(loc='center left', bbox_to_anchor=(1, 0.5), title='Distance to \npickup point',handles = reversed(lines), labels=reversed(labels))
         plt.savefig(os.path.join(path_to_images, 'centrality_delta_2.eps'), transparent=False, bbox_inches='tight')
         plt.show()
+    #effect of distance to pup depending on CX n=30
+    if True:
+        df = pd.read_csv(os.path.join(folder, "02_18_bab_nodisc_rs_30.csv"))
+        folder_data = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_30")
+        df = df[(df.nrPup == 3) & (df.nrCust == 30)].copy()
+
+        df['class_id'] = df.apply(lambda x: 2 if x['p_home'] == 0.8 and x['discount_rate'] == 0.06  else (
+            3 if x['p_home'] == 0.2 and x['discount_rate'] == 0.06  else (
+                5 if x['discount_rate'] == 0.12 and x['p_home'] == 0.4  else (
+                    4 if x['discount_rate'] == 0.03 and x['p_home'] == 0.4  else
+                    (1 if x['discount_rate'] == 0.06 and x['p_home'] == 0.4 else 10)
+                ))), axis=1)
+        df = df[["class_id", 'discount_rate', 'nrPup', 'policy_bab_ID', 'instance']].copy()
+
+        sns.set()
+        sns.set(font_scale=1.2)
+        sns.set_context(rc={'font.sans-serif': 'Computer Modern Sans Serif'})
+        sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
+        sns.set_style('ticks', {"xtick.bottom": False, "ytick.direction": "in"})
+        fig, axes = plt.subplots(1, 1, sharey=True, sharex=True)
+        df['instance_type'] = df['instance'].apply(lambda x: int(str(x).split('_')[10]))
+        # df = df[df['instance_type'].isin([0,2,3,4])].copy()
+        distances = [10, 15,20,40, 90,180]
+        dict_distances = {}
+        class_bins = [ 1, 2, 3, 4, 5]
+        bottom_dict = {}
+        for distance in distances:
+            bottom_dict[distance] = [0] * (len(class_bins))
+        for distance in distances:
+            dict_distances[distance] = [0] * (len(class_bins))
+
+        colors = [(30 / 255, 30 / 255, 50 / 255, 0.8),
+                  (190 / 255, 190 / 255, 200 / 255),
+                  (230 / 255, 230 / 255, 255 / 255),
+                  (140 / 255, 140 / 255, 160 / 255),
+                  (90 / 255, 120 / 255, 90 / 255),
+                  (230 / 255, 230 / 255, 255 / 255)]
+
+        iter = -1
+        list_farness = []
+        #calculate the distribution of customers per range
+        distribution_range = {}
+        for distance in distances:
+            distribution_range[distance] = 0
+        df1 = df[df.class_id == 1].copy()
+        number_instances = 0
+        for index, row in df1.iterrows():
+            number_instances += 1
+            instance = row['instance']
+            OCVRPInstance = OCVRPParser.parse(os.path.join(folder_data, instance + ".txt"))
+            for cust in OCVRPInstance.customers:
+                #farness = OCVRPInstance.distanceMatrix[cust.id, cust.closest_pup_id] / 10
+                distancesf = [OCVRPInstance.distanceMatrix[cust.id, j.id] for j in OCVRPInstance.customers if
+                                  j is not cust] + [OCVRPInstance.distanceMatrix[cust.id, j.id] for j in OCVRPInstance.pups] + [
+                                     OCVRPInstance.distanceMatrix[cust.id, OCVRPInstance.depot.id]]
+                farness =sum(sorted(distancesf)[:4])/4
+                list_farness.append(farness)
+                for distance in distances:
+                    if farness < distance:
+                        distribution_range[distance] += 1
+                        break
+
+        for distance in distances:
+            distribution_range[distance] = distribution_range[distance]/number_instances
+        print("distribution_range",  distribution_range)
+        for class_id in class_bins:
+            iter += 1
+            df1 = df[df.class_id == class_id].copy()
+            number_instances = 0
+            for index, row in df1.iterrows():
+                number_instances += 1
+                instance = row['instance']
+                OCVRPInstance = OCVRPParser.parse(os.path.join(folder_data, instance + ".txt"))
+                for cust in OCVRPInstance.customers:
+                    #farness = OCVRPInstance.distanceMatrix[cust.id, cust.closest_pup_id] / 10
+
+                    distancesf = [OCVRPInstance.distanceMatrix[cust.id, j.id] for j in OCVRPInstance.customers if
+                                  j is not cust] + [OCVRPInstance.distanceMatrix[cust.id, j.id] for j in OCVRPInstance.pups] + [
+                                     OCVRPInstance.distanceMatrix[cust.id, OCVRPInstance.depot.id]]
+                    farness =sum(sorted(distancesf)[:4]) /4
+                    list_farness.append(farness)
+                    for distance in distances:
+                        if farness < distance:
+                            if row['policy_bab_ID'] & (1 << cust.id - 1):
+                                dict_distances[distance][iter] += 1
+                            break
+            for distance in distances:
+                dict_distances[distance][iter] = (dict_distances[distance][iter] /number_instances)/distribution_range[distance]
+
+        print("C",number_instances, dict_distances )
+
+        print(sum(list_farness) / len(list_farness))
+        print("max farness", max(list_farness),  min(list_farness),  np.percentile(list_farness, 60), np.percentile(list_farness, 90))
+        for distance in distances:
+            print( distance, dict_distances[distance][0])
+        #distances.reverse()
+        for distance in distances:
+            iter = -1
+            for iter_temp in class_bins:
+                iter += 1
+                for dist_temp in distances:
+                    if dist_temp < distance:
+                        bottom_dict[distance][iter] += dict_distances[dist_temp][iter]
+        #lable_dict = {4: '0 - 4: out of 6.6 customers', 8: '4 - 8: out of 6.1 customers',16: '  > 8: out of 5.3 customers'}
+        #lable_dict = {3.3: '0.0 - 3.5', 6.6: '3.3 - 6.6', 18: '> 6.6'}
+        #lable_dict = {3: '0 - 3: out of 5.3 customers', 6: '3 - 6: out of 4.5 customers',16: '  > 6: out of 8.2 customers'}
+
+        class_bins_print = [ 0.7, 1.7, 2.7, 3.7, 4.7]
+        for index, distance in enumerate(distances):
+            print("distance", distance)
+            axes.bar(class_bins_print, dict_distances[distance], bottom=bottom_dict[distance], width=0.6, align="edge",
+                     color=colors[index] ) #, label=lable_dict[distance]
+            # str()discount_rate
+            # axes.bar(delta_bins, percent, width=1, align="edge",  label=r'$\Delta = $'+str(round(1-p_home,1)), hatch=pattern)  # str()discount_rate
+
+        axes.set(xlabel='Parameter combination')
+        axes.set(ylabel='Number of incentives')
+        plt.gca().set_xticks(class_bins, ['C1','C2',  'C3', 'C4', 'C5'])
+        #plt.yticks(np.arange(0, 21 + 1, 2.0))
+        #axes.set_ylim(0, 23)
+
+        #lines, labels = axes.get_legend_handles_labels()
+        #print(lines, labels)
+        #plt.legend(loc='center left', bbox_to_anchor=(1, 0.5), title='Distance to \npickup point',handles = reversed(lines), labels=reversed(labels))
+        #plt.savefig(os.path.join(path_to_images, 'centrality_delta_30.eps'), transparent=False, bbox_inches='tight')
+        plt.show()
     if False:
         df = pd.read_csv(os.path.join(folder, "02_18_bab_nodisc_rs_30.csv"))
         folder_data = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_30")
@@ -3893,7 +4020,7 @@ def managerial_location(folder):
         # plt.gca().set_xticks([2, 5, 8, 11, 14], ['0-3', '3-6', '6-9', '9-12', '12-15'])
         plt.yticks(np.arange(0, 19 + 1, 2.0))
         plt.legend( loc='upper left', title='Distance to pickup point')
-        plt.savefig(os.path.join(path_to_images, 'centrality_delta_.eps'), transparent=False, bbox_inches='tight')
+        plt.savefig(os.path.join(path_to_images, 'centrality_delta_30.eps'), transparent=False, bbox_inches='tight')
         plt.show()
     if False:
         df = pd.read_csv(os.path.join(folder, "02_18_bab_nodisc_rs_30.csv"))
@@ -4105,19 +4232,22 @@ if __name__ == "__main__":
 
     folder_2segm_manyPUP = os.path.join(path_to_data, "output", "VRPDO_discount_proportional_2segm_manyPUP")
     #new remote:
-    large_exp(folder_2segm_manyPUP)
+    #large_exp(folder_2segm_manyPUP)
     #compare_enumeration_no_Gurobi(folder_2segm_manyPUP)
     #experiment_variation_nrcust_heuristic(folder)
     #experiment_variation_nrcust(folder_2segm_manyPUP)
 
 
     #exp_profile()
+
     #managerial_effect_delta(folder)
     #large_exp(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
-    #managerial_location(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
+    #n =30
+    managerial_location(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
     #managerial_effect_delta(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
     #experiment_bab_solution_time_classes(folder_2segm_manyPUP)
     #experiment_bab_solution_time_classes_pups(folder_2segm_manyPUP)
+    # n=18
     #managerial_location(folder_2segm_manyPUP)
     # parseBAB(os.path.join(folder, "bab_7types_nrCust.txt"), folder, "bab_7types_nrCust")
 
