@@ -172,7 +172,7 @@ def policy_remote_customers2(instance):
     print("here", bin(policy))
     return policy
 def policy_remote_customers(instance):
-    policy_rs, rsValue = ring_star_deterministic_no_TW(instance, instance.NR_CUST)
+
     painter = Painter()
     painter.printVertex(instance)
     farness = {}
@@ -198,7 +198,7 @@ def policy_remote_customers(instance):
 
     print(list_cust_ids)
     print(dict_same_decision)
-    size_neighbours = round(len(instance.customers) / 5)
+    size_neighbours = round(len(instance.customers) / 8)
     print("size_neighbours", size_neighbours)
 
     list_farness = []
@@ -232,6 +232,7 @@ def policy_remote_customers(instance):
     dist_2 = min(list_farness) + (max(list_farness) - min(list_farness))*2/3
     dict_cust_remove = {'middle':{}, 'farthest':{}, 'closest':{}}
     policy = 0
+    policy_rs, rsValue = ring_star_deterministic_no_TW(instance, instance.NR_CUST)
     for cust in instance.customers:
         if cust.id in list_cust_ids:
             print("consider", cust.id)

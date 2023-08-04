@@ -3486,14 +3486,76 @@ def large_exp(folder):
         plt.savefig(os.path.join(path_to_images, 'heuristic_improvement.eps'), transparent=False,
                     bbox_inches='tight')
         plt.show()
-    # impact of the problem size on the savings of BAB in comparison to rs and nodsic and remote
+    # impact of the problem size on the savings of BAB in comparison  remote only
     if True:
         #parseBABHeuristic(os.path.join(folder, "bab_large_temp.txt"), folder, "bab_large_temp")
         df = pd.read_csv(os.path.join(folder, "bab_large_temp.csv"))
         # set a new file for remote here
         #parseBAB_REMOTE(os.path.join(folder, "08_03_remote.txt"), folder, "08_03_remote")
-        parseBAB_REMOTE(os.path.join(folder, "03_08_remote_new.txt"), folder, "03_08_remote_new")
+        #parseBAB_REMOTE(os.path.join(folder, "03_08_remote_new.txt"), folder, "03_08_remote_new")
         df_remote = pd.read_csv(os.path.join(folder, "03_08_remote_new.csv"))
+        #df_remote = pd.read_csv(os.path.join(path_to_data, "output", "VRPDO_discount_proportional_2segm_manyPUP", "28_07_23_remote_large.csv"))
+        df_remote = df_remote[['instance', 'nrCust_rem',"nrPup_rem", 'p_home_rem', 'discount_rate_rem', 'obj_val_remote', 'policy_remote_ID', 'instance_id_rem']].copy()
+        df_copy = df[['instance','nrCust', 'policy_bab_ID','obj_val_bab']].copy()
+        df_remote = df_remote.merge(df_copy, on='instance')
+        for index, row in df_remote.iterrows():
+            if row['nrCust'] in [50]:
+                print(row['instance'], bin(int(row['policy_remote_ID'])), bitCount(int(row['policy_remote_ID'])),bin(int(row['policy_bab_ID'])), bitCount(int(row['policy_bab_ID'])),
+                      (row['obj_val_remote'] - row['obj_val_bab']) / row['obj_val_remote'] )
+
+        df_remote['gap_remote'] = 100 * (df_remote['obj_val_remote'] - df_remote['obj_val_bab']) / df_remote['obj_val_remote']
+        df_results = pd.DataFrame(columns=['p_accept', 'p_home', 'discount_rate', 'nrPup', 'nrCust', 'algo', 'savings'])
+        iter = 0
+        for index, row in df.iterrows():
+            if row['nrCust'] in [10, 15, 20, 25,30, 35,40,45,50]:
+                df_results.at[iter, 'instance'] = row['instance']
+                df_results.at[iter, 'p_home'] = row['p_home']
+                df_results.at[iter, 'discount_rate'] = row['discount_rate']
+                df_results.at[iter, 'nrPup'] = row['nrPup']
+                df_results.at[iter , 'nrCust'] = row['nrCust']  #+ i * 0.9 - 0.9
+                df_results.at[iter, 'algo'] = 3
+                df_results.at[iter, 'savings'] = row['gap_remote']
+                iter += 1
+
+        #df_results = df_results[df_results['discount_rate'].isin([0.06])].copy()
+        #df_results = df_results[df_results['nrPup'].isin([1,3])].copy()
+        df_results.sort_values("algo")
+        # sns.scatterplot(ax=axes, data=df_results, x='nrCust', y='savings', markers=True,
+        #                linewidth=1, hue='algo', style='algo',  # discount_rate   nrPup
+        #                palette="deep", legend=False)
+        # sns.lineplot(ax=axes, data=df_results, x='nrCust', y='savings', markers=True,
+        #             markersize=12, hue='algo', style='algo',
+        #             palette="deep", err_style="bars", errorbar=('pi', 100), err_kws={'capsize': 3}, alpha = 0.5)
+        sns.lineplot(ax=axes, data=df_results, x='nrCust', y='savings',  markers=True,err_style="bars",
+                     errorbar=('pi', 100),err_kws={'capsize': 3},
+                     markersize=12, hue='algo', style='algo',
+                     palette="deep")
+        #plt.legend(title=False, labels=['ALL', 'NOI', 'DI', 'R'])
+        #df_results.dropna(subset=['savings'], inplace = True)
+        #axes = sns.barplot(data=df_results, x='nrCust', y='savings', hue = 'algo')
+
+        axes.set_xticks([10, 15, 20, 25,30,35,40,45,50])
+
+        axes.set(xlabel='' + 'Problem size, n')
+        # # axes.set_xticks([0.2, 0.4, 0.6, 0.8, 1.0])
+        axes.set(ylabel='Savings (%)')
+        #handles, labels = axes.get_legend_handles_labels()
+        #handles = [handles[3], handles[4], handles[5]] #handles[7]
+        #axes.legend(handles, labels,  loc='upper right', bbox_to_anchor=(1.0, 1.0))
+        # lgnd = axes.legend( title=False,  handles=handles, fontsize=16,markerscale=1.9,
+        #                     labels=[ 'ALL', 'NOI', 'DI'], loc='upper right',
+        #                     bbox_to_anchor=(1.0, 1.0))
+        #plt.legend(title=False, loc='upper right', bbox_to_anchor=(1.0, 1.0))
+        plt.savefig(os.path.join(path_to_images, 'heuristic_improvement_remoteonly.eps'), transparent=False,
+                   bbox_inches='tight')
+        plt.show()
+    if False:
+        #parseBABHeuristic(os.path.join(folder, "bab_large_temp.txt"), folder, "bab_large_temp")
+        df = pd.read_csv(os.path.join(folder, "bab_large_temp.csv"))
+        # set a new file for remote here
+        #parseBAB_REMOTE(os.path.join(folder, "08_03_remote.txt"), folder, "08_03_remote")
+        #parseBAB_REMOTE(os.path.join(folder, "03_08_remote_new.txt"), folder, "03_08_remote_new")
+        df_remote = pd.read_csv(os.path.join(path_to_data, "output", "VRPDO_discount_proportional_2segm_manyPUP", "28_07_23_remote_large.csv"))
         df_remote = df_remote[['instance', 'nrCust_rem',"nrPup_rem", 'p_home_rem', 'discount_rate_rem', 'obj_val_remote', 'policy_remote_ID', 'instance_id_rem']].copy()
         #df['objValPrint'] = df.apply(lambda x: min(x['obj_val_bab'], x['obj_val_rs'], x['obj_val_nodisc'],
         #                                           x['obj_val_uniform']), axis=1)
@@ -3502,44 +3564,42 @@ def large_exp(folder):
         df_remote = df_remote.merge(df_copy, on='instance')
         df_remote['gap_remote'] = 100 * (df_remote['obj_val_remote'] - df_remote['objValPrint']) / df_remote['objValPrint']
 
-        df['objValPrint'] = df.apply(lambda x: min(x['obj_val_bab'], x['obj_val_rs'], x['obj_val_nodisc'],
-                                                   x['obj_val_uniform']), axis=1)
         df['gap_nodisc'] = 100 * (df['obj_val_nodisc'] - df['objValPrint']) / df['objValPrint']
         df['gap_rs'] = 100 * (df['obj_val_rs'] - df['objValPrint']) / df['objValPrint']
         df['gap_uniform'] = 100 * (df['obj_val_uniform'] - df['objValPrint']) / df['objValPrint']
         df_results = pd.DataFrame(columns=['p_accept', 'p_home', 'discount_rate', 'nrPup', 'nrCust', 'algo', 'savings'])
         iter = 0
         for index, row in df.iterrows():
-            if row['nrCust'] in [10, 15, 20, 25,30,35,40,45,50]:
+            if row['nrCust'] in [10, 15, 20, 25,30, 35,40,45,50]:
                 for i in range(4):
                     df_results.at[iter + i, 'instance'] = row['instance']
                     df_results.at[iter + i, 'p_home'] = row['p_home']
                     # df_results.at[iter + i, 'p_accept'] = row['p_accept']
                     df_results.at[iter + i, 'discount_rate'] = row['discount_rate']
                     df_results.at[iter + i, 'nrPup'] = row['nrPup']
-                    df_results.at[iter + i, 'nrCust'] = row['nrCust']  #+ i * 0.9 - 0.9
-                    # if i == 0:
-                    #     if row['nrPup'] == 1:
-                    #         pass
-                    #     else:
-                    #         df_results.at[iter + i, 'algo'] = 1
-                    #         df_results.at[iter + i, 'savings'] = max(row['gap_nodisc'], 0)
-                    # elif i == 1:
-                    #     if row['nrPup'] == 3:
-                    #         pass
-                    #     else:
-                    #         df_results.at[iter + i, 'algo'] = 2
-                    #         df_results.at[iter + i, 'savings'] = max(row['gap_rs'], 0)
-                    # elif i == 2:
-                    #     if row['nrPup'] == 3:
-                    #         pass
-                    #     else:
-                    #         df_results.at[iter + i, 'algo'] = 0
-                    #         df_results.at[iter + i, 'savings'] = max(row['gap_uniform'], 0)
-                    if i==3:
-
-                        df_results.at[iter + i, 'algo'] = 3
-                        df_results.at[iter + i, 'savings'] = max(df_remote[df_remote['instance']==row['instance']]['gap_remote'].mean(), 0)
+                    df_results.at[iter + i, 'nrCust'] = row['nrCust']  + i * 0.9 - 0.9
+                    if i == 0:
+                        if row['nrPup'] == 1:
+                            pass
+                        else:
+                            df_results.at[iter + i, 'algo'] = 1
+                            df_results.at[iter + i, 'savings'] = row['gap_nodisc']
+                    elif i == 1:
+                        if row['nrPup'] == 3:
+                            pass
+                        else:
+                            df_results.at[iter + i, 'algo'] = 2
+                            df_results.at[iter + i, 'savings'] = row['gap_rs']
+                    elif i == 2:
+                        if row['nrPup'] == 3:
+                            pass
+                        else:
+                            df_results.at[iter + i, 'algo'] = 0
+                            df_results.at[iter + i, 'savings'] = row['gap_uniform']
+                    # if i==3:
+                    #
+                    #     df_results.at[iter + i, 'algo'] = 3
+                    #     df_results.at[iter + i, 'savings'] = max(df_remote[df_remote['instance']==row['instance']]['gap_remote'].mean(), 0)
                 iter += 3
         #df_results = df_results[df_results['discount_rate'].isin([0.06])].copy()
         #df_results = df_results[df_results['nrPup'].isin([1,3])].copy()
@@ -3663,7 +3723,6 @@ def large_exp(folder):
                         df_temp.at[index, 'cost_diff'] = (row['obj_val_remote'] - row['obj_val_bab'])/row['obj_val_remote']
                     except:
                         pass
-
                 df_temp = df_temp.dropna(axis=0)
                 #df_results = pd.DataFrame(index=df_temp.nrCust.unique(), columns=['same_remote'])
                 print( class_id, round(df_temp['same_remote'].mean(), 3),  round(df_temp['cost_diff'].mean(), 3))

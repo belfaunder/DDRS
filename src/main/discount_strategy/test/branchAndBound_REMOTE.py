@@ -31,12 +31,15 @@ if __name__ == "__main__":
     print(prefix, "Exact BAB")
     print(prefix, "solverType: ", solverType)
     print(prefix, "TIME_LIMIT:", constants.TIME_LIMIT)
+    folder_large = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_large")
+
     if os.name != 'nt':
         file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "data",
                                      "i_VRPDO_2segm_manyPUP_large", str(sys.argv[-1]) + ".txt")
     else:
-        file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPup_classes",
-                                     "VRPDO_size_10_phome_0.1_ppup_0.0_incrate_0.06_nrpup3_0.txt")
+        #file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPup_classes",
+        #                             "VRPDO_size_50_phome_0.4_ppup_0.0_incrate_0.06_nrpup3_3.txt")
+        file_instance = os.path.join(folder_large,"VRPDO_size_50_phome_0.4_ppup_0.0_incrate_0.06_nrpup3_3.txt")
         # file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
         #                             "VRPDO_size_10_phome_0.2_ppup_0.0_incrate_0.03_0.txt")
 
@@ -45,7 +48,6 @@ if __name__ == "__main__":
     print(OCVRPInstance)
     remote_policy_ID = policy_remote_customers(OCVRPInstance)
     print(bin(remote_policy_ID))
-    print(bin(128))
 
 
 
