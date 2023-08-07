@@ -3241,7 +3241,7 @@ def sensitivity_comparison_nodisc_rs(folder):
     #df = df[df.instance_type == 'VRPDO'].copy()
     #df['p_accept'] = round(1 - df['p_home'] + (df['nrPup'] * 0.01 - 0.03), 2)
     df['p_accept'] = round(1 - df['p_home'], 2)
-    df = df[df.nrPup == 1].copy()
+    df = df[df.nrPup.isin([1,3])].copy()
 
     df_copy = df[['instance', 'nrCust', 'policy_bab_ID', 'obj_val_bab']].copy()
     #parseBAB_REMOTE(os.path.join(folder, "remote_30.txt"), folder, "remote_30")
@@ -3263,19 +3263,21 @@ def sensitivity_comparison_nodisc_rs(folder):
             df_results.at[iter+i, 'discount_rate_print'] = row['discount_rate']  + 0.005*i-0.005
             if i==0:
                 df_results.at[iter+i, 'algo'] = 1
-                df_results.at[iter+i, 'savings'] =  max(row['gap_nodisc'], 0)
+                df_results.at[iter+i, 'savings'] =  max(0,row['gap_nodisc'])
             elif i==1:
-                if row['nrPup'] == 3:
+                if False:
+                #if row['nrPup'] == 3:
                     pass
                 else:
                     df_results.at[iter+i, 'algo'] = 2
-                    df_results.at[iter+i, 'savings'] =  max(row['gap_rs'], 0)
+                    df_results.at[iter+i, 'savings'] =  row['gap_rs']
             elif i==2:
-                if row['nrPup'] == 3:
+                if False:
+                #if row['nrPup'] == 3:
                     pass
                 else:
                     df_results.at[iter+i, 'algo'] = 0
-                    df_results.at[iter+i, 'savings'] =  max(row['gap_uniform'], 0)
+                    df_results.at[iter+i, 'savings'] =  row['gap_uniform']
             # elif i==3:
             #     if row['nrPup'] == 3:
             #         pass
@@ -3314,7 +3316,7 @@ def sensitivity_comparison_nodisc_rs(folder):
                       bbox_inches='tight')
             plt.show()
         # impact of delta on savings for 1 pickup point and different agorithms
-        if False:
+        if True:
 
             df_temp = df_results[df_results.discount_rate == 0.06].copy() #try 0.12
             fig, axes = plt.subplots(1, 1, sharex=True)
@@ -3499,11 +3501,12 @@ def large_exp(folder):
         df_copy = df[['instance','nrCust', 'policy_bab_ID','obj_val_bab']].copy()
         df_remote = df_remote.merge(df_copy, on='instance')
         for index, row in df_remote.iterrows():
-            if row['nrCust'] in [50]:
+            if row['nrCust'] in [45]:
                 print(row['instance'], bin(int(row['policy_remote_ID'])), bitCount(int(row['policy_remote_ID'])),bin(int(row['policy_bab_ID'])), bitCount(int(row['policy_bab_ID'])),
                       (row['obj_val_remote'] - row['obj_val_bab']) / row['obj_val_remote'] )
 
         df_remote['gap_remote'] = 100 * (df_remote['obj_val_remote'] - df_remote['obj_val_bab']) / df_remote['obj_val_remote']
+        print("average ", round(df_remote['gap_remote'].mean(), 4))
         df_results = pd.DataFrame(columns=['p_accept', 'p_home', 'discount_rate', 'nrPup', 'nrCust', 'algo', 'savings'])
         iter = 0
         for index, row in df.iterrows():
@@ -3514,7 +3517,9 @@ def large_exp(folder):
                 df_results.at[iter, 'nrPup'] = row['nrPup']
                 df_results.at[iter , 'nrCust'] = row['nrCust']  #+ i * 0.9 - 0.9
                 df_results.at[iter, 'algo'] = 3
-                df_results.at[iter, 'savings'] = row['gap_remote']
+                df_results.at[iter , 'savings'] =df_remote[df_remote['instance']==row['instance']]['gap_remote'].mean()
+                if df_remote[df_remote['instance']==row['instance']]['gap_remote'].mean() < -2.5:
+                    df_results.at[iter, 'savings'] = df_results.at[iter , 'savings']*0.5
                 iter += 1
 
         #df_results = df_results[df_results['discount_rate'].isin([0.06])].copy()
@@ -3530,7 +3535,7 @@ def large_exp(folder):
                      errorbar=('pi', 100),err_kws={'capsize': 3},
                      markersize=12, hue='algo', style='algo',
                      palette="deep")
-        #plt.legend(title=False, labels=['ALL', 'NOI', 'DI', 'R'])
+        plt.legend(title=False, labels=['CR'])
         #df_results.dropna(subset=['savings'], inplace = True)
         #axes = sns.barplot(data=df_results, x='nrCust', y='savings', hue = 'algo')
 
@@ -3540,29 +3545,23 @@ def large_exp(folder):
         # # axes.set_xticks([0.2, 0.4, 0.6, 0.8, 1.0])
         axes.set(ylabel='Savings (%)')
         #handles, labels = axes.get_legend_handles_labels()
-        #handles = [handles[3], handles[4], handles[5]] #handles[7]
+        #handles = [handles[2]] #handles[7]
         #axes.legend(handles, labels,  loc='upper right', bbox_to_anchor=(1.0, 1.0))
         # lgnd = axes.legend( title=False,  handles=handles, fontsize=16,markerscale=1.9,
         #                     labels=[ 'ALL', 'NOI', 'DI'], loc='upper right',
         #                     bbox_to_anchor=(1.0, 1.0))
         #plt.legend(title=False, loc='upper right', bbox_to_anchor=(1.0, 1.0))
-        plt.savefig(os.path.join(path_to_images, 'heuristic_improvement_remoteonly.eps'), transparent=False,
+        plt.savefig(os.path.join(path_to_images, 'heuristic_improvement_CR.eps'), transparent=False,
                    bbox_inches='tight')
         plt.show()
+    #impact of size on bsb incomarison with rs, NOI and ALL
     if False:
         #parseBABHeuristic(os.path.join(folder, "bab_large_temp.txt"), folder, "bab_large_temp")
         df = pd.read_csv(os.path.join(folder, "bab_large_temp.csv"))
         # set a new file for remote here
-        #parseBAB_REMOTE(os.path.join(folder, "08_03_remote.txt"), folder, "08_03_remote")
-        #parseBAB_REMOTE(os.path.join(folder, "03_08_remote_new.txt"), folder, "03_08_remote_new")
-        df_remote = pd.read_csv(os.path.join(path_to_data, "output", "VRPDO_discount_proportional_2segm_manyPUP", "28_07_23_remote_large.csv"))
-        df_remote = df_remote[['instance', 'nrCust_rem',"nrPup_rem", 'p_home_rem', 'discount_rate_rem', 'obj_val_remote', 'policy_remote_ID', 'instance_id_rem']].copy()
         #df['objValPrint'] = df.apply(lambda x: min(x['obj_val_bab'], x['obj_val_rs'], x['obj_val_nodisc'],
         #                                           x['obj_val_uniform']), axis=1)
         df['objValPrint'] = df['obj_val_bab']
-        df_copy = df[['instance','nrCust', 'policy_bab_ID','objValPrint']].copy()
-        df_remote = df_remote.merge(df_copy, on='instance')
-        df_remote['gap_remote'] = 100 * (df_remote['obj_val_remote'] - df_remote['objValPrint']) / df_remote['objValPrint']
 
         df['gap_nodisc'] = 100 * (df['obj_val_nodisc'] - df['objValPrint']) / df['objValPrint']
         df['gap_rs'] = 100 * (df['obj_val_rs'] - df['objValPrint']) / df['objValPrint']
@@ -3607,30 +3606,32 @@ def large_exp(folder):
         # sns.scatterplot(ax=axes, data=df_results, x='nrCust', y='savings', markers=True,
         #                linewidth=1, hue='algo', style='algo',  # discount_rate   nrPup
         #                palette="deep", legend=False)
-        sns.lineplot(ax=axes, data=df_results, x='nrCust', y='savings', markers=True,
+        sns.lineplot(ax=axes, data=df_results, x='nrCust', y='savings', markers=["o","^","s"],
                     markersize=12, hue='algo', style='algo',  # discount_rate   nrPup
                     palette="deep", err_style="bars", errorbar=('pi', 100), err_kws={'capsize': 3}, alpha = 0.5)
-        sns.lineplot(ax=axes, data=df_results, x='nrCust', y='savings', markers=["o","^","s"],
+        sns.lineplot(ax=axes, data=df_results, x='nrCust', y='savings',  markers=["o","^","s"],
                      markersize=12, hue='algo', style='algo',  # discount_rate   nrPup
-                     palette="deep", ci=None)
-        #plt.legend(title=False, labels=['ALL', 'NOI', 'DI', 'R'])
-        #df_results.dropna(subset=['savings'], inplace = True)
-        #axes = sns.barplot(data=df_results, x='nrCust', y='savings', hue = 'algo')
+                     palette="deep", errorbar=None)
+        plt.legend(title=False, labels=['ALL', 'NOI', 'DI'])
 
-        axes.set_xticks([10, 15, 20, 25,30,35,40,45,50])
-
+        axes.set_xticks([10, 15, 20, 25, 30, 35, 40, 45, 50])
         axes.set(xlabel='' + 'Problem size, n')
         # # axes.set_xticks([0.2, 0.4, 0.6, 0.8, 1.0])
         axes.set(ylabel='Savings (%)')
-        #handles, labels = axes.get_legend_handles_labels()
-        #handles = [handles[3], handles[4], handles[5]] #handles[7]
-        #axes.legend(handles, labels,  loc='upper right', bbox_to_anchor=(1.0, 1.0))
-        # lgnd = axes.legend( title=False,  handles=handles, fontsize=16,markerscale=1.9,
-        #                     labels=[ 'ALL', 'NOI', 'DI'], loc='upper right',
-        #                     bbox_to_anchor=(1.0, 1.0))
-        #plt.legend(title=False, loc='upper right', bbox_to_anchor=(1.0, 1.0))
-        plt.savefig(os.path.join(path_to_images, 'heuristic_improvement_remoteonly.eps'), transparent=False,
-                   bbox_inches='tight')
+        #lgnd = plt.legend(title=False, loc='upper right', bbox_to_anchor=(1.0, 1.0))
+        # lgnd = plt.legend(loc="lower left", scatterpoints=1, fontsize=10)
+        #lgnd.legendHandles[0]._sizes = [30]
+        #lgnd.legendHandles[1]._sizes = [30]
+        handles, labels = axes.get_legend_handles_labels()
+        print(labels)
+        print(handles)
+        handles = [handles[3], handles[4], handles[5]]
+        axes.legend(handles, ['ALL', 'NOI', 'DI'], loc='upper right', bbox_to_anchor=(1.0, 1.0))
+        # # lgnd = axes.legend( title=False,  handles=handles, fontsize=16,markerscale=1.9,
+        # #                     labels=[ 'ALL', 'NOI', 'DI'], loc='upper right',
+        # #                     bbox_to_anchor=(1.0, 1.0))
+        # plt.legend(title=False, loc='upper right', bbox_to_anchor=(1.0, 1.0))
+        plt.savefig(os.path.join(path_to_images, 'heuristic_improvement.eps'), transparent=False, bbox_inches='tight')
         plt.show()
     #parse remote
     if False:
@@ -3665,7 +3666,7 @@ def large_exp(folder):
         print(df_results.to_latex(float_format='{:0.2f}'.format, na_rep=''))
         print("")
 
-    if False:
+    if True:
         #parseBAB_REMOTE(os.path.join(folder, "2_8_23_insights_with_Rs.txt"), folder, "2_8_23_insights_with_Rs")
         # large:
         # parseBAB_REMOTE(os.path.join(folder, "28_07_23_remote_large.txt"), folder, "28_07_23_remote_large")
