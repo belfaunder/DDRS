@@ -198,7 +198,7 @@ def policy_remote_customers(instance):
 
     print(list_cust_ids)
     print(dict_same_decision)
-    size_neighbours = round(len(instance.customers) / 8)
+    size_neighbours = round(len(instance.customers) / 8) + 1
     print("size_neighbours", size_neighbours)
 
     list_farness = []

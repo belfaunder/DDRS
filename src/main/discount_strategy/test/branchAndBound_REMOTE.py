@@ -37,9 +37,9 @@ if __name__ == "__main__":
         file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "data",
                                      "i_VRPDO_2segm_manyPUP_large", str(sys.argv[-1]) + ".txt")
     else:
-        #file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPup_classes",
-        #                             "VRPDO_size_50_phome_0.4_ppup_0.0_incrate_0.06_nrpup3_3.txt")
-        file_instance = os.path.join(folder_large,"VRPDO_size_50_phome_0.4_ppup_0.0_incrate_0.06_nrpup3_3.txt")
+        file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPup_classes",
+                                     "VRPDO_size_16_phome_0.1_ppup_0.0_incrate_0.06_nrpup3_1.txt")
+        #file_instance = os.path.join(folder_large,"VRPDO_size_16_phome_0.1_ppup_0.0_incrate_0.06_nrpup3_1.txt")
         # file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
         #                             "VRPDO_size_10_phome_0.2_ppup_0.0_incrate_0.03_0.txt")
 
@@ -51,13 +51,16 @@ if __name__ == "__main__":
 
 
 
+
     if 2 ** bitCount(remote_policy_ID) < constants.SAMPLE_SIZE:
         estimation_remote = one_policy_cost_estimation(instance=OCVRPInstance, policy=remote_policy_ID, solverType=solverType)
     else:
         estimation_remote = sampleAverageApproximation_PoissonBinomial_1sample_2segm(instance=OCVRPInstance,
                                                                             policy=remote_policy_ID, solverType=solverType)
+
+    # print(bin(39388))
     # estimation_remote = sampleAverageApproximation_PoissonBinomial_1sample_2segm(instance=OCVRPInstance,
-    #                                                                              policy=0,
+    #                                                                              policy=39388,
     #                                                                              solverType=solverType)
 
     print(prefix+ 'Remote_policy:', remote_policy_ID)
