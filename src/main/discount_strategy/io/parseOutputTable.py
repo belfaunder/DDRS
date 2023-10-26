@@ -2450,7 +2450,7 @@ def experiment_bab_solution_time_classes_pups(folder):
             plt.show()
 
     #table with effect of parameters on solution time and fulfillment cost
-    if True:
+    if False:
         #parseBAB(os.path.join(folder, "21_07_23_bab_classes.txt"), folder, "21_07_23_bab_classes")
         df_bab = pd.read_csv(os.path.join(folder, "17_07_23_bab_classes.csv"))
         df_bab = df_bab[df_bab['nrCust'] == 18].copy()
@@ -2510,15 +2510,15 @@ def experiment_bab_solution_time_classes_pups(folder):
                 df_results.at[iter, 'pruned_n_min'] = round(df_slice['pruned_nodes'].min())
                 df_results.at[iter, 'pruned_n_max'] = round(df_slice['pruned_nodes'].max())
 
-    # df_results = df_results[['delta', 'u', 'p', 'sp0', 'time', 'time_min',  'time_max','sp1', 'fulf_cost',
-    #                                          'sp2', 'num_inc', 'nodes',  'num_tsps',
-    #                                          'pruned_by_cliques_nl','pruned_by_cliques_l','pruned_by_rs_nl', 'pruned_by_rs_l',
-    #                                          'pruned_by_insertionCost_nl', 'pruned_by_insertionCost_l', 'pruned_by_bounds_nl', 'pruned_by_bounds_l']].copy()
+        # df_results = df_results[['delta', 'u', 'p', 'sp0', 'time', 'time_min',  'time_max','sp1', 'fulf_cost',
+        #                                          'sp2', 'num_inc', 'nodes',  'num_tsps',
+        #                                          'pruned_by_cliques_nl','pruned_by_cliques_l','pruned_by_rs_nl', 'pruned_by_rs_l',
+        #                                          'pruned_by_insertionCost_nl', 'pruned_by_insertionCost_l', 'pruned_by_bounds_nl', 'pruned_by_bounds_l']].copy()
 
-    df_results = df_results[['class','delta', 'u', 'p', 'sp0', 'time', 'time_min',  'time_max','sp1', 'pruned_n', 'pruned_n_min', 'pruned_n_max','sp3',
-                             'fulf_cost','fulf_cost_min','fulf_cost_max','sp2', 'num_inc','num_inc_min','num_inc_max']].copy()
-    print(df_results.to_latex(float_format='{:0.1f}'.format, na_rep='', index=False)) #
-    # table with effect of parameters on solution time and fulfillment cost for n=30 customers
+        df_results = df_results[['class','delta', 'u', 'p', 'sp0', 'time', 'time_min',  'time_max','sp1', 'pruned_n', 'pruned_n_min', 'pruned_n_max','sp3',
+                                 'fulf_cost','fulf_cost_min','fulf_cost_max','sp2', 'num_inc','num_inc_min','num_inc_max']].copy()
+        print(df_results.to_latex(float_format='{:0.1f}'.format, na_rep='', index=False)) #
+        # table with effect of parameters on solution time and fulfillment cost for n=30 customers
     if False:
         folder = os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison")
 
@@ -2545,6 +2545,45 @@ def experiment_bab_solution_time_classes_pups(folder):
                 df_results.at[iter, 'fulf_cost'] = round(df_slice['obj_val_bab'].mean())
                 df_results.at[iter, 'num_inc'] = df_slice['num_disc_bab'].mean()
         print(df_results.to_latex(float_format='{:0f}'.format, na_rep='', index=False))  #
+    if True:
+        folder = os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison")
+
+        # parseBAB(os.path.join(folder, "17_07_23_bab_classes.txt"), folder, "17_07_23_bab_classes")
+        df_bab = pd.read_csv(os.path.join(folder, "02_18_bab_nodisc_rs_30.csv"))
+        df_bab_temp = df_bab[df_bab['nrCust'] == 30].copy()
+        # df_bab = df_bab[df_bab['instance_id'].isin([0, 1, 2, 4, 5, 6, 8, 9])].copy()
+
+        df_results = pd.DataFrame(  columns=['class','delta', 'u', 'p', 'fulf_cost',
+                                             'fulf_cost_min','fulf_cost_max','sp2', 'num_inc','num_inc_min','num_inc_max'     ])
+        iter = -1
+        dict_parameters = {0:[0.6, 0.06, 'C1'], 1:[0.2, 0.06,'C2'], 2:[0.8, 0.06,'C3'], 3:[0.6, 0.03,'C4'], 4:[0.6, 0.12,'C5']}
+        for key in dict_parameters:
+            delta = dict_parameters[key][0]
+            u = dict_parameters[key][1]
+            for nr_pup in [1, 3, 5]:
+                iter += 1
+                print(key)
+                df_slice = df_bab_temp[(df_bab_temp['p_home']==round(1-delta,1)) &(df_bab_temp['discount_rate']==u)&(df_bab_temp['nrPup']==nr_pup)].copy()
+                if iter % 3==0:
+                    df_results.at[iter, 'class'] = dict_parameters[key][2]
+                    df_results.at[iter, 'delta'] = delta
+                    df_results.at[iter, 'u'] = u*10
+                df_results.at[iter, 'p'] = nr_pup
+                df_results.at[iter, 'fulf_cost'] = round(df_slice['obj_val_bab'].mean())
+                df_results.at[iter, 'fulf_cost_min'] = round(df_slice['obj_val_bab'].min())
+                df_results.at[iter, 'fulf_cost_max'] = round(df_slice['obj_val_bab'].max())
+                df_results.at[iter, 'num_inc'] = df_slice['num_disc_bab'].mean()
+                df_results.at[iter, 'num_inc_min'] = df_slice['num_disc_bab'].min()
+                df_results.at[iter, 'num_inc_max'] = df_slice['num_disc_bab'].max()
+
+
+    # df_results = df_results[['delta', 'u', 'p', 'sp0', 'time', 'time_min',  'time_max','sp1', 'fulf_cost',
+    #                                          'sp2', 'num_inc', 'nodes',  'num_tsps',
+    #                                          'pruned_by_cliques_nl','pruned_by_cliques_l','pruned_by_rs_nl', 'pruned_by_rs_l',
+    #                                          'pruned_by_insertionCost_nl', 'pruned_by_insertionCost_l', 'pruned_by_bounds_nl', 'pruned_by_bounds_l']].copy()
+
+
+    print(df_results.to_latex(float_format='{:0.1f}'.format, na_rep='', index=False)) #
 
 
 
@@ -3499,9 +3538,10 @@ def large_exp(folder):
         #df(bab_large_small_opt) data is used only for large instances
         df = pd.read_csv(os.path.join(folder, "bab_large_small_opt.csv"))
         df['objValPrint'] = df.apply(lambda x: min(x['obj_val_bab'], x['obj_val_nodisc'], x['obj_val_uniform']), axis=1)
-        df['gap_rs'] = 100 * (df['obj_val_rs'] - df['objValPrint']) / df['obj_val_rs']
-        df['gap_nodisc'] = 100 * (df['obj_val_nodisc'] - df['objValPrint']) / df['obj_val_nodisc']
-        df['gap_uniform'] = 100 * (df['obj_val_uniform'] - df['objValPrint']) / df['obj_val_uniform']
+        df['objValPrint2'] = df.apply(lambda x: min(x['obj_val_bab'], x['obj_val_nodisc'], x['obj_val_uniform'], x['obj_val_rs'] ), axis=1)
+        df['gap_rs'] = 100 * (df['obj_val_rs'] - df['objValPrint']) / df['objValPrint']
+        df['gap_nodisc'] = 100 * (df['obj_val_nodisc'] - df['objValPrint2']) / df['objValPrint2']
+        df['gap_uniform'] = 100 * (df['obj_val_uniform'] - df['objValPrint2']) / df['objValPrint2']
         df['gap_rs'] = df.apply(lambda x: max(x['gap_rs'], 0), axis=1)
         # set a new file for remote here
         #parseBAB_REMOTE(os.path.join(folder, "08_03_remote.txt"), folder, "08_03_remote")
@@ -3516,21 +3556,22 @@ def large_exp(folder):
         #         print(row['instance'], bin(int(row['policy_remote_ID'])), bitCount(int(row['policy_remote_ID'])),bin(int(row['policy_bab_ID'])), bitCount(int(row['policy_bab_ID'])),
         #               (row['obj_val_remote'] - row['objValPrint']) / row['obj_val_remote'] )
 
-        df_remote['gap_remote'] =  100*(df_remote['obj_val_remote'] - df_remote['objValPrint']) / df_remote['obj_val_remote']
+        df_remote['gap_remote'] =  100*(df_remote['obj_val_remote'] - df_remote['objValPrint']) / df_remote['objValPrint']
         #df_remote['gap_remote'] =  df_remote['gap_remote'].apply(lambda x: x if x>-2.5 else x*0.5)
         print("average ", round(df_remote['gap_remote'].mean(), 4))
         df_results = pd.DataFrame(columns=['p_accept', 'p_home', 'discount_rate', 'nrPup', 'nrCust', 'algo', 'savings'])
         iter = 0
+        #[10,11,12,13,14,15,16,17,18,19, 20,25,30, 35,40,45,50]
         for index, row in df.iterrows():
-            if row['nrCust'] in [10,11,12,13,14,15,16,17,18, 20,25,30, 35,40,45,50]:
-                for algo in [1, 0, 2,3]:
+            if row['nrCust'] in [10,11,12,13,14,15,16,17,18,19, 20,25,30, 35,40,45,50]:
+                for algo in [1, 0, 2, 3]:
                     df_results.at[iter, 'instance'] = row['instance']
                     df_results.at[iter, 'p_home'] = row['p_home']
                     df_results.at[iter, 'discount_rate'] = row['discount_rate']
                     df_results.at[iter, 'nrPup'] = row['nrPup']
-                    df_results.at[iter , 'nrCust'] = row['nrCust'] + algo * 0.45 - 0.9
+                    df_results.at[iter , 'nrCust'] = row['nrCust']# + algo * 0.45 - 0.9
                     df_results.at[iter, 'algo'] = algo
-                    if algo==1:
+                    if algo==0:
                         df_results.at[iter , 'savings'] =df_remote[df_remote['instance']==row['instance']]['gap_remote'].mean()
                         if (df_remote[df_remote['instance'] == row['instance']]['gap_remote'].mean() < -3):
                             if row['nrCust'] !=50:
@@ -3539,49 +3580,54 @@ def large_exp(folder):
                                 df_results.at[iter, 'savings'] = df_results.at[iter, 'savings'] * 0.5
                         if (df_remote[df_remote['instance'] == row['instance']]['gap_remote'].mean() < 0) and row['nrCust'] <20:
                             df_results.at[iter, 'savings'] = 0
-                    elif algo==0:
+                    elif algo==1:
                         df_results.at[iter, 'savings'] = df_remote[df_remote['instance'] == row['instance']][ 'gap_rs'].mean()
                     elif algo==2:
-                        if row['nrCust'] <20:
-                            df_results.at[iter, 'savings'] = 0
+                        if row['nrPup'] == 1:
+                            pass
                         else:
-                            if row['nrPup'] == 1:
-                                pass
-                            else:
-                                df_results.at[iter , 'savings'] =df_remote[df_remote['instance']==row['instance']]['gap_nodisc'].mean()
+                            df_results.at[iter , 'savings'] =df_remote[df_remote['instance']==row['instance']]['gap_nodisc'].mean()
                     elif algo==3:
-                        if row['nrCust'] <20:
-                            df_results.at[iter, 'savings'] = 0
+                        if row['nrPup']>2 and row['nrCust'] >40:
+                            pass
                         else:
                             df_results.at[iter , 'savings'] =df_remote[df_remote['instance']==row['instance']]['gap_uniform'].mean()
                     iter += 3
 
         df_results = df_results[df_results.nrPup != 5].copy()
         df_results.sort_values("algo")
-        df_results1 = df_results[df_results['algo'].isin([0, 1])].copy()
-        sns.lineplot(ax=axes, data=df_results1, x='nrCust', y='savings',  markers=True,err_style="bars",
+        df_results1 = df_results[df_results['algo'].isin([0])].copy()
+        sns.lineplot(ax=axes, data=df_results1, x='nrCust', y='savings',  markers=True, err_style="bars",
                      errorbar=('pi', 100),err_kws={'capsize': 3},
                      markersize=12, hue='algo', style='algo',
                      palette="deep")
-        plt.legend(title=False, labels=['RS', 'B'])
+        #plt.legend(title=False, labels=[ 'B'])
+        axes.get_legend().remove()
         axes.set_xticks([10, 15, 20, 25, 30, 35, 40, 45, 50])
         axes.set(xlabel='' + 'Problem size, n')
         axes.set(ylabel='Increase in cost (%)')
-        axes.set_ylim(-6, None)
-        #plt.savefig(os.path.join(path_to_images, 'heuristic_improvement_CR.eps'), transparent=False,
-        #         bbox_inches='tight')
+        #axes.set_ylim(-6, None)
+        plt.savefig(os.path.join(path_to_images, 'heuristic_improvement_CR.eps'), transparent=False,
+              bbox_inches='tight')
         plt.show()
         fig, axes = plt.subplots(1, 1, figsize=(9, 5))
+        df_results = df_results[df_results['algo'].isin([1,2,3])].copy()
         df_results2 = df_results[df_results['p_home'].isin([0.4]) & df_results['discount_rate'].isin([0.06])].copy()
-        sns.lineplot(ax=axes, data=df_results2, x='nrCust', y='savings', markers=True,errorbar=None,
+        sns.lineplot(ax=axes, data=df_results2, x='nrCust', y='savings', markers=True, err_style=None,
                      markersize=12, hue='algo', style='algo', palette="deep")
-        #plt.legend(title=False, labels=['RS', 'B'])
+        sns.lineplot(ax=axes, data=df_results2, x='nrCust', y='savings', markers=True, err_style="bars",
+                     errorbar=('pi', 100), err_kws={'capsize': 3},
+                     markersize=12, hue='algo', style='algo', palette="deep", alpha = 0.6)
+        sns.lineplot(ax=axes, data=df_results2, x='nrCust', y='savings', markers=True,err_style=None,
+                     markersize=12, hue='algo', style='algo', palette="deep")
+
+        plt.legend(title=False, labels=[ 'RS', 'NOI', 'ALL'])
         axes.set_xticks([10, 15, 20, 25, 30, 35, 40, 45, 50])
         axes.set(xlabel='' + 'Problem size, n')
+        axes.set_ylim(0, None)
         axes.set(ylabel='Increase in cost (%)')
-        axes.set_ylim(-6, None)
-        # plt.savefig(os.path.join(path_to_images, 'heuristic_improvement_CR.eps'), transparent=False,
-        #         bbox_inches='tight')
+        #plt.savefig(os.path.join(path_to_images, 'heuristic_improvement.eps'), transparent=False,
+        #       bbox_inches='tight')
         plt.show()
         # axes.get_legend().remove()
         # handles, labels = axes.get_legend_handles_labels()
@@ -4506,7 +4552,7 @@ if __name__ == "__main__":
     folder_data_prob = os.path.join(path_to_data, "data", "i_VRPDO_prob")
     folder_large = os.path.join(path_to_data, "output", "VRPDO_2segm_large")
     #experiment_heuristic_parameters_variation(folder_large)
-    large_exp(folder_large)
+    #large_exp(folder_large)
     #managerial_effect_delta(folder_large)
     #sensitivity_disc_size_comparison_nodisc(folder, folder_data_disc)
     #sensitivity_comparison_nodisc_rs(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
@@ -4529,6 +4575,7 @@ if __name__ == "__main__":
     #managerial_location(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
     #managerial_effect_delta(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
     #experiment_bab_solution_time_classes(folder_2segm_manyPUP)
+    #experiment_bab_solution_time_classes_pups(folder_2segm_manyPUP)
     #experiment_bab_solution_time_classes_pups(folder_2segm_manyPUP)
     # n=18
     #managerial_location(folder_2segm_manyPUP)

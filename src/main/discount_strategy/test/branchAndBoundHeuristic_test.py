@@ -36,7 +36,7 @@ if __name__ == "__main__":
                                      "i_VRPDO_2segm_manyPUP_large", str(sys.argv[-1]) + ".txt")
     else:
         file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_large",
-                                     "VRPDO_size_10_phome_0.4_ppup_0.0_incrate_0.06_nrpup3_0.txt")
+                                     "VRPDO_size_30_phome_0.4_ppup_0.0_incrate_0.06_nrpup1_3.txt")
 
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()

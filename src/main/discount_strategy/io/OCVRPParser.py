@@ -34,9 +34,9 @@ def parse(file_instance):
                 vertices[int(custInfo[0])] = {}
                 vertices[int(custInfo[0])]['x'] = float(custInfo[1])
                 vertices[int(custInfo[0])]['y'] = float(custInfo[2])
-                vertices[int(custInfo[0])]['prob_home'] = float(custInfo[3])
-                vertices[int(custInfo[0])]['prob_pup'] = float(custInfo[4])
-                vertices[int(custInfo[0])]['shipping_fee'] = float(custInfo[5])
+                vertices[int(custInfo[0])]['prob_home'] = 1 - float(custInfo[3])
+                vertices[int(custInfo[0])]['prob_pup'] = 0
+                vertices[int(custInfo[0])]['shipping_fee'] = float(custInfo[4])
 
             vertices[0] = {}
             vertices[0]['x'] = float(lines[7].split()[1])
@@ -63,11 +63,11 @@ def parse(file_instance):
                 #                               (nodes[i]['y'] - nodes[j]['y']) ** 2)
                 #EUC_2D : rounded Euclidean distances metric from TSPLIN format
                 d[(i, j)] = distance.set_distance(nodes[i]['x'],nodes[i]['y'], nodes[j]['x'],nodes[j]['y'])
-
                 j += 1
-            while j < n + constants.FLEET_SIZE + 1:
-                d[(i, j)] = d[(i, j - 1)]
-                j += 1
+            # while j < n + constants.FLEET_SIZE + 1:
+            #     print("here", i,j)
+            #     d[(i, j)] = d[(i, j - 1)]
+            #     j += 1
             j = 0
             while j < i:
                 d[(i, j)] = d[(j, i)]
@@ -81,9 +81,16 @@ def parse(file_instance):
                 j += 1
             j = 0
             i += 1
-        i = 0
-        j = 0
-
+        #check triangle inequality
+        # count = 0
+        # for i in range(n + 1+nr_pup):
+        #     for j in range(n + 1+nr_pup):
+        #         for k in range(n + 1+nr_pup):
+        #             if (d[(i, j)] > d[(i, k)] + d[(k, j)]+0.1):
+        #                 count+=1
+        #                 print("triangle inequality not satisfied", i,j,k, nodes[i]['x'],nodes[i]['y'],nodes[j]['x'],nodes[j]['y'], nodes[k]['x'],nodes[k]['y'])
+        #
+        # print("TOTAL", count)
         #while i < n + constants.FLEET_SIZE + 1:
         #    j = 0
         #    s = ""
@@ -104,19 +111,8 @@ def parse(file_instance):
         closest_cust_id = []
         pup = PUP(vertices[nr_cust + 1 + iter]['x'], vertices[nr_cust + 1 + iter]['y'], nr_cust + 1 + iter, closest_cust_id, iter)
         pups.append(pup)
-    customersDistance = defaultdict(int)
 
-    for i in range(1, nr_cust+1):
-        customersDistance[i] = math.sqrt((vertices[i]['x'] - vertices[0]['x']) ** 2 +
-                                               (vertices[i]['y'] - vertices[0]['y']) ** 2)
     verticesReenum = vertices
-    # verticesReenum = {}
-    # for i in [0]+list(range(nr_cust+1,nr_cust+nr_pup+1)):
-    #     verticesReenum[i] = vertices[i]
-    # id = 1
-    # for i in sorted(customersDistance, key=customersDistance.get, reverse=True):
-    #     verticesReenum[id] = vertices[i]
-    #     id += 1
 
     customers = []
     for i in range(1, nr_cust+1):
