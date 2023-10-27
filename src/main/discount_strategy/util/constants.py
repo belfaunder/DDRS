@@ -8,7 +8,7 @@ NUMBER_OF_SAMPLES = 10
 # == == == == == = VRP MODEL PARAMS == == == == == == ==
 # fleet size (=number of virtual PUPs)
 FLEET_SIZE = 1
-PUP_CAPACITY =60
+PUP_CAPACITY = 60
 VEHICLE_CAPACITY = 50
 PROB_PLACE_ORDER = 1
 #number of  segments of customers(from nonparametric rank approach)
@@ -21,7 +21,7 @@ EPS = 10e-6
 BIGM = 1000
 MIPGAP = 1*10e-2
 LIMIT_CORES = 20
-TIME_LIMIT = 360000
+TIME_LIMIT = 3600
 # == == == == == == HEURISTICS == == == == == == == == ==
 HEURISTIC_TIME_LIMIT = 360000
 HEURISTIC_SAMPLE_SIZE = 200

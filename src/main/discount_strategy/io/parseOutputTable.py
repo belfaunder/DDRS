@@ -325,12 +325,10 @@ def parseBAB(file_path, folder, output_name):
                     nrPup = int(lines[idx + 2].split(':')[1])
 
                     eps = round(float(lines[idx + 3].split(':')[1].split()[0])/100, 4)
-                    p_home = instance.split('_')[4]
-                    p_pup = instance.split('_')[6]
+                    p_home = 1-float(instance.split('_')[5])
+                    p_pup = 0
                     instance_id = instance.split('_')[-1]
-
-
-                    discount = (instance.split('_')[8]).split('.txt')[0]
+                    discount = (instance.split('_')[7]).split('.txt')[0]
                     time_running = float(lines[idx + 4].split(':')[1])
                     nodes = float(lines[idx + 5].split(':')[1])
                     num_tsps = float(lines[idx + 6].split(':')[1])
@@ -2328,8 +2326,10 @@ def experiment_heuristic_parameters_variation(folder):
 
 
 def experiment_bab_solution_time_classes(folder):
-    #parseBAB(os.path.join(folder, "bab_VRPDO_disc_proportional_small_not_finished.txt"), folder, "bab_VRPDO_discount_proportional_small")
-    df_bab = pd.read_csv(os.path.join(folder, "07_23_bab_classes_15.csv"))
+    parseBAB(os.path.join(folder, "temp.txt"), folder, "temp")
+    #df_bab = pd.read_csv(os.path.join(folder, "07_23_bab_classes_15.csv"))
+
+    df_bab = pd.read_csv(os.path.join(folder, "temp.csv"))
     nr_cust = [10, 11, 12, 13, 14, 15, 16, 17, 18]
 
     for n in nr_cust:
@@ -4547,7 +4547,8 @@ def managerial_location(folder):
 
 
 if __name__ == "__main__":
-    folder = os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison")
+    #folder = os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison")
+
     folder_data_disc = os.path.join(path_to_data, "data", "i_VRPDO_old")
     folder_data_prob = os.path.join(path_to_data, "data", "i_VRPDO_prob")
     folder_large = os.path.join(path_to_data, "output", "VRPDO_2segm_large")
@@ -4558,8 +4559,9 @@ if __name__ == "__main__":
     #sensitivity_comparison_nodisc_rs(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
     #print_convergence_gap()
     folder_2segm = os.path.join(path_to_data, "output", "VRPDO_discount_proportional_2segm")
-
-    folder_2segm_manyPUP = os.path.join(path_to_data, "output", "VRPDO_discount_proportional_2segm_manyPUP")
+    #folder_2segm_manyPUP = os.path.join(path_to_data, "output", "VRPDO_discount_proportional_2segm_manyPUP")
+    folder_DDRS = os.path.join(path_to_data, "output", "DDRS")
+    #experiment_bab_solution_time_classes(folder_DDRS)
     #new remote:
     #large_exp(folder_2segm_manyPUP)
     #compare_enumeration_no_Gurobi(folder_2segm_manyPUP)
@@ -4574,7 +4576,7 @@ if __name__ == "__main__":
     #n =30
     #managerial_location(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
     #managerial_effect_delta(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
-    #experiment_bab_solution_time_classes(folder_2segm_manyPUP)
+    #
     #experiment_bab_solution_time_classes_pups(folder_2segm_manyPUP)
     #experiment_bab_solution_time_classes_pups(folder_2segm_manyPUP)
     # n=18
@@ -4588,19 +4590,6 @@ if __name__ == "__main__":
 
     #experiment_varying_discount(folder)
     #experiment_saturation_choice_model()
-
-
-    # folder_eps = os.path.join(path_to_data, "output", "nr_cust_small", "eps")
-    # folder_sample = os.path.join(path_to_data, "output", "nr_cust_small", "sample")
-    # experiment_heuristic_table(folder_eps, folder_sample)
-    # experiment_heuristic_cliques()
-    # experiment_heuristic_rsub()
-    # parseBAB_time_limit()
-    # experiment_heuristic_sample()
-
-    # folder = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "output", "i_7_types_nr_cust")
-    # folder = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "output", "nr_cust_small")
-    # experiment_nrcust_heuristic_comparison_rs_nodisc(folder)
 
     # folder = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "output", "sensitivity_disc_locdep_size")
     # folder = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "output", "sensitivity_disc_size")

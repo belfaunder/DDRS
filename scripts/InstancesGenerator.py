@@ -367,10 +367,11 @@ def generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type ):
     instance_type = "DDRS"
     mainDirStorage = os.path.join(path_to_data, "data", "i_DDRS")
     #nr_custs = [10]
-    #nr_custs = [10, 15, 20, 25, 30, 35, 40, 45, 50]
-    nr_custs = [10, 11, 12, 13, 14, 15, 16, 17,  18, 19]
+    nr_custs = [10, 11, 12, 13, 14, 15, 16, 17,  18, 19, 20, 25, 30, 35, 40, 45, 50]
+    dict_parameters = {0.06: [0.6]}
 
-    dict_parameters = {0.06:[0.3, 0.6, 0.9], 0.03:[0.6], 0.12:[0.6]}
+    #nr_custs = [10, 11, 12, 13, 14, 15, 16, 17,  18, 19]
+    #dict_parameters = {0.06:[0.3, 0.6, 0.9], 0.03:[0.6], 0.12:[0.6]}
     #dict_probabilities = {0.0: [0.4]}
     #disc_rates = [0.005, 0.01,0.015, 0.02,0.025, 0.03,0.035, 0.04,0.045, 0.05, 0.06, 0.07, 0.08, 0.09]
     instanceList = os.path.join(mainDirStorage, 'list.txt')
@@ -382,7 +383,7 @@ def generate_3_segments_instance_zhou_discount_proportional_tsp(instance_type ):
         for nr_cust in nr_custs:
             for u in dict_parameters:
                 for p_delta in dict_parameters[u]:
-                    for nr_pup in [3]:
+                    for nr_pup in [1,5]:
                         with open(shuffled_cust_list, "rb") as file_shuffled:
                             depots_id = pickle.load(file_shuffled)
                             customers_id = pickle.load(file_shuffled)
