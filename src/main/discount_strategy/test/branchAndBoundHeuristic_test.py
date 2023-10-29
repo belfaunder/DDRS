@@ -32,11 +32,11 @@ if __name__ == "__main__":
     print(prefix, "EPS_PRECISION_HEURISTIC: ", constants.EPSILON_H)
 
     if os.name != 'nt':
-        file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "data",
-                                     "i_VRPDO_2segm_manyPUP_large", str(sys.argv[-1]) + ".txt")
+        file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "data", "i_DDRS",
+                                      str(sys.argv[-1]) + ".txt")
     else:
-        file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPUP_large",
-                                     "VRPDO_size_30_phome_0.4_ppup_0.0_incrate_0.06_nrpup1_3.txt")
+        file_instance = os.path.join(path_to_data, "data", "i_DDRS",
+                                     "DDRS_nrcust_10_nrpup3_delta_0.6_u_0.03_0.txt")
 
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()
@@ -52,7 +52,6 @@ if __name__ == "__main__":
                                                                             policy=babPolicy, solverType=solverType)
 
     print(prefix, 'Estimated_BAB_cost:',estimation_bab )
-
     rsPolicyID, rsValue = ring_star_deterministic_no_TW(OCVRPInstance, OCVRPInstance.NR_CUST)
 
     if rsPolicyID == babPolicy:
@@ -83,5 +82,3 @@ if __name__ == "__main__":
     print(prefix + 'Estimated_RS_cost:', estimation_rs)
     print(prefix + 'Estimated_NODISC_cost:', estimation_nodisc)
     print(prefix + 'Estimated_UNIFORM_cost:', estimation_uni)
-
-
