@@ -39,16 +39,16 @@ if __name__ == "__main__":
                                      "i_DDRS", str(sys.argv[-1])+".txt")
     else:
         file_instance = os.path.join(path_to_data, "data", "i_DDRS",
-                                     "DDRS_nrcust_10_nrpup3_delta_0.3_u_0.06_0.txt")
+                                     "DDRS_nrcust_10_nrpup3_delta_0.6_u_0.03_8.txt")
 
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()
     print(OCVRPInstance)
     bab = BABExact(instance=OCVRPInstance, solverType = solverType)
-    #rsPolicyID, rsValue = ring_star_deterministic_no_TW(OCVRPInstance, OCVRPInstance.NR_CUST)
+    rsPolicyID, rsValue = ring_star_deterministic_no_TW(OCVRPInstance, OCVRPInstance.NR_CUST)
     # #babPolicy = rsPolicyID
-    # babPolicy = 25865
-    babPolicy, time, lbPrint, ubPrint = bab.runBranchAndBound()
+    babPolicy = 0
+    #babPolicy, time, lbPrint, ubPrint = bab.runBranchAndBound()
     #
     #
     # n = OCVRPInstance.NR_CUST
@@ -83,19 +83,19 @@ if __name__ == "__main__":
     #EnumerationSolver = ScenarioEnumerationSolver(instance=OCVRPInstance)
     #EnumerationSolver.exactPolicyByEnumeration(True)
     #print(prefix, 'Time_enumeration ', process_time()-start_time)
-
-    print(prefix,"pruned_by_cliques_nonleaf:", bab.pruned_cliques_nonleaf)
-    print(prefix,"pruned_by_cliques_leaf:", bab.pruned_cliques_leaf)
-    print(prefix,"pruned_by_rs_nonleaf:", bab.pruned_rs_nonleaf)
-    print(prefix,"pruned_by_rs_leaf:", bab.pruned_rs_leaf)
-    print(prefix, "pruned_by_insertionCost_nonleaf:", bab.pruned_insertionCost_nonleaf)
-    print(prefix, "pruned_by_insertionCost_leaf:", bab.pruned_insertionCost_leaf)
-    print(prefix, "pruned_by_bounds_nonleaf:", bab.pruned_bounds_nonleaf)
-    print(prefix, "pruned_by_bounds:", bab.nrNodes - bab.pruned_branching - bab.pruned_cliques_leaf - bab.pruned_cliques_nonleaf - bab.pruned_rs_leaf -\
-          bab.pruned_rs_nonleaf-  bab.pruned_insertionCost_nonleaf - bab.pruned_insertionCost_leaf -  bab.pruned_bounds_nonleaf)
+    #
+    # print(prefix,"pruned_by_cliques_nonleaf:", bab.pruned_cliques_nonleaf)
+    # print(prefix,"pruned_by_cliques_leaf:", bab.pruned_cliques_leaf)
+    # print(prefix,"pruned_by_rs_nonleaf:", bab.pruned_rs_nonleaf)
+    # print(prefix,"pruned_by_rs_leaf:", bab.pruned_rs_leaf)
+    # print(prefix, "pruned_by_insertionCost_nonleaf:", bab.pruned_insertionCost_nonleaf)
+    # print(prefix, "pruned_by_insertionCost_leaf:", bab.pruned_insertionCost_leaf)
+    # print(prefix, "pruned_by_bounds_nonleaf:", bab.pruned_bounds_nonleaf)
+    # print(prefix, "pruned_by_bounds:", bab.nrNodes - bab.pruned_branching - bab.pruned_cliques_leaf - bab.pruned_cliques_nonleaf - bab.pruned_rs_leaf -\
+    #       bab.pruned_rs_nonleaf-  bab.pruned_insertionCost_nonleaf - bab.pruned_insertionCost_leaf -  bab.pruned_bounds_nonleaf)
 
     # mainDirStorage =  os.path.join(path_to_data,"output")
-    # convergence = os.path.join(mainDirStorage, 'convergence.txt')
+    # convergence = os.path.join(maindominanceDirStorage, 'convergence.txt')
     #
     # with open(convergence, 'wb') as file:htop
     #    pickle.dump(time, file)

@@ -43,7 +43,8 @@ if __name__ == "__main__":
     print(OCVRPInstance)
     start_time = process_time()
     babSampling = BABHeuristic(instance=OCVRPInstance, solverType =solverType)
-    babPolicy=  babSampling.runBranchAndBound()
+    #babPolicy=  babSampling.runBranchAndBound()
+    babPolicy = 0
 
     if 2 ** bitCount(babPolicy) < constants.SAMPLE_SIZE:
         estimation_bab = one_policy_cost_estimation(instance=OCVRPInstance, policy=babPolicy, solverType=solverType)
