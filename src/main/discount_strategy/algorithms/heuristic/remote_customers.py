@@ -173,8 +173,8 @@ def policy_remote_customers2(instance):
     return policy
 def policy_remote_customers(instance):
 
-    painter = Painter()
-    painter.printVertex(instance)
+    # painter = Painter()
+    # painter.printVertex(instance)
     farness = {}
 
     list_cust_ids = [cust.id for cust in instance.customers]
@@ -235,7 +235,6 @@ def policy_remote_customers(instance):
     policy_rs, rsValue = ring_star_deterministic_no_TW(instance, instance.NR_CUST)
     for cust in instance.customers:
         if cust.id in list_cust_ids:
-            print("consider", cust.id)
             if policy_rs & (1 << int(cust.id-1)):
                 if instance.distanceMatrix[cust.id, cust.closest_pup_id] < dist_1:
                     if cust.shipping_fee < farness[cust.id]:

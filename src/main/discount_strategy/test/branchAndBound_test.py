@@ -39,7 +39,7 @@ if __name__ == "__main__":
                                      "i_DDRS", str(sys.argv[-1])+".txt")
     else:
         file_instance = os.path.join(path_to_data, "data", "i_DDRS",
-                                     "DDRS_nrcust_10_nrpup3_delta_0.6_u_0.03_8.txt")
+                                     "DDRS_nrcust_10_nrpup3_delta_0.6_u_0.06_4.txt")
 
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()
@@ -47,10 +47,8 @@ if __name__ == "__main__":
     bab = BABExact(instance=OCVRPInstance, solverType = solverType)
     rsPolicyID, rsValue = ring_star_deterministic_no_TW(OCVRPInstance, OCVRPInstance.NR_CUST)
     # #babPolicy = rsPolicyID
-    babPolicy = 0
-    #babPolicy, time, lbPrint, ubPrint = bab.runBranchAndBound()
-    #
-    #
+    babPolicy, time, lbPrint, ubPrint = bab.runBranchAndBound()
+
     # n = OCVRPInstance.NR_CUST
     # temp_prob = []
     # for scenario in range(2**n):

@@ -24,7 +24,8 @@ if __name__ == '__main__':
         file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "data",
                                      "i_VRPDO_discount_proportional_2segm_manyPUP", str(sys.argv[-1])+".txt")
     else:
-        file_instance = os.path.join(path_to_data, "data", "i_DDRS", "temp.txt")
+        file_instance = os.path.join(path_to_data, "data", "i_DDRS",
+                                     "DDRS_nrcust_10_nrpup3_delta_0.6_u_0.06_4.txt")
         #file_instance = os.path.join(path_to_data, "data", "i_DDRS", "DDRS_nrcust_10_nrpup3_delta_0.6_u_0.03_0.txt")
 
     OCVRPInstance = OCVRPParser.parse(file_instance)

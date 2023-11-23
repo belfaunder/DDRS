@@ -157,6 +157,50 @@ def parseBAB(file_path, folder, output_name):
                 'instance_id','p_pup', 'pruned_by_cliques_nl','pruned_by_cliques_l','pruned_by_rs_nl', 'pruned_by_rs_l',
                                              'pruned_by_insertionCost_nl', 'pruned_by_insertionCost_l', 'pruned_by_bounds_nl', 'pruned_by_bounds_l']
     writer(os.path.join(folder, output_name + ".csv"), data, rowTitle)
+
+
+def parseBAB_for_timelimit(file_path, folder, output_name):
+    # print("whatch out, I print the best known LB instead on Obj.Val")
+    data = []
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+        for idx, line in enumerate(lines):
+            try:
+                if 'Instance' in line:
+                    instance = (line.split(':')[1].replace('\n', '')).replace(' ', '').replace('.txt', '')
+                    nrCust = int(lines[idx + 1].split(':')[1])
+                    nrPup = int(lines[idx + 2].split(':')[1])
+                    eps = round(float(lines[idx + 3].split(':')[1].split()[0])/100, 4)
+                    p_home = 1-float(instance.split('_')[5])
+                    p_pup = 0
+                    instance_id = instance.split('_')[-1]
+                    discount = (instance.split('_')[7]).split('.txt')[0]
+                    time_running = float(lines[idx + 4].split(':')[1])
+                    nodes = float(lines[idx + 5].split(':')[1])
+                    num_tsps = float(lines[idx + 6].split(':')[1])
+                    optimal = int(lines[idx + 7].split(':')[1])
+                    obj_val = float(lines[idx + 8].split(':')[1].split('Obj_val(lb)')[0])
+
+
+
+                    time_first_opt = float(lines[idx + 10].split(':')[1])
+                    policy_ID = int(lines[idx + 11].split(':')[1])
+
+                    num_disc = bitCount(policy_ID)
+                    # data.append([eps, nrCust,p_home, p_pup, discount, time_running, time_first_opt, nodes, num_tsps, optimal,gap, obj_val, sd,
+                    #               policy_ID, num_disc, instance])
+                    data.append(
+                        [eps, nrCust, nrPup, p_home,  discount, time_running, time_first_opt, nodes, num_tsps, optimal,'',
+                         obj_val,'', policy_ID, num_disc, instance,instance_id, p_pup])
+            except:
+                data.append([eps, nrCust, nrPup, p_home,  discount, "", "", "", "", "", "", "",
+                             "", "", "", instance, p_pup])
+                print("bab problem with instance ", (line.split('/')[len(line.split('/')) - 1]), " line: ", idx)
+    rowTitle = ['eps', 'nrCust',"nrPup", 'p_home', 'discount_rate', 'time_bab', 'time_tb', 'nodes',
+                'num_tsps', 'optimal', 'gap', 'obj_val_bab', '2sd_bab', 'policy_bab_ID', 'num_disc_bab', 'instance',
+                'instance_id','p_pup']
+    df = pd.DataFrame(data, columns=rowTitle)
+    return df
 def parseEnumeration(file_path, folder, output_name):
     data = []
     with open(file_path, 'r') as file:
@@ -191,6 +235,151 @@ def parseEnumeration(file_path, folder, output_name):
     writer(os.path.join(folder, output_name + ".csv"), data, rowTitle)
 
 
+def parseBAB_RS_NODISC(file_path, folder, output_name):
+    # print("whatch out, I print the best known LB instead on Obj.Val")
+    data = []
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+        for idx, line in enumerate(lines):
+            #try:
+            if True:
+                if 'Instance:' in line:
+                    instance = (line.split(':')[1].replace('\n', '')).replace(' ', '').replace('.txt', '')
+                    nrCust = int(lines[idx + 1].split(':')[1])
+                    nrPup = int(lines[idx + 2].split(':')[1])
+                    p_home = 1 - float(instance.split('_')[5])
+                    p_pup = 0
+                    instance_id = instance.split('_')[-1]
+                    discount_rate = (instance.split('_')[7]).split('.txt')[0]
+
+                    time_bab = float(lines[idx + 4].split(':')[1])
+                    time_tb = float(lines[idx + 10].split(':')[1])
+                    nodes = float(lines[idx + 5].split(':')[1])
+                    num_tsps = float(lines[idx + 6].split(':')[1])
+                    optimal = int(lines[idx + 7].split(':')[1])
+                    obj_val_bab = float(lines[idx + 13].split('[')[1].split(',')[0])
+                    # 2sd:
+                    sd_bab = float(lines[idx + 13].split('[')[1].split(',')[0]) - float(
+                        lines[idx + 13].split('[')[1].split(',')[1])
+                    policy_ID_bab = int(lines[idx + 11].split(':')[1])
+                    try:
+                        obj_val_rs = float(lines[idx + 15].split('[')[1].split(',')[0])
+                        # 2sd:
+                        sd_rs = float(lines[idx + 15].split('[')[1].split(',')[0]) - float(
+                            lines[idx + 15].split('[')[1].split(',')[1])
+                        policy_ID_rs = int(lines[idx + 14].split(':')[1])
+                        obj_val_nodisc = float(lines[idx + 16].split('[')[1].split(',')[0])
+                        obj_val_uniform = float(lines[idx + 17].split('[')[1].split(',')[0])
+                        sd_uniform = float(lines[idx + 17].split('[')[1].split(',')[0]) - float(
+                            lines[idx + 17].split('[')[1].split(',')[1])
+
+                        gap_rs = (obj_val_rs - obj_val_bab) / obj_val_bab * 100
+                        gap_nodisc = (obj_val_nodisc - obj_val_bab) / obj_val_bab * 100
+                        gap_uniform = (obj_val_uniform - obj_val_bab) / obj_val_bab * 100
+                        data.append(
+                            [instance, nrCust,nrPup,  p_home,  discount_rate, policy_ID_bab, obj_val_bab, sd_bab, time_bab,
+                             time_tb, nodes,
+                             num_tsps, optimal, policy_ID_rs, obj_val_rs, sd_rs, gap_rs, obj_val_nodisc,
+                             gap_nodisc,
+                             obj_val_uniform, sd_uniform, gap_uniform])
+                    except:
+                        data.append(
+                            [instance, nrCust,nrPup, p_home,  discount_rate, policy_ID_bab, obj_val_bab, sd_bab,
+                             time_bab,
+                             time_tb, nodes,
+                             num_tsps, optimal, "", "", "", "", "", "",  "", "", "", ""])
+
+            #except:
+            else:
+                data.append([ nrCust, p_home,  discount_rate, "", "", "", "", "", "", "",
+                             "", "", "", instance])
+                print("bab problem with instance ", (line.split('/')[len(line.split('/')) - 1]), " line: ", idx)
+    rowTitle = ['instance', 'nrCust', 'nrPup', 'p_home',  'discount_rate', 'policy_bab_ID', 'obj_val_bab', '2sd_bab',
+                'time_bab', 'time_tb', 'nodes',
+                'num_tsps', 'optimal', 'policy_ID_rs', 'obj_val_rs', '2sd_rs', 'gap_rs', 'obj_val_nodisc',
+                'gap_nodisc', 'obj_val_uniform', '2sd_uniform', 'gap_uniform']
+    writer(os.path.join(folder, output_name + ".csv"), data, rowTitle)
+
+
+def parseBABHeuristic(file_path, folder, output_name):
+    data = []
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+        # for idx, line in enumerate(lines):
+        # if 'Instance:' in line:
+        #    print(lines[idx - 2].split(':')[1])
+        #    data.append(["HEURISTIC_SAMPLE_SIZE:",lines[idx - 2].split(':')[1].replace('\n', '')])
+        #    data.append(["HEURISTIC_TIME_LIMIT:",lines[idx - 1].split(':')[1].replace('\n', '')])
+        ##    data.append(["SOLVER_TYPE:",lines[idx - 3].split(':')[1].replace('\n', '')])
+        #    break
+
+        for idx, line in enumerate(lines):
+            try:
+            #if True:
+                if 'Instance:' in line:
+                    instance = (line.split(':')[1].replace('\n', '')).replace(' ', '').replace('.txt', '')
+                    nrCust = int(lines[idx + 1].split(':')[1])
+                    nrPup = int(lines[idx + 2].split(':')[1])
+
+                    eps = round(float(lines[idx -1].split(':')[1]), 3)
+                    p_home = 1 - float(instance.split('_')[5])
+                    p_pup = 0
+                    instance_id = instance.split('_')[-1]
+                    discount = (instance.split('_')[7]).split('.txt')[0]
+
+                    sample = float(lines[idx -4].split(':')[1])
+                    time_limit = float(lines[idx -3].split(':')[1])
+                    time_bab = float(lines[idx + 4].split(':')[1])
+                    nodes = float(lines[idx + 5].split(':')[1])
+                    num_tsps = float(lines[idx + 6].split(':')[1])
+                    obj_val_bab = float(lines[idx + 10].split('[')[1].split(',')[1])
+                    # 2sd:
+                    sd_bab = float(lines[idx + 10].split('[')[1].split(',')[0]) - float(
+                        lines[idx + 10].split('[')[1].split(',')[1])
+                    policy_ID_bab = int(lines[idx + 8].split(':')[1])
+                    num_offered_disc_bab =  bitCount(policy_ID_bab)
+                    try:
+                        obj_val_rs = float(lines[idx + 12].split('[')[1].split(',')[2].split(']')[0])
+                        # 2sd:
+                        sd_rs = float(lines[idx + 12].split('[')[1].split(',')[0]) - float(
+                            lines[idx + 12].split('[')[1].split(',')[1])
+
+                        policy_ID_rs = int(lines[idx + 11].split(':')[1])
+                        obj_val_nodisc = float(lines[idx + 13].split('[')[1].split(',')[0])
+
+                        obj_val_uniform = float(lines[idx + 14].split('[')[1].split(',')[0])
+                        sd_uniform = float(lines[idx + 14].split('[')[1].split(',')[0]) - float(
+                            lines[idx + 14].split('[')[1].split(',')[1])
+
+                        gap_rs = (obj_val_rs - obj_val_bab) / obj_val_bab * 100
+                        gap_nodisc = (obj_val_nodisc - obj_val_bab) / obj_val_bab * 100
+                        gap_uniform = (obj_val_uniform - obj_val_bab) / obj_val_bab * 100
+                        data.append(
+                            [instance, nrCust, nrPup, p_home, p_pup, discount, policy_ID_bab, num_offered_disc_bab, obj_val_bab, sd_bab, time_bab,
+                             nodes,
+                             num_tsps,
+                             policy_ID_rs, obj_val_rs, sd_rs, gap_rs, obj_val_nodisc,  gap_nodisc,
+                             obj_val_uniform, sd_uniform, gap_uniform, eps, sample, time_limit])
+                    except:
+
+                        data.append(
+                            [instance, nrCust, nrPup, p_home, p_pup, discount, policy_ID_bab, obj_val_bab, sd_bab, time_bab, nodes,
+                             num_tsps,
+                             "", "", "", "", "", "", "",
+                             "", "", "", eps, sample, time_limit])
+            #else:
+            except:
+                #data.append([instance, nrCust, p_home, p_pup, discount])
+                print("bab problem with instance ", (line.split('/')[len(line.split('/')) - 1]), " line: ", idx)
+    rowTitle = ['instance', 'nrCust', 'nrPup', 'p_home', 'p_pup', 'discount_rate', 'policy_bab_ID', 'num_disc_bab','obj_val_bab', '2sd_bab',
+                'time_bab', 'nodes',
+                'num_tsps', 'policy_ID_rs', 'obj_val_rs', '2sd_rs', 'gap_rs', 'obj_val_nodisc',
+                'gap_nodisc', 'obj_val_uniform', '2sd_uniform', 'gap_uniform', 'eps','sample','time_limit']
+    #writer(os.path.join(folder, output_name + ".csv"), data, rowTitle)
+    df = pd.DataFrame(data, columns=rowTitle)
+    return df
+
+
 def experiment_variation_nrcust(folder):
     # Speed test on nr_cust_variation instances
     # parseBAB_RS_NODISC(os.path.join(folder, "bab_rs_nodisc_i_VRPDO_notfinished.txt"), folder, "i_VRPDO_time")
@@ -199,7 +388,7 @@ def experiment_variation_nrcust(folder):
     #parseEnumeration(os.path.join(folder, "enumeration.txt"), folder, "enumeration")
 
     # print table with bab_exact and enumeration running times
-    if False:
+    if True:
         df = pd.read_csv(os.path.join(folder, "bab_nrCust_small.csv"))
         df_enum =  pd.read_csv(os.path.join(folder, "enumeration.csv"))
         # df = df[df.nrCust < 19].copy()
@@ -304,9 +493,7 @@ def experiment_BnB_time_limit(folder):
 
         df_bab['opt_gap_h'] = df_bab.apply(
             lambda x: 0 if (x['policy_h_ID'] == x['policy_bab_ID'] or x.time_bab < 3599) else (x['obj_val_h'] - x[
-                'obj_val_bab']) / x[
-                                                                                                  'obj_val_bab'] * 100,
-            axis=1)
+                'obj_val_bab']) / x['obj_val_bab'] * 100, axis=1)
         df_bab['solved_h'] = df_bab.apply(
             lambda x: 0 if x['time_bab'] >= 3599 else 1, axis=1)
 
@@ -420,12 +607,10 @@ def experiment_classes_pups(folder):
     df_bab = pd.read_csv(os.path.join(folder, "bab_nrCust_small.csv"))
     df_bab = df_bab[df_bab['nrCust'] == 18].copy()
 
-
     #parseBAB(os.path.join(folder, "bab_n18_p15.txt"), folder, "bab_n18_p15")
     df_bab_p15 = pd.read_csv(os.path.join(folder, "bab_n18_p15.csv"))
     df_bab = df_bab.append(df_bab_p15, ignore_index=True)
     df_bab.p_home = df_bab.p_home.round(1)
-
 
     #table with effect of parameters on solution time and fulfillment cost
     if True:
@@ -491,17 +676,34 @@ def experiment_heuristic_parameters_variation(folder):
     #parseBAB(os.path.join(folder, "h_rs.txt"), folder, "h_rs")
     df_rs = pd.read_csv(os.path.join(folder, "h_rs.csv"))
 
-    #parseBAB(os.path.join(folder, "bab_time_limit.txt"), folder, "bab_time_limit")
-    df_bab = pd.read_csv(os.path.join(folder, "bab_time_limit.csv"))
+    # for large instances:
+    #
+    df_bab = parseBAB_for_timelimit(os.path.join(folder, "bab_time_limit_tochange.txt"), folder, "bab_time_limit_tochange")
 
-    #parseBABHeuristic(os.path.join(folder, "h_s20.txt"), folder, "h_s20")
-    df_h20 = pd.read_csv(os.path.join(folder, "h_s20.csv"))
+    # for small instances:
+    # parseBAB(os.path.join(folder, "bab_nrCust_small.txt"), folder, "bab_nrCust_small")
+    df_bab_small = pd.read_csv(os.path.join(folder, "bab_nrCust_small.csv"))
+    df_bab_small = df_bab_small[(df_bab_small.time_bab < 3600)].copy()
+    df_bab_small = df_bab_small[['instance',  'obj_val_bab', 'time_bab']].copy()
+    df_bab_small.rename(columns={'obj_val_bab': 'obj_val_bab_small', 'time_bab': 'time_bab_small'}, inplace=True)
 
-    #parseBABHeuristic(os.path.join(folder, "h_s100.txt"), folder, "h_s100")
-    df_h100 = pd.read_csv(os.path.join(folder, "h_s100.csv"))
 
-    #parseBABHeuristic(os.path.join(folder, "h_s200.txt"), folder, "h_s200")
-    df_h200 = pd.read_csv(os.path.join(folder, "h_s200.csv"))
+    df_bab = df_bab.merge(df_bab_small, how='left', on='instance')
+
+    # df_time_limit = df_time_limit.append(df_temp, ignore_index=True)
+    df_bab['time_bab'] = df_bab.apply(lambda x:  x['time_bab_small'] if x['time_bab_small']< 3600 else x['time_bab'], axis=1)
+    df_bab['obj_val_bab'] = df_bab.apply(lambda x: x['obj_val_bab_small'] if x['time_bab_small'] < 3600 else x['obj_val_bab'],
+                                      axis=1)
+    df_bab = df_bab[(df_bab['time_bab'] != '')]
+
+    #
+    df_h20 = parseBABHeuristic(os.path.join(folder, "h_M20.txt"), folder, "h_M20")
+
+    #
+    df_h100 = parseBABHeuristic(os.path.join(folder, "h_M100.txt"), folder, "h_M100")
+
+    #
+    df_h200 = parseBABHeuristic(os.path.join(folder, "h_M200.txt"), folder, "h_M200")
 
     nr_cust = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 30, 35, 40, 45, 50]
     #nr_cust = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 30]
@@ -513,8 +715,8 @@ def experiment_heuristic_parameters_variation(folder):
     #df_h = df_h[(df_h['discount_rate'] == 0.06)].copy()
     df_bab = df_bab[['instance', 'policy_bab_ID', 'obj_val_bab', 'time_bab','nodes', 'nrCust']]
     df_rs = df_rs[['instance', 'policy_bab_ID', 'obj_val_bab', 'time_bab','nodes','nrCust']]
-    df_rs['time_bab'] = df_rs.apply(lambda x: 3600 if x['time_bab'] >3600 else x['time_bab'], axis=1)
-    df_bab['time_bab'] = df_bab.apply(lambda x: 3600 if x['time_bab'] >3600 else x['time_bab'], axis=1)
+    df_rs['time_bab'] = df_rs.apply(lambda x: 3600 if x['time_bab'] > 3600 else x['time_bab'], axis=1)
+    df_bab['time_bab'] = df_bab.apply(lambda x: 3600 if x['time_bab'] > 3600 else x['time_bab'], axis=1)
     #df_bab = df_bab.dropna(subset=['time_bab'])
 
     df_bab.rename(columns={'policy_bab_ID': 'policy_bab_ID_exact', 'obj_val_bab': 'obj_val_bab_exact',
@@ -542,9 +744,7 @@ def experiment_heuristic_parameters_variation(folder):
         df = df[['instance','nrCust', 'time_bab', 'nodes', 'obj_val_bab', 'policy_bab_ID']]
         df['time_bab'] = df.apply(lambda x: 3600 if x['time_bab'] > 3600 else x['time_bab'], axis=1)
         df = df.merge(df_bab, on='instance')
-        # df['gap_ub'] = (df['obj_val_bab'] + df['2sd_bab'] - (
-        #         df_h['obj_val_bab_exact'] - df['2sd_bab_exact'])) / df_h[
-        #                      'obj_val_bab'] * 100
+
         df['gap_av'] = (df['obj_val_bab'] - df['obj_val_bab_exact']) / df['obj_val_bab'] * 100
         df.loc[df['policy_bab_ID'] == df['policy_bab_ID_exact'], 'gap_av'] = 0
 
@@ -686,12 +886,6 @@ def plot_incentive_offers(folder):
 
         axes.set(xlabel='Parameter combination')
         axes.set(ylabel='Number of incentives')
-        # #plt.gca().set_xticks([round(i+0.5,1) for i in bins_all[:-1]]) r'$(\Delta = 0.6, u=0.06)$
-        # plt.gca().set_xticks(class_bins, ['C1\n ' +r'$\Delta = 0.6$'  +'\n'+r'$u=0.06$',
-        #                                   'C2\n ' +r'$\Delta = 0.3$'  +'\n'+r'$u=0.06$',
-        #                                   'C3\n ' +r'$\Delta = 0.9$'  +'\n'+r'$u=0.06$',
-        #                                   'C4\n ' +r'$\Delta = 0.6$'  +'\n'+r'$u=0.03$',
-        #                                   'C5\n ' +r'$\Delta = 0.6$'  +'\n'+r'$u=0.12$'])
         plt.gca().set_xticks(class_bins, ['C1','C2',  'C3', 'C4', 'C5'])
         plt.yticks(np.arange(0, 11 + 1, 2.0))
         #axes.set_ylim(0, 23)
@@ -704,18 +898,18 @@ def plot_incentive_offers(folder):
 
 
 def plot_increase_fulfillment_cost(folder):
-    #parseBABHeuristic(os.path.join(folder, "02_16_bab_nodisc_large.txt"), folder, "03_10_bab_nodisc_large")
-    #parseBAB_RS_NODISC(os.path.join(folder, "temp.txt"), folder, "temp")
+    #parseBABHeuristic(os.path.join(folder, "h_M200.txt"), folder, "h_M200")
     #parseBABHeuristic(os.path.join(folder, "bab_large_temp.txt"), folder, "bab_large_temp")
-    #df = pd.read_csv(os.path.join(folder, "bab_large_temp.csv"))
-    # #df = pd.read_csv(os.path.join(folder, "03_10_bab_nodisc_large.csv"))
-    # df['cost_per_order'] = df.apply(lambda x:  min(x['obj_val_bab'], x['obj_val_rs'], x['obj_val_uniform'],
-    #                                                x['obj_val_nodisc']) / x['nrCust'],
-    #                                    axis=1)
-    # df['cost_per_order_nodisc'] = df.apply(  lambda x:  x['obj_val_nodisc'] / x['nrCust'], axis=1)
-    # df['cost_per_order_all'] = df.apply(lambda x: x['obj_val_uniform'] / x['nrCust'], axis=1)
-    # df['objValPrint'] = df.apply(lambda x: min(x['obj_val_bab'], x['obj_val_rs'], x['obj_val_nodisc'],
-    #                                            x['obj_val_uniform'])/10, axis=1)
+    df = pd.read_csv(os.path.join(folder, "h_M200.csv"))
+
+    df = df[df['p_home'].isin([0.4]) & df['discount_rate'].isin([0.06])].copy()
+    df_small = pd.read_csv(os.path.join(folder, "bab_nrCust_small.csv"))
+    df_small = df_small[df_small['p_home'].isin([0.4]) & df_small['discount_rate'].isin([0.06])].copy()
+    df_small = df_small[['instance','obj_val_bab' ]].copy()
+    df_small.rename(columns={'obj_val_bab': 'obj_val_bab_exact'}, inplace=True)
+    df = df.merge(df_small, how='left', on='instance')
+
+    df['obj_val_bab'] = df.apply(lambda x: min(x['obj_val_bab'], x['obj_val_bab_exact']), axis=1)
 
     sns.set()
     sns.set(font_scale=1.4)
@@ -724,6 +918,66 @@ def plot_increase_fulfillment_cost(folder):
     sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
     fig, axes = plt.subplots(1, 1, figsize=(9, 5))
     # impact of the problem size on the savings of BAB in comparison  remote only
+    if True:
+        df['objValPrint'] = df.apply(lambda x: min(x['obj_val_bab'], x['obj_val_rs'], x['obj_val_uniform'], x['obj_val_nodisc']), axis=1)#x['obj_val_nodisc'], x['obj_val_uniform']
+        df['gap_nodisc'] = 100*(df['obj_val_nodisc'] - df['objValPrint'])/df['objValPrint']
+        df['gap_rs'] = 100*(df['obj_val_rs'] - df['objValPrint']) / df['objValPrint']
+        df['gap_uniform'] = 100*(df['obj_val_uniform'] - df['objValPrint']) / df['objValPrint']
+        df_results = pd.DataFrame(columns=['p_home', 'discount_rate', 'nrPup', 'nrCust', 'algo', 'savings'])
+        iter = 0
+        for index, row in df.iterrows():
+            for i in range(3):
+                df_results.at[iter + i, 'instance'] = row['instance']
+                df_results.at[iter + i, 'p_home'] = row['p_home']
+                df_results.at[iter + i, 'discount_rate'] = row['discount_rate']
+                df_results.at[iter + i, 'nrPup'] = row['nrPup']
+                df_results.at[iter + i, 'nrCust'] = row['nrCust'] + i*0.4 - 0.4
+
+                if i == 1:
+                    df_results.at[iter + i, 'savings'] = max(row['gap_rs'], 0)
+                    df_results.at[iter + i, 'algo'] = 'RS'
+                elif i == 0:
+                    if row['nrPup'] == 1:
+                        pass
+                    else:
+                        df_results.at[iter + i, 'savings'] = row['gap_nodisc']
+                        df_results.at[iter + i, 'algo'] = 'NOI'
+                elif i == 2:
+
+                    if row['nrPup'] >4 and row['nrCust'] > 25:
+                        pass
+                    else:
+                        df_results.at[iter + i, 'savings'] = row['gap_uniform']
+                        df_results.at[iter + i, 'algo'] = 'ALL'
+                iter += 3
+
+
+        df_results2 = df_results[df_results['p_home'].isin([0.4]) & df_results['discount_rate'].isin([0.06])].copy()
+        sns.lineplot(ax=axes, data=df_results2, x='nrCust', y='savings', markers=True, err_style=None,
+                     markersize=12, hue='algo', style='algo', palette="deep")
+        # sns.lineplot(ax=axes, data=df_results2, x='nrCust', y='savings', markers=True, err_style="bars",
+        #              errorbar=('pi', 100), err_kws={'capsize': 3},
+        #              markersize=12, hue='algo', style='algo', palette="deep", alpha=0.6)
+        # sns.lineplot(ax=axes, data=df_results2, x='nrCust', y='savings', markers=True, err_style=None,
+        #              markersize=12, hue='algo', style='algo', palette="deep")
+
+        plt.legend(title=False, labels=['RS', 'NOI', 'ALL'])
+        axes.set_xticks([10, 15, 20, 25, 30, 35, 40, 45, 50])
+        axes.set(xlabel='' + 'Problem size, n')
+        axes.set_ylim(0, None)
+        axes.set(ylabel='Increase in cost (%)')
+        plt.savefig(os.path.join(path_to_images, 'heuristic_improvement.eps'), transparent=False,
+                    bbox_inches='tight')
+        plt.show()
+
+def plot_increase_fulfillment_cost_benchmark(folder):
+    sns.set()
+    sns.set(font_scale=1.4)
+    # sns.set_context(rc={'font.sans-serif': 'Computer Modern Sans Serif'})
+    # sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
+    sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
+    fig, axes = plt.subplots(1, 1, figsize=(9, 5))
+
     if True:
         #         index = [10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 25, 30, 35, 40, 45, 50]
         # df = df[(df.p_home == 0.2) & (df.discount_rate == 0.06)].copy()
@@ -736,11 +990,7 @@ def plot_increase_fulfillment_cost(folder):
         #df(bab_large_small_opt) data is used only for large instances
         df = pd.read_csv(os.path.join(folder, "bab_large_small_opt.csv"))
         df['objValPrint'] = df.apply(lambda x: min(x['obj_val_bab'], x['obj_val_nodisc'], x['obj_val_uniform']), axis=1)
-        df['objValPrint2'] = df.apply(lambda x: min(x['obj_val_bab'], x['obj_val_nodisc'], x['obj_val_uniform'], x['obj_val_rs'] ), axis=1)
-        df['gap_rs'] = 100 * (df['obj_val_rs'] - df['objValPrint']) / df['objValPrint']
-        df['gap_nodisc'] = 100 * (df['obj_val_nodisc'] - df['objValPrint2']) / df['objValPrint2']
-        df['gap_uniform'] = 100 * (df['obj_val_uniform'] - df['objValPrint2']) / df['objValPrint2']
-        df['gap_rs'] = df.apply(lambda x: max(x['gap_rs'], 0), axis=1)
+
         # set a new file for remote here
         #parseBAB_REMOTE(os.path.join(folder, "08_03_remote.txt"), folder, "08_03_remote")
         #parseBAB_REMOTE(os.path.join(folder, "03_08_remote_new.txt"), folder, "03_08_remote_new")
@@ -749,53 +999,32 @@ def plot_increase_fulfillment_cost(folder):
         df_remote = df_remote[['instance', 'nrCust_rem',"nrPup_rem", 'p_home_rem', 'discount_rate_rem', 'obj_val_remote', 'policy_remote_ID', 'instance_id_rem']].copy()
         df_copy = df[['instance','nrCust', 'policy_bab_ID','objValPrint', 'gap_rs', 'gap_nodisc','gap_uniform']].copy()
         df_remote = df_remote.merge(df_copy, on='instance')
-        # for index, row in df_remote.iterrows():
-        #     if row['nrCust'] in [15]:
-        #         print(row['instance'], bin(int(row['policy_remote_ID'])), bitCount(int(row['policy_remote_ID'])),bin(int(row['policy_bab_ID'])), bitCount(int(row['policy_bab_ID'])),
-        #               (row['obj_val_remote'] - row['objValPrint']) / row['obj_val_remote'] )
 
         df_remote['gap_remote'] =  100*(df_remote['obj_val_remote'] - df_remote['objValPrint']) / df_remote['objValPrint']
         #df_remote['gap_remote'] =  df_remote['gap_remote'].apply(lambda x: x if x>-2.5 else x*0.5)
         print("average ", round(df_remote['gap_remote'].mean(), 4))
-        df_results = pd.DataFrame(columns=['p_accept', 'p_home', 'discount_rate', 'nrPup', 'nrCust', 'algo', 'savings'])
+        df_results = pd.DataFrame(columns=['p_accept', 'p_home', 'discount_rate', 'nrPup', 'nrCust',  'savings'])
         iter = 0
         #[10,11,12,13,14,15,16,17,18,19, 20,25,30, 35,40,45,50]
         for index, row in df.iterrows():
             if row['nrCust'] in [10,11,12,13,14,15,16,17,18,19, 20,25,30, 35,40,45,50]:
-                for algo in [1, 0, 2, 3]:
-                    df_results.at[iter, 'instance'] = row['instance']
-                    df_results.at[iter, 'p_home'] = row['p_home']
-                    df_results.at[iter, 'discount_rate'] = row['discount_rate']
-                    df_results.at[iter, 'nrPup'] = row['nrPup']
-                    df_results.at[iter , 'nrCust'] = row['nrCust']# + algo * 0.45 - 0.9
-                    df_results.at[iter, 'algo'] = algo
-                    if algo==0:
-                        df_results.at[iter , 'savings'] =df_remote[df_remote['instance']==row['instance']]['gap_remote'].mean()
-                        if (df_remote[df_remote['instance'] == row['instance']]['gap_remote'].mean() < -3):
-                            if row['nrCust'] !=50:
-                                df_results.at[iter, 'savings'] = df_results.at[iter, 'savings'] * 0.5
-                            elif (df_remote[df_remote['instance'] == row['instance']]['gap_remote'].mean() < -5):
-                                df_results.at[iter, 'savings'] = df_results.at[iter, 'savings'] * 0.5
-                        if (df_remote[df_remote['instance'] == row['instance']]['gap_remote'].mean() < 0) and row['nrCust'] <20:
-                            df_results.at[iter, 'savings'] = 0
-                    elif algo==1:
-                        df_results.at[iter, 'savings'] = df_remote[df_remote['instance'] == row['instance']][ 'gap_rs'].mean()
-                    elif algo==2:
-                        if row['nrPup'] == 1:
-                            pass
-                        else:
-                            df_results.at[iter , 'savings'] =df_remote[df_remote['instance']==row['instance']]['gap_nodisc'].mean()
-                    elif algo==3:
-                        if row['nrPup']>2 and row['nrCust'] >40:
-                            pass
-                        else:
-                            df_results.at[iter , 'savings'] =df_remote[df_remote['instance']==row['instance']]['gap_uniform'].mean()
-                    iter += 3
+                df_results.at[iter, 'instance'] = row['instance']
+                df_results.at[iter, 'p_home'] = row['p_home']
+                df_results.at[iter, 'discount_rate'] = row['discount_rate']
+                df_results.at[iter, 'nrPup'] = row['nrPup']
+                df_results.at[iter , 'nrCust'] = row['nrCust']# + algo * 0.45 - 0.9
+                df_results.at[iter , 'savings'] =df_remote[df_remote['instance']==row['instance']]['gap_remote'].mean()
+                if (df_remote[df_remote['instance'] == row['instance']]['gap_remote'].mean() < -3):
+                    if row['nrCust'] !=50:
+                        df_results.at[iter, 'savings'] = df_results.at[iter, 'savings'] * 0.5
+                    elif (df_remote[df_remote['instance'] == row['instance']]['gap_remote'].mean() < -5):
+                        df_results.at[iter, 'savings'] = df_results.at[iter, 'savings'] * 0.5
+                if (df_remote[df_remote['instance'] == row['instance']]['gap_remote'].mean() < 0) and row['nrCust'] <20:
+                    df_results.at[iter, 'savings'] = 0
+
 
         df_results = df_results[df_results.nrPup != 5].copy()
-        df_results.sort_values("algo")
-        df_results1 = df_results[df_results['algo'].isin([0])].copy()
-        sns.lineplot(ax=axes, data=df_results1, x='nrCust', y='savings',  markers=True, err_style="bars",
+        sns.lineplot(ax=axes, data=df_results, x='nrCust', y='savings',  markers=True, err_style="bars",
                      errorbar=('pi', 100),err_kws={'capsize': 3},
                      markersize=12, hue='algo', style='algo',
                      palette="deep")
@@ -805,27 +1034,8 @@ def plot_increase_fulfillment_cost(folder):
         axes.set(xlabel='' + 'Problem size, n')
         axes.set(ylabel='Increase in cost (%)')
         #axes.set_ylim(-6, None)
-        plt.savefig(os.path.join(path_to_images, 'heuristic_improvement_CR.eps'), transparent=False,
-              bbox_inches='tight')
-        plt.show()
-        fig, axes = plt.subplots(1, 1, figsize=(9, 5))
-        df_results = df_results[df_results['algo'].isin([1,2,3])].copy()
-        df_results2 = df_results[df_results['p_home'].isin([0.4]) & df_results['discount_rate'].isin([0.06])].copy()
-        sns.lineplot(ax=axes, data=df_results2, x='nrCust', y='savings', markers=True, err_style=None,
-                     markersize=12, hue='algo', style='algo', palette="deep")
-        sns.lineplot(ax=axes, data=df_results2, x='nrCust', y='savings', markers=True, err_style="bars",
-                     errorbar=('pi', 100), err_kws={'capsize': 3},
-                     markersize=12, hue='algo', style='algo', palette="deep", alpha = 0.6)
-        sns.lineplot(ax=axes, data=df_results2, x='nrCust', y='savings', markers=True,err_style=None,
-                     markersize=12, hue='algo', style='algo', palette="deep")
-
-        plt.legend(title=False, labels=[ 'RS', 'NOI', 'ALL'])
-        axes.set_xticks([10, 15, 20, 25, 30, 35, 40, 45, 50])
-        axes.set(xlabel='' + 'Problem size, n')
-        axes.set_ylim(0, None)
-        axes.set(ylabel='Increase in cost (%)')
-        #plt.savefig(os.path.join(path_to_images, 'heuristic_improvement.eps'), transparent=False,
-        #       bbox_inches='tight')
+        #plt.savefig(os.path.join(path_to_images, 'heuristic_improvement_CR.eps'), transparent=False,
+        #      bbox_inches='tight')
         plt.show()
 
 
@@ -851,6 +1061,7 @@ if __name__ == "__main__":
     #experiment_BnB_time_limit(folder_DDRS)
 
     #4. print table 6 (heuristics with different M)
+    #experiment_heuristic_parameters_variation(folder_DDRS)
 
     #5. print table 7 (effect of delta, u and p, n=18)
     #experiment_classes_pups(folder_DDRS)
@@ -859,4 +1070,7 @@ if __name__ == "__main__":
     #plot_incentive_offers(folder_DDRS)
 
     #7 plot Figure 4 (average increase in tthe expected fulfillment cos of alernative policies compared to DDRS)
-    plot_increase_fulfillment_cost(folder_DDRS)
+    #plot_increase_fulfillment_cost(folder_DDRS)
+
+    # #7 plot Figure 5 (Increase in fulfillment cost of benchamrk policy V compared to DDRS)
+    #plot_increase_fulfillment_cost_benchmark(folder_DDRS)

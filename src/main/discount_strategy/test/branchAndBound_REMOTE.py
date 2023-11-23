@@ -27,21 +27,17 @@ prefix = "tag: "
 
 if __name__ == "__main__":
     solverType = 'Gurobi'
-
     print(prefix, "Exact BAB")
     print(prefix, "solverType: ", solverType)
     print(prefix, "TIME_LIMIT:", constants.TIME_LIMIT)
     folder_large = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPup_classes")
 
     if os.name != 'nt':
-        file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "data",
-                                     "i_VRPDO_2segm_manyPup_classes", str(sys.argv[-1]) + ".txt")
+        file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "i_DDRS",
+                                     str(sys.argv[-1]) + ".txt")
     else:
-        file_instance = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPup_classes",
-                                     "VRPDO_size_19_phome_0.4_ppup_0.0_incrate_0.06_nrpup3_4.txt")
-        #file_instance = os.path.join(folder_large,"VRPDO_size_16_phome_0.1_ppup_0.0_incrate_0.06_nrpup3_1.txt")
-        # file_instance = os.path.join(path_to_data, "data", "i_VRPDO_discount_proportional_2segm_manyPUP",
-        #                             "VRPDO_size_10_phome_0.2_ppup_0.0_incrate_0.03_0.txt")
+        file_instance = os.path.join(path_to_data, "data", "i_DDRS",
+                                     "DDRS_nrcust_10_nrpup3_delta_0.6_u_0.06_4.txt")
 
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()
@@ -49,19 +45,11 @@ if __name__ == "__main__":
     remote_policy_ID = policy_remote_customers(OCVRPInstance)
     print(bin(remote_policy_ID))
 
-
-
-
     if 2 ** bitCount(remote_policy_ID) < constants.SAMPLE_SIZE:
         estimation_remote = one_policy_cost_estimation(instance=OCVRPInstance, policy=remote_policy_ID, solverType=solverType)
     else:
         estimation_remote = sampleAverageApproximation_PoissonBinomial_1sample_2segm(instance=OCVRPInstance,
                                                                             policy=remote_policy_ID, solverType=solverType)
-
-    # print(bin(39388))
-    # estimation_remote = sampleAverageApproximation_PoissonBinomial_1sample_2segm(instance=OCVRPInstance,
-    #                                                                              policy=39388,
-    #                                                                              solverType=solverType)
 
     print(prefix+ 'Remote_policy:', remote_policy_ID)
     print(prefix+ 'Estimated_REMOTE_cost:', estimation_remote)

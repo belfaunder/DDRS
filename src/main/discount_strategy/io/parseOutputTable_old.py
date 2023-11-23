@@ -4388,11 +4388,9 @@ def managerial_location(folder):
                     all.append(farness / 10)
                     if row['policy_bab_ID'] & (1 << cust.id - 1):
                         closeness.append(farness/10)
-
             num_bins = [0,3,6,9,12, 15]
             heights, bins = np.histogram(closeness, bins=num_bins)
             heights_all, bins_all = np.histogram(all, bins=num_bins)
-
             percent = [i / number_instances for i in heights]
             percent_all = [i / number_instances for i in heights_all]
             axes_bins = [1.5, 4.5, 7.5, 10.5, 13.5]
@@ -4414,7 +4412,6 @@ def managerial_location(folder):
         axes.set(ylabel='Number of offered incentives')
         #plt.gca().set_xticks([round(i+0.5,1) for i in bins_all[:-1]])
         plt.gca().set_xticks([2, 5, 8, 11, 14], ['0-3', '3-6', '6-9', '9-12', '12-15'])
-
         plt.legend( loc='upper right')
         plt.savefig(os.path.join(path_to_images, 'centrality_delta.eps'), transparent=False, bbox_inches='tight')
         plt.show()
