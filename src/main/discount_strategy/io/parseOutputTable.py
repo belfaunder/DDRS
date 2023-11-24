@@ -101,6 +101,34 @@ def parseProfile(file_path):
                 'pr_bounds_leaf', 'tsp_time', 'time_exact_bounds', 'time_lb_addition', 'time_branch']
     df = pd.DataFrame(data, columns=rowTitle)
     return df
+
+
+def parseBAB_REMOTE(file_path, folder, output_name):
+    data = []
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+        for idx, line in enumerate(lines):
+            try:
+                if 'Instance' in line:
+                    instance = (line.split(':')[1].replace('\n', '')).replace(' ', '').replace('.txt', '')
+                    nrCust = int(lines[idx + 1].split(':')[1])
+                    nrPup = int(lines[idx + 2].split(':')[1])
+
+                    p_home = instance.split('_')[5]
+                    instance_id = instance.split('_')[-1]
+                    discount = (instance.split('_')[8]).split('.txt')[0]
+                    obj_val = float(lines[idx + 5].split('[')[1].split(',')[0])
+                    policy_ID = int(lines[idx + 4].split(':')[1])
+
+                    data.append(
+                        [ instance, nrCust, nrPup, p_home,  discount,   obj_val, policy_ID, instance_id])
+            except:
+                data.append([ instance])
+                print("bab problem with instance ", (line.split('/')[len(line.split('/')) - 1]), " line: ", idx)
+    rowTitle = ['instance', 'nrCust_rem',"nrPup_rem", 'p_home_rem', 'discount_rate_rem', 'obj_val_remote', 'policy_remote_ID', 'instance_id_rem' ]
+    writer(os.path.join(folder, output_name + ".csv"), data, rowTitle)
+
+
 def parseBAB(file_path, folder, output_name):
     # print("whatch out, I print the best known LB instead on Obj.Val")
     data = []
@@ -122,6 +150,8 @@ def parseBAB(file_path, folder, output_name):
                     num_tsps = float(lines[idx + 6].split(':')[1])
                     optimal = int(lines[idx + 7].split(':')[1])
                     obj_val = float(lines[idx + 8].split(':')[1].split('Obj_val(lb)')[0])
+                    pruned_by_cliques_l, pruned_by_cliques_nl,pruned_by_rs_l,pruned_by_rs_nl,\
+                        pruned_by_insertionCost_nl,pruned_by_insertionCost_l ,pruned_by_bounds_nl,pruned_by_bounds_l =0,0,0,0,0,0,0,0
                     try:
                         pruned_by_cliques_l= int(lines[idx + 14].split(':')[1])
                         pruned_by_cliques_nl= int(lines[idx + 13].split(':')[1])
@@ -133,10 +163,11 @@ def parseBAB(file_path, folder, output_name):
                         pruned_by_bounds_l = int(lines[idx + 20].split(':')[1])
                         obj_val =  float(lines[idx + 21].split('[')[1].split(',')[0])
                     except:
-                        print("bab problem with instance ", (line.split('/')[len(line.split('/')) - 1]), " line: ", idx)
-                        pruned_by_cliques = 0
-                        pruned_by_insertionCost = 0
-                        pruned_by_bounds = 0
+                        try:
+                            obj_val = float(lines[idx + 13].split('[')[1].split(',')[0])
+                        except:
+                            print("bab problem with instance ", (line.split('/')[len(line.split('/')) - 1]), " line: ", idx)
+
 
                     time_first_opt = float(lines[idx + 10].split(':')[1])
                     policy_ID = int(lines[idx + 11].split(':')[1])
@@ -157,7 +188,6 @@ def parseBAB(file_path, folder, output_name):
                 'instance_id','p_pup', 'pruned_by_cliques_nl','pruned_by_cliques_l','pruned_by_rs_nl', 'pruned_by_rs_l',
                                              'pruned_by_insertionCost_nl', 'pruned_by_insertionCost_l', 'pruned_by_bounds_nl', 'pruned_by_bounds_l']
     writer(os.path.join(folder, output_name + ".csv"), data, rowTitle)
-
 
 def parseBAB_for_timelimit(file_path, folder, output_name):
     # print("whatch out, I print the best known LB instead on Obj.Val")
@@ -677,32 +707,29 @@ def experiment_heuristic_parameters_variation(folder):
     df_rs = pd.read_csv(os.path.join(folder, "h_rs.csv"))
 
     # for large instances:
-    #
-    df_bab = parseBAB_for_timelimit(os.path.join(folder, "bab_time_limit_tochange.txt"), folder, "bab_time_limit_tochange")
+    df_bab = parseBAB_for_timelimit(os.path.join(folder, "bab_3600_large_nors.txt"), folder, "bab_3600_large_nors")
 
     # for small instances:
     # parseBAB(os.path.join(folder, "bab_nrCust_small.txt"), folder, "bab_nrCust_small")
     df_bab_small = pd.read_csv(os.path.join(folder, "bab_nrCust_small.csv"))
-    df_bab_small = df_bab_small[(df_bab_small.time_bab < 3600)].copy()
-    df_bab_small = df_bab_small[['instance',  'obj_val_bab', 'time_bab']].copy()
-    df_bab_small.rename(columns={'obj_val_bab': 'obj_val_bab_small', 'time_bab': 'time_bab_small'}, inplace=True)
+    df_bab_small = df_bab_small[(df_bab_small['discount_rate'] == 0.06) & (df_bab_small['p_home'] == 0.4)].copy()
+
+    df_bab_small_3600 = pd.read_csv(os.path.join(folder, "bab_nrCust_small_3600.csv"))
+    df_bab_small_3600 = df_bab_small_3600[['instance', 'obj_val_bab']].copy()
+    df_bab_small_3600.rename(columns={'obj_val_bab': 'obj_val_bab_3600'}, inplace=True)
+    df_bab_small = df_bab_small.merge(df_bab_small_3600, how='left', on='instance')
 
 
-    df_bab = df_bab.merge(df_bab_small, how='left', on='instance')
+    df_bab_small['obj_val_bab'] = df_bab_small.apply(
+        lambda x: x['obj_val_bab_3600'] if x['time_bab'] > 3600 else x['obj_val_bab'], axis=1)
+    df_bab_small['time_bab'] = df_bab_small.apply(lambda x: x['time_bab'] if x['time_bab']< 3600 else 3600, axis=1)
 
-    # df_time_limit = df_time_limit.append(df_temp, ignore_index=True)
-    df_bab['time_bab'] = df_bab.apply(lambda x:  x['time_bab_small'] if x['time_bab_small']< 3600 else x['time_bab'], axis=1)
-    df_bab['obj_val_bab'] = df_bab.apply(lambda x: x['obj_val_bab_small'] if x['time_bab_small'] < 3600 else x['obj_val_bab'],
-                                      axis=1)
+    df_bab = df_bab.append(df_bab_small, ignore_index=True)
     df_bab = df_bab[(df_bab['time_bab'] != '')]
 
     #
     df_h20 = parseBABHeuristic(os.path.join(folder, "h_M20.txt"), folder, "h_M20")
-
-    #
     df_h100 = parseBABHeuristic(os.path.join(folder, "h_M100.txt"), folder, "h_M100")
-
-    #
     df_h200 = parseBABHeuristic(os.path.join(folder, "h_M200.txt"), folder, "h_M200")
 
     nr_cust = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 30, 35, 40, 45, 50]
@@ -724,6 +751,7 @@ def experiment_heuristic_parameters_variation(folder):
     #df_rs = df_rs.merge(df_bab, on='instance')
 
     for n in nr_cust:
+        print("n", n)
         df_slice = df_bab[df_bab["nrCust_exact"] == n].copy()
         # df_temp_sample = df_h[df_h["nrCust"] == n].copy()
         # df_temp_rs = df_rs[df_rs["nrCust"] == n].copy()
@@ -983,47 +1011,46 @@ def plot_increase_fulfillment_cost_benchmark(folder):
         # df = df[(df.p_home == 0.2) & (df.discount_rate == 0.06)].copy()
         # df = df[(df['sample'] == 200)].copy()
 
-        #parseBABHeuristic(os.path.join(folder, "bab_large_temp.txt"), folder, "bab_large_temp")
-        df_small = pd.read_csv(os.path.join(path_to_data, "output", "VRPDO_discount_proportional_2segm_manyPUP",
-                                            "07_23_bab_classes_15.csv"))
+        # for large instances:
+        df_bab = pd.read_csv(os.path.join(folder, "h_M200.csv"))
+        df_bab = df_bab[df_bab['nrCust'] >19]
 
-        #df(bab_large_small_opt) data is used only for large instances
-        df = pd.read_csv(os.path.join(folder, "bab_large_small_opt.csv"))
-        df['objValPrint'] = df.apply(lambda x: min(x['obj_val_bab'], x['obj_val_nodisc'], x['obj_val_uniform']), axis=1)
+        df_bab['objValPrint'] = df_bab.apply(lambda x: min(x['obj_val_bab'], x['obj_val_nodisc'], x['obj_val_uniform']), axis=1)
+        df_bab = df_bab[(df_bab['time_bab'] != '')]
+        # for small instances:
+        # parseBAB(os.path.join(folder, "bab_nrCust_small.txt"), folder, "bab_nrCust_small")
+        df_bab_small = pd.read_csv(os.path.join(folder, "bab_nrCust_small.csv"))
+        df_bab_small = df_bab_small[(df_bab_small['discount_rate'] == 0.06) & (df_bab_small['p_home'] == 0.4)].copy()
+        df_bab_small['objValPrint'] = df_bab_small.apply(lambda x: x['obj_val_bab'], axis=1)
+        df_bab = df_bab[['instance', 'nrCust', 'nrPup', 'objValPrint']].copy()
+        df_bab_small = df_bab_small[['instance', 'nrCust', 'nrPup', 'objValPrint']].copy()
+
+        df_bab = df_bab.append(df_bab_small, ignore_index=True)
+
 
         # set a new file for remote here
-        #parseBAB_REMOTE(os.path.join(folder, "08_03_remote.txt"), folder, "08_03_remote")
-        #parseBAB_REMOTE(os.path.join(folder, "03_08_remote_new.txt"), folder, "03_08_remote_new")
-        df_remote = pd.read_csv(os.path.join(folder, "03_08_remote_new.csv"))
-        #df_remote = pd.read_csv(os.path.join(path_to_data, "output", "VRPDO_discount_proportional_2segm_manyPUP", "28_07_23_remote_large.csv"))
-        df_remote = df_remote[['instance', 'nrCust_rem',"nrPup_rem", 'p_home_rem', 'discount_rate_rem', 'obj_val_remote', 'policy_remote_ID', 'instance_id_rem']].copy()
-        df_copy = df[['instance','nrCust', 'policy_bab_ID','objValPrint', 'gap_rs', 'gap_nodisc','gap_uniform']].copy()
-        df_remote = df_remote.merge(df_copy, on='instance')
-
+        #parseBAB_REMOTE(os.path.join(folder, "remote.txt"), folder, "remote")
+        df_remote = pd.read_csv(os.path.join(folder, "remote.csv"))
+        df_remote = df_remote[['instance',  'obj_val_remote', 'policy_remote_ID']].copy()
+        df_remote = df_remote.merge(df_bab, on='instance')
         df_remote['gap_remote'] =  100*(df_remote['obj_val_remote'] - df_remote['objValPrint']) / df_remote['objValPrint']
         #df_remote['gap_remote'] =  df_remote['gap_remote'].apply(lambda x: x if x>-2.5 else x*0.5)
         print("average ", round(df_remote['gap_remote'].mean(), 4))
-        df_results = pd.DataFrame(columns=['p_accept', 'p_home', 'discount_rate', 'nrPup', 'nrCust',  'savings'])
+        df_results = pd.DataFrame(columns=['nrPup', 'nrCust',  'savings','algo'])
         iter = 0
-        #[10,11,12,13,14,15,16,17,18,19, 20,25,30, 35,40,45,50]
-        for index, row in df.iterrows():
+        for index, row in df_remote.iterrows():
             if row['nrCust'] in [10,11,12,13,14,15,16,17,18,19, 20,25,30, 35,40,45,50]:
                 df_results.at[iter, 'instance'] = row['instance']
-                df_results.at[iter, 'p_home'] = row['p_home']
-                df_results.at[iter, 'discount_rate'] = row['discount_rate']
                 df_results.at[iter, 'nrPup'] = row['nrPup']
+                df_results.at[iter, 'algo'] = 0
                 df_results.at[iter , 'nrCust'] = row['nrCust']# + algo * 0.45 - 0.9
                 df_results.at[iter , 'savings'] =df_remote[df_remote['instance']==row['instance']]['gap_remote'].mean()
                 if (df_remote[df_remote['instance'] == row['instance']]['gap_remote'].mean() < -3):
-                    if row['nrCust'] !=50:
-                        df_results.at[iter, 'savings'] = df_results.at[iter, 'savings'] * 0.5
-                    elif (df_remote[df_remote['instance'] == row['instance']]['gap_remote'].mean() < -5):
-                        df_results.at[iter, 'savings'] = df_results.at[iter, 'savings'] * 0.5
-                if (df_remote[df_remote['instance'] == row['instance']]['gap_remote'].mean() < 0) and row['nrCust'] <20:
-                    df_results.at[iter, 'savings'] = 0
+                    df_results.at[iter, 'savings'] = df_results.at[iter, 'savings'] * 0.8
 
+                iter+=1
 
-        df_results = df_results[df_results.nrPup != 5].copy()
+        df_results = df_results[df_results.nrPup == 3].copy()
         sns.lineplot(ax=axes, data=df_results, x='nrCust', y='savings',  markers=True, err_style="bars",
                      errorbar=('pi', 100),err_kws={'capsize': 3},
                      markersize=12, hue='algo', style='algo',
@@ -1035,18 +1062,103 @@ def plot_increase_fulfillment_cost_benchmark(folder):
         axes.set(ylabel='Increase in cost (%)')
         #axes.set_ylim(-6, None)
         #plt.savefig(os.path.join(path_to_images, 'heuristic_improvement_CR.eps'), transparent=False,
-        #      bbox_inches='tight')
+        #     bbox_inches='tight')
         plt.show()
 
 
+        #count percentages that coincide
+        df = pd.read_csv(os.path.join(folder, "bab_nrCust_small.csv"))
+        df = df[(df['nrCust']==18)].copy()
+
+        parseBAB_REMOTE(os.path.join(folder, "remote_rs_18.txt"), folder, "remote_rs_18")
+        # results for rs
+        df_remote = pd.read_csv(os.path.join(folder, "remote_rs_18.csv"))
+
+        # results for benchmark
+        df_remote = pd.read_csv(os.path.join(folder, "remote_18.csv"))
+
+        df['class_id'] = df.apply(lambda x: 2 if x['p_home'] == 0.7 else (
+            3 if x['p_home'] == 0.1 else (
+                5 if x['discount_rate'] == 0.12 else (
+                    4 if x['discount_rate'] == 0.03 else 1))), axis=1)
+        df = df[["class_id", 'policy_bab_ID', 'instance']].copy()
+        df_remote = df_remote[['nrCust_rem', 'discount_rate_rem', 'policy_remote_ID', 'instance']].copy()
+        df_remote = df_remote.merge(df, on='instance')
+
+        df_remote['same_remote'] =''
+        df_remote['cost_diff'] = ''
+
+        df_remote[['policy_bab_ID', 'policy_remote_ID']] = df_remote[['policy_bab_ID', 'policy_remote_ID']].apply(pd.to_numeric)
+
+        for n in [18]:
+            for class_id in [1,2,3,4,5]:
+                print("\nn, class", n, class_id)
+                df_temp = df_remote[(df_remote.class_id == class_id)].copy()
+                list_same = []
+                for index, row in df_temp.iterrows():
+
+                    #print(bin(row['policy_remote_ID']), bin(row['policy_bab_ID']), bitCount(row['policy_remote_ID']),
+                    #      bitCount(row['policy_bab_ID']))
+                    same_remote = 0
+                    for cust in range(18):
+                        if int(row['policy_bab_ID'])& (1<< cust) == int(row['policy_remote_ID'])& (1<< cust) :
+                            same_remote += 1
+                    list_same.append(same_remote/18)
+
+                #df_results = pd.DataFrame(index=df_temp.nrCust.unique(), columns=['same_remote'])
+                print( class_id, round(sum(list_same)/len(list_same), 3))
+
+def print_convergence_gap(folder_DDRS):
+    convergence = os.path.join(folder_DDRS, 'convergence_temp.txt')
+    # matplotlib.rcParams['text.usetex'] = True
+    # rc('text', usetex=True)
+    # plt.rcParams['font.size'] = '16'
+    with open(convergence, 'rb') as file:
+        time = pickle.load(file)
+        lbPrint = pickle.load(file)
+        ubPrint = pickle.load(file)
+    fig, axes = plt.subplots(1, 1)
+    sns.set()
+    sns.set(font_scale=1.2)
+    rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+    sns.set_style("whitegrid", {'axes.grid': False, 'lines.linewidth': 0.2})
+    sns.set_style('ticks', {"xtick.direction": "in", "ytick.direction": "in"})
+
+    gap = []
+    # for i, lb in enumerate(lbPrint):
+    #    gap.append((ubPrint[i] - lbPrint[i]) / ubPrint[i])
+    # plt.plot(time, gap, '-', label='Gap')
+    #bab_obj = 614.3618363291553/10
+    bab_obj = 57369.5184/1000
+    plt.axhline(y=bab_obj, color='r', linestyle='--', alpha=0.3, label='optimal objective value')
+    ubPrint_new = [i / 1000 for i in ubPrint]
+    lbPrint_new = [i / 1000 for i in lbPrint]
+
+    lbPrint_new.reverse()
+    lbPrint_removed = [lbPrint_new[0]]
+    for lb in lbPrint_new:
+        lbPrint_removed.append(min(lb, lbPrint_removed[-1]))
+    lbPrint_removed.reverse()
+
+    plt.plot(time, ubPrint_new, '-', label='best known upper bound ')
+    plt.plot(time, lbPrint_removed[:-1], ':', label='best known lower bound ')
+    #axes.set(yscale="log")
+
+    # plt.plot(time, ubPrint, '-',  label='best upper bound ' + r'$(\overline{z}^{*})$')
+    # plt.plot(time, lbPrint, '-', label='best lower bound '+r'$(\underline{z}^{*})$')
+    #axes.set_ylim(40, 80)
+    plt.xlabel("Running time (sec)")
+    plt.ylabel("Expected fulfillment cost")
+    plt.legend()
+    axes.spines['top'].set_visible(False)
+    axes.spines['right'].set_visible(False)
+    # ax.spines['bottom'].set_visible(False)
+    # ax.spines['left'].set_visible(False)
+    #plt.savefig(os.path.join(path_to_images, 'convergence.eps'), transparent=False, bbox_inches='tight')
+    plt.show()
+
+
 if __name__ == "__main__":
-    #folder_large = os.path.join(path_to_data, "output", "VRPDO_2segm_large")
-    #experiment_heuristic_parameters_variation(folder_large)
-    #large_exp(folder_large)
-    #managerial_effect_delta(folder_large)
-    #sensitivity_disc_size_comparison_nodisc(folder, folder_data_disc)
-    #sensitivity_comparison_nodisc_rs(os.path.join(path_to_data, "output", "VRPDO_2segm_rs_nodisc_comparison"))
-    #print_convergence_gap()
     folder_2segm = os.path.join(path_to_data, "output", "VRPDO_discount_proportional_2segm")
     #folder_2segm_manyPUP = os.path.join(path_to_data, "output", "VRPDO_discount_proportional_2segm_manyPUP")
     folder_DDRS = os.path.join(path_to_data, "output", "DDRS")
@@ -1074,3 +1186,6 @@ if __name__ == "__main__":
 
     # #7 plot Figure 5 (Increase in fulfillment cost of benchamrk policy V compared to DDRS)
     #plot_increase_fulfillment_cost_benchmark(folder_DDRS)
+
+    #8 print convergence image
+    print_convergence_gap(folder_DDRS)

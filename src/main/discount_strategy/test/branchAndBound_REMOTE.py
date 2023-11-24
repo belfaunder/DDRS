@@ -33,11 +33,9 @@ if __name__ == "__main__":
     folder_large = os.path.join(path_to_data, "data", "i_VRPDO_2segm_manyPup_classes")
 
     if os.name != 'nt':
-        file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "i_DDRS",
-                                     str(sys.argv[-1]) + ".txt")
+        file_instance = os.path.join((Path(os.path.abspath(__file__)).parents[4]), "i_DDRS",str(sys.argv[-1]) + ".txt")
     else:
-        file_instance = os.path.join(path_to_data, "data", "i_DDRS",
-                                     "DDRS_nrcust_10_nrpup3_delta_0.6_u_0.06_4.txt")
+        file_instance = os.path.join(path_to_data, "data", "i_DDRS", "DDRS_nrcust_10_nrpup3_delta_0.6_u_0.06_4.txt")
 
     OCVRPInstance = OCVRPParser.parse(file_instance)
     OCVRPInstance.calculateInsertionBounds()

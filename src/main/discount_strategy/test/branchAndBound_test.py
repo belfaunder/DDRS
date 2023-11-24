@@ -92,26 +92,21 @@ if __name__ == "__main__":
     # print(prefix, "pruned_by_bounds:", bab.nrNodes - bab.pruned_branching - bab.pruned_cliques_leaf - bab.pruned_cliques_nonleaf - bab.pruned_rs_leaf -\
     #       bab.pruned_rs_nonleaf-  bab.pruned_insertionCost_nonleaf - bab.pruned_insertionCost_leaf -  bab.pruned_bounds_nonleaf)
 
-    # mainDirStorage =  os.path.join(path_to_data,"output")
-    # convergence = os.path.join(maindominanceDirStorage, 'convergence.txt')
-    #
-    # with open(convergence, 'wb') as file:htop
-    #    pickle.dump(time, file)
-    #    pickle.dump(lbPrint, file)
-    #    pickle.dump(ubPrint, file)
-    #
-    # with open(convergence, "rb") as file:
-    #     time = pickle.load(file)
-    #     lbPrint = pickle.load(file)
-    #     ubPrint = pickle.load(file)
-    #Painter.printConvergence(OCVRPInstance, time, lbPrint, ubPrint, ubPrint[-1])
-
-    if 2**bitCount(babPolicy) < constants.SAMPLE_SIZE:
-        estimation_bab = one_policy_cost_estimation(instance = OCVRPInstance, policy = babPolicy, solverType = solverType)
+    if 2 ** bitCount(babPolicy) < constants.SAMPLE_SIZE:
+        estimation_bab = one_policy_cost_estimation(instance=OCVRPInstance, policy=babPolicy, solverType=solverType)
     else:
-        estimation_bab = sampleAverageApproximation_PoissonBinomial_1sample_2segm(instance = OCVRPInstance,
-                                                                            policy = babPolicy, solverType = solverType)
-    print(prefix, 'Estimated_BAB_cost:',estimation_bab )
+        estimation_bab = sampleAverageApproximation_PoissonBinomial_1sample_2segm(instance=OCVRPInstance,
+                                                                                  policy=babPolicy, solverType=solverType)
+    print(prefix, 'Estimated_BAB_cost:', estimation_bab)
+
+    convergence = os.path.join(path_to_data, "output", "DDRS", 'convergence_temp.txt')
+
+    with open(convergence, 'wb') as file:
+       pickle.dump(time, file)
+       pickle.dump(lbPrint, file)
+       pickle.dump(ubPrint, file)
+
+
 
     # EnumerationSolver = ScenarioEnumerationSolver(instance=OCVRPInstance, solverType=solverType)
     # EnumerationSolver.exactPolicyByEnumeration_withoutGurobi_2segm()
