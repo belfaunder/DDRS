@@ -1,24 +1,15 @@
+# Code to run benchmark comparison with nonlinear off-the-shelf solver SCIP https://www.scipopt.org/
+
 import os
 import sys
 from pathlib import Path
-import copy
-import math
-from itertools import combinations
-from src.main.discount_strategy.algorithms.exact.bab.BoundsCalculation import updateBoundsFromDictionary
-from src.main.discount_strategy.algorithms.exact.bab.BAB_super_class import BAB_super_class
-from src.main.discount_strategy.algorithms.exact.bab.BoundsCalculation import updateBoundsWithNewTSPs
-import numpy as np
 from time import process_time
 from src.main.discount_strategy.util import constants
-from src.main.discount_strategy.util import probability
-from src.main.discount_strategy.util.bit_operations import bitCount
-
 from src.main.discount_strategy.io import OCVRPParser
 path_to_data = constants.PATH_TO_DATA
 prefix=constants.PREFIX
 
 from pyscipopt import Model, quicksum
-
 
 def addcut(edges, set_visit, model, x_vars, n):
     new_cut_added = False
@@ -155,27 +146,6 @@ def solve_gurobi_DDRS(instance):
                     set_visit[omega].append(customer.closest_pup_id)
             else:
                 set_visit[omega].append(customer.id)
-    #for omega in range(2 ** instance.NR_CUST):
-    # if True:
-    #     while True:
-    #         m.optimize()
-    #
-    #         edges = []
-    #         for omega in range(2 ** instance.NR_CUST):
-    #             for i in range(0, instance.NR_CUST + instance.NR_PUP + 2):
-    #                 for j in range(0, instance.NR_CUST + instance.NR_PUP + 2):
-    #                     if j > i:
-    #                         if m.getVal(x_vars[omega, i, j]) > EPS:
-    #                             edges.append([omega, i, j])
-    #
-    #
-    #         if addcut(edges, set_visit, m, x_vars, instance.NR_CUST)== False:
-    #             if isMIP:  # integer variables, components connected: solution found
-    #                 break
-    #             m.freeTransform()
-    #             for (omega, i, j) in x_vars:  # all components connected, switch to integer model
-    #                 m.chgVarType(x_vars[omega, i, j], "B")
-    #                 isMIP = True
 
     policy = 0
     for i in range(1, instance.NR_CUST + 1):

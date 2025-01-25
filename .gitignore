@@ -21,6 +21,7 @@
 target
 output
 data
+!data/test_instance.txt
 build
 old
 pyconcorde

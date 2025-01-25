@@ -1,25 +1,15 @@
-
 from src.main.discount_strategy.algorithms.exact.bab.BoundsCalculation import updateBoundsFromDictionary
 from src.main.discount_strategy.algorithms.exact.bab.BAB_super_class import BAB_super_class
 from src.main.discount_strategy.algorithms.exact.bab.BoundsCalculation import updateBoundsWithNewTSPs
 from time import process_time
 from src.main.discount_strategy.util import constants
-
 path_to_data = constants.PATH_TO_DATA
-
-def timer(start,end):
-    hours, rem = divmod(end-start, 3600)
-    minutes, seconds = divmod(rem, 60)
-    return("{:0>2}:{:0>2}:{:05.2f})".format(int(hours),int(minutes),seconds))
-
 prefix=constants.PREFIX
 
 class BABExact(BAB_super_class):
 
     def runBranchAndBound(self):
         self.instance.set_enlarged_neighbourhood()
-        # Save the current time to a variable ('t')
-        t  = process_time()
         openNodes = self.openNodes
 
         # Visit all nodes until no nodes are left to branch on ( or a time limit is reached)
@@ -54,15 +44,6 @@ class BABExact(BAB_super_class):
             lbPrint.append( self.bestNode.lbVal() )
             ubPrint.append(self.bestNode.ubVal())
             time.append(process_time()-start_time)
-            # print("\nnextNode", nextNode.withDiscountID, bin(nextNode.withDiscountID),
-            #       nextNode.exactValueProb, nextNode.exactValue, nextNode.lbRoute,
-            #    nextNode.lbVal(), nextNode.ubVal())
-            # print("bestNode", bin(self.bestNode.withDiscountID), self.bestNode.withDiscountID,
-            #       self.bestNode.exactValueProb, self.bestNode.lbRoute, self.bestNode.lbVal() ,self.bestNode.ubVal()  )
-
-            # print(len(self.instance.routeCost))
-            #for id in nextNode.lbScenarios:
-            #    print(id, bin(id), nextNode.lbScenarios[id])
             if self.isTerminalNode(nextNode):
                 continue
             elif self.canFathom(nextNode):
@@ -82,7 +63,7 @@ class BABExact(BAB_super_class):
             print(prefix+ 'Optimal: 1')
         else:
             print(prefix+ 'Optimal: 0')
-        print(prefix+ 'Obj_val(ub): ', self.bestNode.ubVal(), 'Obj_val(lb): ', self.bestNode.lbVal())
+        print(prefix+ 'Obj_val(ub): ', self.bestNode.ubVal()/constants.SCALING_FACTOR, 'Obj_val(lb): ', self.bestNode.lbVal()/constants.SCALING_FACTOR)
         print(prefix+ 'Gap: ', max(0,round((self.bestNode.ubVal() - self.bestNode.lbVal())/self.bestNode.ubVal(),2)))
 
         try:
@@ -92,14 +73,18 @@ class BABExact(BAB_super_class):
         print(prefix+ 'BestPolicy_bab_ID: ', self.bestNode.withDiscountID)
         print(prefix+ 'BestPolicy_bab: ', bin(self.bestNode.withDiscountID)[2:].zfill(self.instance.NR_CUST))
 
+        self.pruned_insertionCost_nonleaf += self.pruned_rs_nonleaf
+        self.pruned_insertionCost_leaf += self.pruned_rs_leaf
+        self.pruned_by_bounds_leaf =  self.nrNodes - self.pruned_branching - self.pruned_cliques_leaf -\
+                                      self.pruned_cliques_nonleaf - self.pruned_insertionCost_nonleaf -\
+                                      self.pruned_insertionCost_leaf - self.pruned_bounds_nonleaf
+
+
         return self.bestNode.withDiscountID, time, lbPrint, ubPrint
     # Check whether the node can be fathomed, i.e.whether we can prune the node
     # skip node
     def canFathom(self, node):
         def exploreNode():
-
-            #DOMINANCE_CHECK_BOUNDS_REMOVED
-            #return False
             nonlocal node
             if node.setNotGivenDiscount:
 
@@ -166,11 +151,9 @@ class BABExact(BAB_super_class):
                     self.bestNode = node
                     self.bestUb = min(self.bestUb, self.bestNode.ubVal())
                     #if not self.isLeaf(node):
-                        # add info by new tsp and should branch
+                    # add info by new tsp and should branch
                     exploreNode()
                     self.bestUb = min(self.bestUb, self.bestNode.ubVal())
-                    #    return False
-                    #else:
                     return False
 
                 # epsilon optimality
@@ -188,9 +171,6 @@ class BABExact(BAB_super_class):
                         self.openNodes.push(self.bestNode, 0)
                         if self.isLeaf(node):
                             self.openNodes.push(node, node.priority())
-                    #self.bestNode = node
-                    #self.bestUb = min(self.bestUb, self.bestNode.ubVal())
-
                     return False
                 else:
                     if not self.isLeaf(node):

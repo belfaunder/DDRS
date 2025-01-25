@@ -1,9 +1,5 @@
 # Intrusive implementation of a BB node
 # @author Joris Kinable
-import os
-from pathlib import Path
-import sys
-
 class Node:
     #Reference to the next node in the same layer * /
     #Node < S > nextNodeInLayer=null;
@@ -85,8 +81,6 @@ class Node:
 
 
     def __str__(self):
-        #return str(self.withDiscountID) + str(self.formPolicy())
-        #return str(self.withDiscountID) + str(self.formPolicy())
         return str(self.withDiscountID)+str(self.noDiscountID)
 
     def formPolicy( self, NR_CUST):
@@ -94,7 +88,6 @@ class Node:
         if self.withDiscountID + self.noDiscountID == 0:
             policy = ['x'] * NR_CUST
         else:
-
             policy = ['x']*(NR_CUST -lenDefined)
             for i in bin(self.withDiscountID)[2:].zfill(lenDefined):
                 policy.append(i)
@@ -105,7 +98,6 @@ class Node:
             return True
         else:
             return False
-
 
     # keeps only 1 fathomed node per layer
     def fathomed(self):
@@ -123,18 +115,13 @@ class Node:
 
             while new_child.children:
                 new_child = new_child.children[0]
-                #new_child.withDiscountID = new_parent.withDiscountID
-                #new_child.noDiscountID = new_parent.noDiscountID
                 new_child.lbExpDiscount = 0
                 new_child.lbRoute = new_parent.lbRoute
 
             new_parent = new_parent.parent
-
 
     def __eq__(self, other):
         if not isinstance(other, Node):
             # don't attempt to compare against unrelated types
             return NotImplemented
         return  self.noDiscountID == other.noDiscountID and self.withDiscountID == other.withDiscountID
-
-

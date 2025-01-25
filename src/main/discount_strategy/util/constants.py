@@ -1,24 +1,19 @@
 from pathlib import Path
 import os
 # == == == == == = SAA PARAMS == == == == == == ==
-#SAMPLE_SIZE = 5000
 SAMPLE_SIZE = 5000
 NUMBER_OF_SAMPLES = 10
 
 # == == == == == = VRP MODEL PARAMS == == == == == == ==
-# fleet size (=number of virtual PUPs)
 FLEET_SIZE = 1
 PUP_CAPACITY = 60
 VEHICLE_CAPACITY = 50
 PROB_PLACE_ORDER = 1
-#number of  segments of customers(from nonparametric rank approach)
-#NUMBER_SEGMENTS = 3
-
-
+SCALING_FACTOR = 1000
 # == == == == == == GENERAL == == == == == == == == ==
-# EPS - precicion of calculations, does not depend on the algorithm requirements
 EPS = 10e-6
 BIGM = 1000
+BIGM_POLICY_COST = 10**10
 MIPGAP = 1*10e-2
 LIMIT_CORES = 20
 TIME_LIMIT = 80000
@@ -34,9 +29,6 @@ EPSILON =0
 EPSILON_H = 0.01
 EPSILONRS = 0
 
-# file_images = os.path.join((Path(os.path.abspath(__file__)).parents[1]),"results","images")
-#segment_probability[0] - proability of always home
-
-PATH_TO_DATA = os.path.join((Path(os.path.abspath(__file__)).parents[6]),"OneDrive - TU Eindhoven", "~code_data", "OCTSP")
-PATH_TO_IMAGES = os.path.join(PATH_TO_DATA, "images")
+PATH_TO_DATA = os.path.join((Path(os.path.abspath(__file__)).parents[4]),"data")
+PATH_TO_IMAGES = os.path.join(PATH_TO_DATA, "output")
 PREFIX = "tag: "

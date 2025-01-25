@@ -2,19 +2,16 @@ from pathlib import Path
 import sys
 import os
 import gurobipy as grb
-import numpy as np
 from itertools import combinations
-from copy import copy, deepcopy
+from src.main.discount_strategy.util.bit_operations import bitCount
 
-path_to_concorde = os.path.join((Path(os.path.abspath(__file__)).parents[6]), "pyconcorde")
-sys.path.insert(1, path_to_concorde)
-
-#if os.name != 'nt':
+# For Ubuntu and Concorde only
+# path_to_concorde = os.path.join((Path(os.path.abspath(__file__)).parents[6]), "pyconcorde")
+# sys.path.insert(1, path_to_concorde)
+# if os.name != 'nt':
 #    from concorde.tsp import TSPSolver_ as TSPSolverConcorde
 #    from concorde.tests.data_utils import get_dataset_path
 
-
-from src.main.discount_strategy.util.bit_operations import bitCount
 
 def subtourelim(model, where):
     if where == grb.GRB.Callback.MIPSOL:
@@ -27,7 +24,6 @@ def subtourelim(model, where):
         if len(tour) < len(model._set_visit):
             # add subtour elimination constr. for every pair of cities in tour
             model.cbLazy(grb.quicksum(model._x_vars[i, j] for i, j in combinations(tour, 2))
-                         # model.addConstr(grb.quicksum(model._x_vars[i, j] for i, j in combinations(tour, 2))
                          <= len(tour) - 1)
 
 # Given a tuplelist of edges, find the shortest subtour
@@ -52,9 +48,10 @@ class TSPSolver:
         self.instance = instance
         self.baseModel = self.tsp_base_model(instance.distanceMatrix, instance.NR_CUST, instance.NR_PUP)
         self.solverType = solverType
-        if solverType == 'Concorde':
-            fname = get_dataset_path("berlin" + str(instance.NR_CUST + 2))
-            self.solver = TSPSolverConcorde.from_tspfile(fname)
+        # if solverType == 'Concorde':
+        #     fname = get_dataset_path("berlin" + str(instance.NR_CUST + 2))
+        #     self.solver = TSPSolverConcorde.from_tspfile(fname)
+
     # create a tsp model that visit all customers at home
     def tsp_base_model(self, distanceMatrix, nr_cust, nr_pup):
         m = grb.Model()
@@ -62,7 +59,6 @@ class TSPSolver:
         m.Params.Threads = 4
 
         set_visit = list(range(nr_cust + 1 + nr_pup))
-
         #length of the route that includes only one depot and one pickup point
         m._dist_pup = {}
         for pup_id in range(nr_cust+1, nr_cust+nr_pup+1):
@@ -134,33 +130,22 @@ class TSPSolver:
                         pass
 
             self.baseModel._set_visit = set_visit
-            #self.baseModel.update()
             # Optimize model
-
             self.baseModel.optimize(subtourelim)
             # self.baseModel.printAttr('X')
-
-            # m.write("upd.lp")
             #vals = self.baseModel.getAttr('x', x_vars)
             # selected = grb.tuplelist((i, j) for i, j in vals.keys() if vals[i, j] > 0.5)
             # print(selected)
             # for tuple in selected:
             #     print(tuple, self.instance.distanceMatrix[tuple])
-
             #tour = subtour(selected, set_visit)
             #assert len(tour) == n - len(skip)+1
-
-            # print('')
             # print('Optimal tour: %s' % str(tour))
-            #
             # print(scenarioID, 'Optimal cost: %g' %  self.baseModel.objVal)
             # print('')
             tsp_cost = self.baseModel.objVal
         else:
-            # TODO - this would be more difficult or simply delete it
             tsp_cost = self.baseModel._dist_pup[set_visit[1]]
-        #print("")
-        #print("NEW_TSP", bin(scenarioID)[2:], tsp_cost)
         return tsp_cost
 
 
@@ -198,7 +183,6 @@ class TSPSolver:
         self.baseModel._set_visit = set_visit
         # self.baseModel.update()
         # Optimize model
-
         self.baseModel.optimize(subtourelim)
         tsp_cost = self.baseModel.objVal
 
@@ -207,69 +191,6 @@ class TSPSolver:
             lb = min(self.instance.distanceMatrix[(0, pup.id)] * 2, lb)
 
         return tsp_cost, lb
-
-    def tspCostWihoutReuse(self, scenario):
-        distanceMatrix = self.instance.distanceMatrix
-        nr_cust = self.instance.NR_CUST
-
-        m = grb.Model()
-        m.setParam('OutputFlag', False)
-
-        # create set of customers that should be visited in scenario
-        set_visit = [0]
-        iter = 1
-        for i in scenario:
-            if i == 0:
-                set_visit.append(iter)
-        set_visit.append(nr_cust + 1)
-        m._dist_pup = distanceMatrix[(0, nr_cust + 1)] * 2
-        if len(set_visit) > 2:
-            # Create variables
-            x_vars = m.addVars(distanceMatrix.keys(), obj=distanceMatrix, vtype=grb.GRB.BINARY, name='e')
-            for i, j in x_vars.keys():
-                x_vars[j, i] = x_vars[i, j]  # edge in opposite direction
-
-            # forbid loops
-            for i in list(range(nr_cust + 2)):
-                m.addConstr(x_vars[i, i] == 0, name="forbid_loop_{0}".format(i))
-
-            # Add degree-2 constraint
-            for i in list(range(nr_cust + 2)):
-                if i in set_visit:
-                    m.addConstr(grb.quicksum(x_vars[i, j] for j in range(nr_cust + 2)) == 2,
-                                name="constraint_inflow2_{0}".format(i))
-                else:
-                    m.addConstr(grb.quicksum(x_vars[i, j] for j in range(nr_cust + 2)) == 0,
-                                name="constraint_inflow0_{0}".format(i))
-
-            m._set_visit = set_visit
-            m._x_vars = x_vars
-            m.Params.lazyConstraints = 1
-            #m.update()
-            # Optimize model
-
-            m.optimize(subtourelim)
-
-            # self.baseModel.printAttr('X')
-
-            # m.write("upd.lp")
-            # vals = self.baseModel.getAttr('x', x_vars)
-            # selected = grb.tuplelist((i, j) for i, j in vals.keys() if vals[i, j] > 0.5)
-            # print(selected)
-
-            # tour = subtour(selected, set_visit)
-            # assert len(tour) == n - len(skip)+1
-
-            # print('')
-            # print('Optimal tour: %s' % str(tour))
-
-            # print(scenario, 'Optimal cost: %g' %  m.objVal)
-            # print('')
-            tsp_cost = m.objVal
-        else:
-            tsp_cost = m._dist_pup
-
-        return tsp_cost
 
     def tspCostConcorde(self, scenarioID):
 

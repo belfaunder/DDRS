@@ -12,14 +12,7 @@ function runBenchmark(){
     instances=($(cat ./scripts/BAB/instances_nr_cust_heuristic_small.lst))
 
     outputdir=./output
-    #filename=babSamplingBenchmark.txt
-
-    #filename=RingStar_disc_size_sensitivity.txt
     filename=bab_nrCust_small.txt
-    #filename=h_sample50_eps05_time600.txt
-    #filename=Enumeration_3_segments.txt
-    #message="Benchmark, 2 h, 20 threads max"
-    #header="name	nrCustomers    nrLocations LB   UB	feasible    optimal runtime"
     prefix="tag: "
 
     #test whether output dir exists
@@ -32,11 +25,7 @@ function runBenchmark(){
     echo "${prefix}${message}" >> $outputfile
     echo "${prefix}${header}" >> $outputfile
 
-    #printf "%s\n" "${instances[@]}" |  parallel --timeout 7200  --no-notice -P 20 -k --eta --colsep ' ' "python3  ./src/main/discount_strategy/test/enumeration_test.py {}" >> $outputfile
-    printf "%s\n" "${instances[@]}" |  parallel --timeout 56000  --no-notice  -P 5 -k --eta --colsep ' ' "python3  ./src/main/discount_strategy/test/branchAndBound_test.py {}" >> $outputfile
-    #printf "%s\n" "${instances[@]}" |  parallel --timeout 36000  --no-notice  -P 5 -k --eta --colsep ' ' "python3  ./src/main/discount_strategy/test/branchAndBoundHeuristic_test.py {}" >> $outputfile
-    #printf "%s\n" "${instances[@]}" |  parallel --timeout 14500 --no-notice  -P 20 -k --eta --colsep ' ' "python3  ./src/main/discount_strategy/test/ringStar_test.py {}" >> $outputfile
-
+    printf "%s\n" "${instances[@]}" |  parallel --timeout 10800  --no-notice  -P 5 -k --eta --colsep ' ' "python3  ./src/main/discount_strategy/test/branchAndBound_test.py {}" >> $outputfile
     #only preserve tagged lines, and remove the tag
     mv $outputfile "${outputfile}_tmp"
     grep ${prefix} "${outputfile}_tmp" | sed -e "s/$prefix//g" > $outputfile

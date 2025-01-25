@@ -1,42 +1,17 @@
-
-import os
-import sys
-from pathlib import Path
-import copy
-
-import math
-from itertools import combinations
-import numpy as np
 from time import process_time
 from src.main.discount_strategy.algorithms.exact.bab.BAB_super_class import BAB_super_class
 from src.main.discount_strategy.algorithms.exact.bab import BoundsCalculation
 from src.main.discount_strategy.algorithms.exact.bab.BoundsCalculation import updateBoundsFromDictionary
-
-
 from src.main.discount_strategy.util import constants
-from src.main.discount_strategy.util import probability
 from src.main.discount_strategy.util.bit_operations import bitCount
 
-
-def timer(start,end):
-    hours, rem = divmod(end-start, 3600)
-    minutes, seconds = divmod(rem, 60)
-    return("{:0>2}:{:0>2}:{:05.2f})".format(int(hours),int(minutes),seconds))
-
-prefix="tag: "
-
+prefix=constants.PREFIX
 class BABHeuristic(BAB_super_class):
-
-
     def runBranchAndBound(self):
         self.upperBoundNumberDiscount = bitCount(self.rs_policy)
-        #self.upperBoundNumberDiscount = self.instance.NR_CUST
-        t  = process_time()
         openNodes = self.openNodes
         # Visit all nodes until no nodes are left to branch on ( or a time limit is reached)
         start_time = process_time()
-        ubValRoot = self.root.ubVal()
-        best_old = self.bestNode
         self.openNodes.push(self.bestNode, self.bestNode.ubRoute)
         self.instance.set_enlarged_neighbourhood()
 
@@ -45,12 +20,6 @@ class BABHeuristic(BAB_super_class):
                 break
 
             nextNode = openNodes.pop()
-            #print("best", self.bestNode.withDiscountID, self.bestNode.formPolicy(self.instance.NR_CUST), "lbVal", self.bestNode.lbVal(),"ubVal", self.bestNode.ubVal(), self.bestNode.exactValueProb,self.bestNode.lbRoute, self.bestNode.ubRoute)
-            #print("current node", nextNode.withDiscountID, nextNode.formPolicy(self.instance.NR_CUST), "lbVal", nextNode.lbVal(),"ubVal", nextNode.ubVal())
-            # print("tspdict:", len(self.instance.routeCost))
-            #if nextNode.withDiscountID==339869411:
-            #    print("current node", nextNode.withDiscountID, nextNode.formPolicy(self.instance.NR_CUST), nextNode.exactValueProb, "lbVal", nextNode.lbVal(),"ubVal", nextNode.ubVal())
-
             if self.bestNode.fathomedState:
                 self.bestNode = nextNode
                 self.bestUb = self.bestNode.ubVal()
@@ -70,7 +39,7 @@ class BABHeuristic(BAB_super_class):
         print(prefix+ "Time_running,s: ", (process_time() - start_time))
         print(prefix+ "Number_nodes: ", self.nrNodes)
         print(prefix+ "Number_calculated_TSPs: ", len(self.instance.routeCost))
-        print(prefix+ 'Obj_val(ub): ', self.bestNode.ubVal(), 'Obj_val(lb): ', self.bestNode.lbVal())
+        print(prefix+ 'Obj_val(ub): ', self.bestNode.ubVal()/constants.SCALING_FACTOR, 'Obj_val(lb): ', self.bestNode.lbVal()/constants.SCALING_FACTOR)
         print(prefix+ 'BestPolicy_ID: ', self.bestNode.withDiscountID)
         print(prefix+ 'BestPolicy: ', bin(self.bestNode.withDiscountID)[2:].zfill(self.instance.NR_CUST))
         return self.bestNode.withDiscountID
@@ -111,14 +80,8 @@ class BABHeuristic(BAB_super_class):
         else:
 
             updateBoundsFromDictionary(self, node)
-            # lf.instance.NR_CUST), node.ubRoute)
             if node.fathomedState:
                 return True
-            # compare the cost of a node with the best node
-            #TODO: finish updateBoundsFromLayer
-            #updateBoundsFromLayer(self, node)
-            #if node.fathomedState:
-            #    return True
             cycle_iteration = 0
             #while True:
             while cycle_iteration<10:
@@ -151,9 +114,6 @@ class BABHeuristic(BAB_super_class):
                     self.openNodes.push(self.bestNode, 0)
                     if self.isLeaf(node):
                         self.openNodes.push(node, node.priority())
-                    #self.bestNode = node
-                    #self.bestUb = min(self.bestUb, self.bestNode.ubVal())
-
                     return False
                 else:
                     if not self.isLeaf(node):

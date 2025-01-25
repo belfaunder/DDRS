@@ -1,16 +1,13 @@
 #tree of BAB - the structure is used in both Exact algorithm and in heuristics
 import collections
-import numpy as np
 import heapq
 import copy
 from src.main.discount_strategy.algorithms.exact.bab.BoundsCalculation import set_probability_covered
-#from BoundsCalculation import updateBoundsFromDictionary
 import itertools
 from collections import OrderedDict
 from src.main.discount_strategy.model.Node import Node
 from src.main.discount_strategy.algorithms.exact.TSPSolver import TSPSolver
 from src.main.discount_strategy.algorithms.exact.ring_star_without_TW import ring_star_deterministic_no_TW
-
 from src.main.discount_strategy.util import constants
 from src.main.discount_strategy.util import probability
 from src.main.discount_strategy.util.bit_operations import bitCount
@@ -79,20 +76,16 @@ class BAB_super_class:
         self.pruned_rs_leaf = 0
         self.pruned_bounds_nonleaf = 0
         self.pruned_branching = 0
+        self.pruned_by_bounds_leaf = 0
 
-        # gurobi model for TSP is stored in TSP object and reused
-        # thus to enable warm start
+        # gurobi model for TSP is stored in TSP object and reused to enable warm start
         self.TSPSolver = TSPSolver(instance=instance, solverType=solverType)
 
-        # add two scnenarios which function as a LB and UB
+        # add two scnenarios functioning as a LB and UB
         scenario_0 = 0
         self.instance.routeCost[scenario_0] = self.TSPSolver.tspCost(scenario_0)
-
-        lbScenarios = {}
         self.instance.ubScenario, self.instance.lbScenario = self.TSPSolver.tspCostUbScenario()
-        lbScenarios, lbScenario = {}, self.instance.lbScenario
         # COVERED_BOUND
-        #DOMINANCE_CHECK_BOUNDS_REMOVED
         lbScenarios, self.instance.lbScenario  = self.set_lbScenarios()
         ubRoute = self.instance.ubScenario
         lbRoute = self.instance.lbScenario
@@ -117,12 +110,9 @@ class BAB_super_class:
                     lastEnteranceDictionary = scenario_0
                     )
         lastEnteranceDictionary = None
-        set_probability_covered(lbScenarios,0,  tspProbDict, self.instance)
+
         # we already added scenario 0 to the exact cost of the root - this is done in set_probability_covered function
-
-
-        # DOMINANCE_CHECK_BOUNDS_REMOVED
-        #root.lbRoute = sum(root.lbScenarios[id][1] * root.lbScenarios[id][0] for id in root.lbScenarios) + root.exactValue + (1-tspProbDict[scenario_0])*lbScenario
+        set_probability_covered(lbScenarios,0,  tspProbDict, self.instance)
         root.lbScenarios[0][1] = 0
         root.lbRoute = sum(root.lbScenarios[id][1] * root.lbScenarios[id][0] for id in root.lbScenarios) + root.exactValue
         self.nodeLayers = {}
@@ -136,9 +126,6 @@ class BAB_super_class:
         # in the worst case we can do nothing (do not offer any discount), which will cost route visiting all customers
         rsPolicyID, rsValue = ring_star_deterministic_no_TW(instance, instance.NR_CUST)
         self.rs_policy = rsPolicyID
-
-        #self.upperBoundNumberDiscount = self.instance.NR_CUST
-
         self.upperBoundNumberDiscount = bitCount(rsPolicyID)
 
     def set_lbScenarios(self):
@@ -158,7 +145,6 @@ class BAB_super_class:
                 # lower cost than the lbScenario. We initiate with the zero probability
                 lbScenarios[id] = [self.TSPSolver.tspCost(scenario), 0 , scenario]
                 lbScenario = min(lbScenarios[id][0], lbScenario)
-
         return lbScenarios, lbScenario
 
     def canBranch(self, node):
@@ -195,7 +181,6 @@ class BAB_super_class:
 
         lastEnteranceDictionary = self.root.lastEnteranceDictionary
 
-        # CHANGESPROBABILITY
         lbExpDiscountLeft = parent.lbExpDiscount + (1 - p_home[diff_customer]) * shipping_fee[diff_customer]
         ubExpDiscountLeft = parent.ubExpDiscount
         lbExpDiscountRight = parent.lbExpDiscount
@@ -213,7 +198,7 @@ class BAB_super_class:
         exactValProbLeft = parent.exactValueProb
         exactValueLeft = parent.exactValue
 
-        # thus to reduce the problem with multiplication of small numbers
+        # To reduce the numerical issue when multiplying small numbers
         if parent.exactValueProb > 10*constants.EPS:
             lastEnteranceDictionary = self.root.lastEnteranceDictionary
             exactValProbRight = parent.exactValueProb / p_home[diff_customer]
@@ -234,11 +219,6 @@ class BAB_super_class:
                         tspProbDictRight[scenario] = scenarioProbRight
 
         lbScenariosRight = set_probability_covered(lbScenariosRight, noDiscountIDRight, tspProbDictRight, self.instance)
-
-        #DOMINANCE_CHECK_BOUNDS_REMOVED
-        #lbRouteRight = sum(
-        #    lbScenariosRight[id][1] * lbScenariosRight[id][0] for id in lbScenariosRight) + exactValueRight + (1-exactValProbRight)*self.instance.lbScenario
-
         lbRouteRight = sum(
             lbScenariosRight[id][1] * lbScenariosRight[id][0] for id in lbScenariosRight) + exactValueRight
 
@@ -319,15 +299,8 @@ class BAB_super_class:
         node = Node(parent, lbRoute, ubRoute, withDiscountID, noDiscountID, lbExpDiscount, ubExpDiscount,
                     tspDict,tspProbDict, lbScenarios,  exactValueProb, exactValue, layer,
                     priorityCoef, lastEnteranceDictionary)
-        # if withDiscountID== 0:
-        #     print("inBranch", layer, exactValueProb, exactValue, lbRoute)
-        #     for scenario in lbScenarios:
-        #         print(lbScenarios[scenario] )
-
         if node.lbRoute + node.lbExpDiscount > self.bestNode.ubVal():
             node.fathomedState = True
-
-        #DOMINANCE_CHECK_REMOVED
         elif self.canFathomByTheoremCliques(node):
           node.fathomedState = True
           if node.layer == self.instance.NR_CUST:
@@ -347,9 +320,7 @@ class BAB_super_class:
             self.nodeLayers[layer] = [node, node]
 
         self.nodeLayers[layer][1] = node
-        # nodeLayers.put(layer, node)
         self.nrNodes += 1
-
         # add the node to the open list of nodes
         return node
 
@@ -423,7 +394,6 @@ class BAB_super_class:
 
     # Return the number of layers in this BB tree
     # @return number of layers in this BB tree
-
     def getNrLayers(self):
         return len(self.nodeLayers)
 
@@ -433,9 +403,7 @@ class BAB_super_class:
     # Returns an iterator over all nodes in a given layer. Nodes in a layer are stored in a * linked list to efficiently perform this operation.
     # @param layer layer
     # @return iterator over all nodes in a given layer
-
     def nodeIterator(self, layer):
-
         current = None
         if layer in self.nodeLayers:
             next = self.nodeLayers[layer][0]
@@ -445,7 +413,3 @@ class BAB_super_class:
             current = next
             next = current.nextNodeInLayer
             yield current
-
-            # @Override
-            # public void remove():
-            #    removeNode(current)

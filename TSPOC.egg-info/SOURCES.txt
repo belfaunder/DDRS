@@ -1,6 +1,0 @@
-setup.py
-TSPOC.egg-info/PKG-INFO
-TSPOC.egg-info/SOURCES.txt
-TSPOC.egg-info/dependency_links.txt
-TSPOC.egg-info/requires.txt
-TSPOC.egg-info/top_level.txt
