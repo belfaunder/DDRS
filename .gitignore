@@ -20,7 +20,7 @@
 !/lib/*
 target
 output
-data
+data/*
 !data/test_instance.txt
 build
 old
