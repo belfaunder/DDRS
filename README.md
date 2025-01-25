@@ -1,3 +1,5 @@
+Code for the algortihms described in paper Demand Steering in a Last-Mile Delivery Problem with Home and Pickup Point Delivery Options.
+
 ## Technologies: ##
 Project is created with:
 
@@ -8,7 +10,7 @@ Project is created with:
 
 ## Installation: ##
 
-1. Clone repository: `git clone https://belfaunder@bitbucket.org/belfaunder/octsp.git'
+1. Clone repository: `git clone https://github.com/belfaunder/DDRS.git'
 2. Install conda: `https://docs.conda.io/projects/conda/en/latest/user-guide/install/windows.html`
 3. Install Gurobi >= 8.1.1: `https://support.gurobi.com/hc/en-us/articles/12872889819921-How-do-I-use-conda-to-install-Gurobi-in-Anaconda`
 4. Install dependencies: conda -r install requirementx.txt
